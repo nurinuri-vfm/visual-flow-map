@@ -526,7 +526,7 @@ function drawLaneBar(){
   const bar = document.getElementById('lanebar');
   const l = view.lay; if(!l){ bar.innerHTML=''; return; }
   bar.innerHTML = l.laneBoxes.map(lb=>
-    `<span class="lt" style="top:${(lb.top+4)*zoom}px;color:var(--${lb.lane})">${LANE_LABEL[lb.lane]}</span>`).join('');
+    `<span class="lt" style="top:${(lb.top+4)*zoom}px;color:var(--${lb.lane})">${esc(LANE_LABEL[lb.lane])}</span>`).join('');
   bar.style.height = (l.height*zoom)+'px';
   bar.style.transform = `translateX(${wrap.scrollLeft}px)`;
 }
@@ -544,7 +544,7 @@ function edgePath(a,b){
   return `M${a.x+NW/2},${a.y+NH} C${a.x+NW/2},${a.y+NH+lift} ${b.x+NW/2},${b.y+NH+lift} ${b.x+NW/2},${b.y+NH}`;
 }
 function showTip(ev,n){
-  tip.innerHTML = `<div class="tk" style="--c:var(--${n.lane})">${LANE_LABEL[n.lane]}</div>`+
+  tip.innerHTML = `<div class="tk" style="--c:var(--${n.lane})">${esc(LANE_LABEL[n.lane])}</div>`+
     `<div class="tt"></div><div class="td"></div>`+(n.ref?`<div class="tr"></div>`:'');
   tip.querySelector('.tt').textContent = n.label;
   tip.querySelector('.td').textContent = n.detail;
@@ -697,7 +697,8 @@ function renderPanel(){
   const el = document.getElementById('apanel');
   if(!cur){
     el.innerHTML = `<div class="empty">
-      上のボタンから${FLOW_WORD}を選ぶと<br>そのルートだけが光ります。<br><br>
+      上のボタンから${esc(FLOW_WORD)}を選ぶと<br>そのルートだけが光ります。<br><br>
+      <span class="k">ドラッグ</span> で移動、<span class="k">Ctrl+ホイール</span> で拡大縮小<br>
       <span class="k">←</span> <span class="k">→</span> で1ステップずつ、<span class="k">Space</span> で再生／停止<br>
       <span class="k">Esc</span> で選択解除
       </div>`;
@@ -718,7 +719,7 @@ function renderPanel(){
   el.innerHTML = `<div class="ahead">
       <div class="t">${esc(cur.title)}</div>
       <div class="g">${esc(cur.category)} ・ 全 ${cur.steps.length} ステップ <span id="prog"></span></div>
-      ${cur.trigger?`<div class="trigger">${FLOW_WORD}：${esc(cur.trigger)}</div>`:''}
+      ${cur.trigger?`<div class="trigger">${esc(FLOW_WORD)}：${esc(cur.trigger)}</div>`:''}
     </div>
     <div class="steps">${st}
       ${(cur.notes&&cur.notes.length)?`<div class="notes"><h3>注意点 / 仕様メモ</h3><ul>${cur.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div>`:''}
@@ -753,12 +754,12 @@ function showNodePanel(id){
   document.getElementById('apanel').innerHTML = `
     <div class="ahead">
       <div class="t" style="color:var(--${n.lane})">${esc(n.label)}</div>
-      <div class="g">${LANE_LABEL[n.lane]} ・ <code style="font-size:10px">${esc(n.id)}</code></div>
+      <div class="g">${esc(LANE_LABEL[n.lane])} ・ <code style="font-size:10px">${esc(n.id)}</code></div>
       ${n.detail?`<div class="trigger" style="color:var(--fg2);background:rgba(255,255,255,.04);border-color:var(--line2)">${esc(n.detail)}</div>`:''}
       ${n.ref?`<div class="g" style="margin-top:6px;font-family:ui-monospace,monospace">${esc(n.ref)}</div>`:''}
     </div>
     <div class="steps">
-      <div class="cat"><h2 style="margin:4px 0 6px">ここを通る${FLOW_WORD}（${via.length}）</h2></div>
+      <div class="cat"><h2 style="margin:4px 0 6px">ここを通る${esc(FLOW_WORD)}（${via.length}）</h2></div>
       ${via.map(f=>`<div class="step" data-f="${esc(f.id)}"><div class="no">▶</div><div class="body">
         <div class="arrow"><span class="to">${esc(f.title)}</span></div><div class="desc">${esc(f.category)}</div></div></div>`).join('') || '<div class="desc" style="padding:4px 8px;color:var(--fg3)">なし</div>'}
       <div class="cat"><h2 style="margin:14px 0 6px">前後の接続（← 入力 ${ins.length} / → 出力 ${outs.length}）</h2></div>
@@ -834,17 +835,62 @@ function fit(soft){
   } else if(!soft) wrap.scrollTo({left:0, top:0});
 }
 
+/* ============================ ドラッグ移動・ホイール拡縮 ============================ */
+/* マップはドラッグで掴んで動かせる。4px以上動いたらパン扱いにして、直後の click を1回だけ握りつぶす */
+let pan = null, suppressClick = false;
+wrap.style.cursor = 'grab';
+wrap.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  pan = { x: e.clientX, y: e.clientY, sl: wrap.scrollLeft, st: wrap.scrollTop, moved: false };
+  wrap.style.cursor = 'grabbing';
+  e.preventDefault();   // テキスト選択とネイティブドラッグを抑止
+});
+addEventListener('mousemove', e => {
+  if (!pan) return;
+  const dx = e.clientX - pan.x, dy = e.clientY - pan.y;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) pan.moved = true;
+  if (pan.moved) { wrap.scrollLeft = pan.sl - dx; wrap.scrollTop = pan.st - dy; }
+});
+addEventListener('mouseup', () => {
+  if (!pan) return;
+  suppressClick = pan.moved;
+  pan = null;
+  wrap.style.cursor = 'grab';
+  // click は mouseup 直後（タイマーより先）に配送されるので、次のタスクで必ず解除される
+  setTimeout(() => { suppressClick = false; }, 0);
+});
+wrap.addEventListener('click', e => {
+  if (suppressClick) { e.stopPropagation(); e.preventDefault(); suppressClick = false; }
+}, true);
+
+/* カーソル位置を不動点にした拡縮（Ctrl+ホイール／トラックパッドのピンチ） */
+function zoomAt(clientX, clientY, nz){
+  const rect = wrap.getBoundingClientRect();
+  const px = clientX - rect.left, py = clientY - rect.top;
+  const cx = (wrap.scrollLeft + px) / zoom, cy = (wrap.scrollTop + py) / zoom;
+  setZoom(nz);
+  wrap.scrollLeft = cx * zoom - px;
+  wrap.scrollTop  = cy * zoom - py;
+}
+wrap.addEventListener('wheel', e => {
+  if (!e.ctrlKey) return;   // 素のホイールは通常スクロールのまま
+  e.preventDefault();       // ブラウザのページ拡大を抑止
+  zoomAt(e.clientX, e.clientY, zoom * (e.deltaY < 0 ? 1.13 : 1/1.13));
+}, { passive: false });
+
 /* ============================ ヘッダ・凡例・キー ============================ */
 document.getElementById('stat').innerHTML =
-  `${FLOW_WORD} <b>${FLOWS.length}</b> ・ 処理ノード <b>${NODES.size}</b> ・ 経路 <b>${EDGELIST.length}</b>`;
+  `${esc(FLOW_WORD)} <b>${FLOWS.length}</b> ・ 処理ノード <b>${NODES.size}</b> ・ 経路 <b>${EDGELIST.length}</b>`;
 const STAMP = META.stamp || {};
 const stampBits = [];
-if (STAMP.builtAt) stampBits.push(String(STAMP.builtAt).slice(0,10) + ' 生成');
+if (STAMP.builtAt) stampBits.push(esc(String(STAMP.builtAt).slice(0,10)) + ' 生成');
 if (STAMP.commit) stampBits.push('commit ' + esc(STAMP.commit));
 if (STAMP.refTotal) stampBits.push('コード参照 ' + STAMP.refOk + '/' + STAMP.refTotal + ' 実在検証済み');
+/* creditUrl は http(s) のみリンク化する（javascript: 等のスキームを弾く） */
+const creditHref = /^https?:\/\//i.test(String(META.creditUrl || '')) ? META.creditUrl : null;
 const credit = META.credit === false ? '' :
-  (META.creditUrl
-    ? `<a href="${esc(META.creditUrl)}" target="_blank" rel="noopener" style="color:var(--fg3)">Generated with interactive-flow-map</a>`
+  (creditHref
+    ? `<a href="${esc(creditHref)}" target="_blank" rel="noopener" style="color:var(--fg3)">Generated with interactive-flow-map</a>`
     : `<span>Generated with interactive-flow-map</span>`);
 document.getElementById('legend').innerHTML =
   LANES.filter(([k])=>[...NODES.values()].some(n=>n.lane===k))
@@ -862,8 +908,9 @@ document.getElementById('btnPrev').onclick = ()=> stepBy(-1);
 document.getElementById('btnNext').onclick = ()=> stepBy(1);
 document.getElementById('btnClear').onclick = clearFlow;
 document.getElementById('btnFit').onclick = ()=> fit(false);
-document.getElementById('btnZoomIn').onclick = ()=> setZoom(zoom*1.18);
-document.getElementById('btnZoomOut').onclick = ()=> setZoom(zoom/1.18);
+const zoomAtCenter = f => { const r = wrap.getBoundingClientRect(); zoomAt(r.left + r.width/2, r.top + r.height/2, zoom * f); };
+document.getElementById('btnZoomIn').onclick = ()=> zoomAtCenter(1.18);
+document.getElementById('btnZoomOut').onclick = ()=> zoomAtCenter(1/1.18);
 document.getElementById('btnFold').onclick = e=>{
   const d = document.getElementById('deck');
   const folded = d.classList.toggle('folded');
@@ -899,7 +946,7 @@ function showHintOnce(){
   const d = document.createElement('div');
   d.id = 'hint';
   d.innerHTML = `上のボタンを押すと、その${esc(FLOW_WORD)}が通る経路だけが<b>順番に光ります</b>。`+
-    `ノードをクリックすると「ここを通る${esc(FLOW_WORD)}」を逆引きできます。<span class="x" title="閉じる">✕</span>`;
+    `図はドラッグで動かせます。ノードをクリックすると「ここを通る${esc(FLOW_WORD)}」を逆引きできます。<span class="x" title="閉じる">✕</span>`;
   document.body.appendChild(d);
   const r = document.getElementById('deck').getBoundingClientRect();
   d.style.left = Math.max(16, r.left + 16) + 'px';

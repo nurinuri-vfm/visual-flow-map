@@ -299,7 +299,7 @@
 <div id="tip"></div>
 
 <script>
-const DATA = {"meta":{"title":"保育園 発熱対応の事象フロー","flowWord":"事象","lanes":[{"key":"staff","label":"保育士"},{"key":"leader","label":"主任・看護師"},{"key":"comm","label":"連絡・伝達"},{"key":"parent","label":"保護者"},{"key":"record","label":"記録・書類"},{"key":"clinic","label":"外部医療機関"}],"stamp":{"builtAt":"2026-08-13T12:44:20.761Z"}},"nodes":[{"id":"staff.onset.discover","lane":"staff","label":"検温で発熱発見","detail":"保育士が午睡明けの検温で37.5℃以上を確認。既往症・直近の様子も併せて確認する","ref":"ヒアリング:保育士(想定)"},{"id":"staff.onset.isolate","lane":"staff","label":"別室で経過観察","detail":"他児と接触しない静養スペースに移し、水分補給と体温再測定を15分おきに行う","ref":"保育所における感染症対策ガイドライン(2023年5月一部改訂)#体調不良時の対応"},{"id":"leader.assess.confirm","lane":"leader","label":"主任が症状確認","detail":"主任・看護師が体温推移とけいれん等の随伴症状の有無を確認し、通常対応か緊急対応かを判断する","ref":"ヒアリング:主任保育士(想定)"},{"id":"leader.assess.emergency","lane":"leader","label":"緊急性ありと判断","detail":"39.0℃以上でけいれん・呼びかけへの反応不良等がある場合、緊急対応（受診・救急要請含む）に切り替える（推定）","ref":"ヒアリング:主任保育士(想定)"},{"id":"comm.notify.call_parent","lane":"comm","label":"保護者へ電話連絡","detail":"登録済みの第一連絡先へ発熱の状況と迎えの依頼を電話で伝える","ref":"ヒアリング:保育士(想定)"},{"id":"comm.notify.no_answer","lane":"comm","label":"電話が繋がらない","detail":"第一連絡先に3回架電しても応答がない場合、緊急連絡先への切替に進む（推定・架電回数は施設により異なる）","ref":"ヒアリング:保育士(想定)"},{"id":"comm.notify.emergency_contact","lane":"comm","label":"緊急連絡先へ架電","detail":"祖父母等の緊急連絡先に発熱の状況を伝え、迎えの可否を確認する","ref":"ヒアリング:保育士(想定)"},{"id":"record.log.entry","lane":"record","label":"保健日誌に記入","detail":"発見時刻・体温推移・対応内容・連絡時刻を保健日誌（個別記録）に記入する","ref":"保育所における感染症対策ガイドライン(2023年5月一部改訂)#記録の作成"},{"id":"parent.respond.ack","lane":"parent","label":"保護者が迎えを承諾","detail":"保護者（または緊急連絡先の家族）が状況を把握し、迎えに来る旨と到着見込み時刻を伝える","ref":"ヒアリング:保護者(想定)"},{"id":"staff.handover.prepare","lane":"staff","label":"引き渡し準備","detail":"与薬記録・当日の様子・体温記録を書面にまとめ、荷物と共に準備する","ref":"ヒアリング:保育士(想定)"},{"id":"parent.handover.arrive","lane":"parent","label":"保護者が来園","detail":"保護者が受付で来園を伝え、玄関または保健室で引き渡しを待つ","ref":"ヒアリング:保育士(想定)"},{"id":"staff.handover.complete","lane":"staff","label":"引き渡し・記録署名","detail":"症状・対応経過を口頭で説明し、引き渡し記録に保護者の受け取りサインを得る","ref":"保育所における感染症対策ガイドライン(2023年5月一部改訂)#降園時の対応"},{"id":"clinic.visit.decide","lane":"clinic","label":"受診の要否を判断","detail":"緊急性ありと判断された場合、嘱託医または医療機関への受診要否を主任が判断する（推定）","ref":"ヒアリング:主任保育士(想定)"},{"id":"record.log.close","lane":"record","label":"引き渡し記録を完結","detail":"引き渡し時刻・受け取った保護者氏名を記録し、保健日誌を保管する","ref":"保育所における感染症対策ガイドライン(2023年5月一部改訂)#記録の保管"}],"edges":[{"from":"comm.notify.call_parent","to":"parent.respond.ack","label":"状況を説明し来園を依頼","kind":"call"},{"from":"comm.notify.call_parent","to":"comm.notify.no_answer","label":"3回架電するも応答なし","kind":"error"},{"from":"comm.notify.no_answer","to":"comm.notify.emergency_contact","label":"緊急連絡先へ切替","kind":"retry"},{"from":"clinic.visit.decide","to":"record.log.entry","label":"対応経過を記録","kind":"db"},{"from":"staff.handover.complete","to":"record.log.close","label":"引き渡し記録に署名","kind":"db"},{"from":"staff.onset.discover","to":"staff.onset.isolate","label":"静養室へ移動","kind":"call"},{"from":"staff.onset.isolate","to":"leader.assess.confirm","label":"体温再測定・症状を報告","kind":"call"},{"from":"leader.assess.confirm","to":"comm.notify.call_parent","label":"通常対応と判断し連絡","kind":"call"},{"from":"comm.notify.call_parent","to":"record.log.entry","label":"連絡時刻を記入","kind":"call"},{"from":"parent.respond.ack","to":"staff.handover.prepare","label":"迎えの意思を保育士へ伝達","kind":"call"},{"from":"staff.handover.prepare","to":"parent.handover.arrive","label":"準備物と記録を用意","kind":"call"},{"from":"parent.handover.arrive","to":"staff.handover.complete","label":"保護者来園・状況説明","kind":"call"},{"from":"leader.assess.confirm","to":"leader.assess.emergency","label":"高熱・けいれんを確認","kind":"call"},{"from":"leader.assess.emergency","to":"comm.notify.call_parent","label":"保護者へ緊急連絡","kind":"call"},{"from":"leader.assess.emergency","to":"clinic.visit.decide","label":"嘱託医への受診を決定","kind":"call"},{"from":"comm.notify.emergency_contact","to":"parent.respond.ack","label":"緊急連絡先の家族が迎えを承諾","kind":"call"},{"from":"parent.respond.ack","to":"parent.handover.arrive","label":"医療機関または園に到着","kind":"call"}],"flows":[{"id":"fever-normal-handover","title":"発熱→通常の引き渡し","category":"体調不良対応","trigger":"検温で37.5℃以上を確認（けいれん等の随伴症状なし）","steps":[{"from":"staff.onset.discover","to":"staff.onset.isolate","label":"静養室へ移動","branch":"main"},{"from":"staff.onset.isolate","to":"leader.assess.confirm","label":"体温再測定・症状を報告","branch":"main"},{"from":"leader.assess.confirm","to":"comm.notify.call_parent","label":"通常対応と判断し連絡","branch":"main"},{"from":"comm.notify.call_parent","to":"record.log.entry","label":"連絡時刻を記入","branch":"main"},{"from":"comm.notify.call_parent","to":"parent.respond.ack","label":"状況を説明し来園を依頼","branch":"main"},{"from":"parent.respond.ack","to":"staff.handover.prepare","label":"迎えの意思を保育士へ伝達","branch":"main"},{"from":"staff.handover.prepare","to":"parent.handover.arrive","label":"準備物と記録を用意","branch":"main"},{"from":"parent.handover.arrive","to":"staff.handover.complete","label":"保護者来園・状況説明","branch":"main"},{"from":"staff.handover.complete","to":"record.log.close","label":"引き渡し記録に署名","branch":"main"}],"notes":["第一連絡先に速やかに繋がった場合の標準経路。到着見込み時刻は保護者からの申告に依存する（推定）。","37.5℃台〜38℃台前半・けいれん等なしを目安に通常対応とする施設が多い（推定・具体的な閾値は各施設のマニュアルによる）。"]},{"id":"fever-emergency-clinic","title":"発熱→緊急対応・受診を経て引き渡し","category":"体調不良対応","trigger":"経過観察中に39.0℃以上・けいれん等の随伴症状を確認","steps":[{"from":"staff.onset.discover","to":"staff.onset.isolate","label":"静養室へ移動","branch":"main"},{"from":"staff.onset.isolate","to":"leader.assess.confirm","label":"体温再測定・症状を報告","branch":"main"},{"from":"leader.assess.confirm","to":"leader.assess.emergency","label":"高熱・けいれんを確認","branch":"alt"},{"from":"leader.assess.emergency","to":"comm.notify.call_parent","label":"保護者へ緊急連絡","branch":"alt"},{"from":"comm.notify.call_parent","to":"comm.notify.no_answer","label":"3回架電するも応答なし","branch":"error"},{"from":"comm.notify.no_answer","to":"comm.notify.emergency_contact","label":"緊急連絡先へ切替","branch":"error"},{"from":"leader.assess.emergency","to":"clinic.visit.decide","label":"嘱託医への受診を決定","branch":"alt"},{"from":"clinic.visit.decide","to":"record.log.entry","label":"対応経過を記録","branch":"alt"},{"from":"comm.notify.emergency_contact","to":"parent.respond.ack","label":"緊急連絡先の家族が迎えを承諾","branch":"alt"},{"from":"parent.respond.ack","to":"parent.handover.arrive","label":"医療機関または園に到着","branch":"alt"},{"from":"parent.handover.arrive","to":"staff.handover.complete","label":"受診結果を含め状況説明","branch":"alt"},{"from":"staff.handover.complete","to":"record.log.close","label":"引き渡し記録に署名","branch":"alt"}],"notes":["第一連絡先に繋がらない場合は緊急連絡先（祖父母等）へ切り替える。それでも連絡が取れない場合は救急要請の判断に進む（このフローには未収録・別フローで扱う想定）。","受診要否の判断基準（39.0℃・けいれん等）は代表的な運用例であり、実際には施設の嘱託医と定めた基準に従う（推定）。"]}]};
+const DATA = {"meta":{"title":"保育園 発熱対応の事象フロー","flowWord":"事象","lanes":[{"key":"staff","label":"保育士"},{"key":"leader","label":"主任・看護師"},{"key":"comm","label":"連絡・伝達"},{"key":"parent","label":"保護者"},{"key":"record","label":"記録・書類"},{"key":"clinic","label":"外部医療機関"}],"stamp":{"builtAt":"2026-08-13T13:00:56.795Z"}},"nodes":[{"id":"staff.onset.discover","lane":"staff","label":"検温で発熱発見","detail":"保育士が午睡明けの検温で37.5℃以上を確認。既往症・直近の様子も併せて確認する","ref":"ヒアリング:保育士(想定)"},{"id":"staff.onset.isolate","lane":"staff","label":"別室で経過観察","detail":"他児と接触しない静養スペースに移し、水分補給と体温再測定を15分おきに行う","ref":"保育所における感染症対策ガイドライン(2023年5月一部改訂)#体調不良時の対応"},{"id":"leader.assess.confirm","lane":"leader","label":"主任が症状確認","detail":"主任・看護師が体温推移とけいれん等の随伴症状の有無を確認し、通常対応か緊急対応かを判断する","ref":"ヒアリング:主任保育士(想定)"},{"id":"leader.assess.emergency","lane":"leader","label":"緊急性ありと判断","detail":"39.0℃以上でけいれん・呼びかけへの反応不良等がある場合、緊急対応（受診・救急要請含む）に切り替える（推定）","ref":"ヒアリング:主任保育士(想定)"},{"id":"comm.notify.call_parent","lane":"comm","label":"保護者へ電話連絡","detail":"登録済みの第一連絡先へ発熱の状況と迎えの依頼を電話で伝える","ref":"ヒアリング:保育士(想定)"},{"id":"comm.notify.no_answer","lane":"comm","label":"電話が繋がらない","detail":"第一連絡先に3回架電しても応答がない場合、緊急連絡先への切替に進む（推定・架電回数は施設により異なる）","ref":"ヒアリング:保育士(想定)"},{"id":"comm.notify.emergency_contact","lane":"comm","label":"緊急連絡先へ架電","detail":"祖父母等の緊急連絡先に発熱の状況を伝え、迎えの可否を確認する","ref":"ヒアリング:保育士(想定)"},{"id":"record.log.entry","lane":"record","label":"保健日誌に記入","detail":"発見時刻・体温推移・対応内容・連絡時刻を保健日誌（個別記録）に記入する","ref":"保育所における感染症対策ガイドライン(2023年5月一部改訂)#記録の作成"},{"id":"parent.respond.ack","lane":"parent","label":"保護者が迎えを承諾","detail":"保護者（または緊急連絡先の家族）が状況を把握し、迎えに来る旨と到着見込み時刻を伝える","ref":"ヒアリング:保護者(想定)"},{"id":"staff.handover.prepare","lane":"staff","label":"引き渡し準備","detail":"与薬記録・当日の様子・体温記録を書面にまとめ、荷物と共に準備する","ref":"ヒアリング:保育士(想定)"},{"id":"parent.handover.arrive","lane":"parent","label":"保護者が来園","detail":"保護者が受付で来園を伝え、玄関または保健室で引き渡しを待つ","ref":"ヒアリング:保育士(想定)"},{"id":"staff.handover.complete","lane":"staff","label":"引き渡し・記録署名","detail":"症状・対応経過を口頭で説明し、引き渡し記録に保護者の受け取りサインを得る","ref":"保育所における感染症対策ガイドライン(2023年5月一部改訂)#降園時の対応"},{"id":"clinic.visit.decide","lane":"clinic","label":"受診の要否を判断","detail":"緊急性ありと判断された場合、嘱託医または医療機関への受診要否を主任が判断する（推定）","ref":"ヒアリング:主任保育士(想定)"},{"id":"record.log.close","lane":"record","label":"引き渡し記録を完結","detail":"引き渡し時刻・受け取った保護者氏名を記録し、保健日誌を保管する","ref":"保育所における感染症対策ガイドライン(2023年5月一部改訂)#記録の保管"}],"edges":[{"from":"comm.notify.call_parent","to":"parent.respond.ack","label":"状況を説明し来園を依頼","kind":"call"},{"from":"comm.notify.call_parent","to":"comm.notify.no_answer","label":"3回架電するも応答なし","kind":"error"},{"from":"comm.notify.no_answer","to":"comm.notify.emergency_contact","label":"緊急連絡先へ切替","kind":"retry"},{"from":"clinic.visit.decide","to":"record.log.entry","label":"対応経過を記録","kind":"db"},{"from":"staff.handover.complete","to":"record.log.close","label":"引き渡し記録に署名","kind":"db"},{"from":"staff.onset.discover","to":"staff.onset.isolate","label":"静養室へ移動","kind":"call"},{"from":"staff.onset.isolate","to":"leader.assess.confirm","label":"体温再測定・症状を報告","kind":"call"},{"from":"leader.assess.confirm","to":"comm.notify.call_parent","label":"通常対応と判断し連絡","kind":"call"},{"from":"comm.notify.call_parent","to":"record.log.entry","label":"連絡時刻を記入","kind":"call"},{"from":"parent.respond.ack","to":"staff.handover.prepare","label":"迎えの意思を保育士へ伝達","kind":"call"},{"from":"staff.handover.prepare","to":"parent.handover.arrive","label":"準備物と記録を用意","kind":"call"},{"from":"parent.handover.arrive","to":"staff.handover.complete","label":"保護者来園・状況説明","kind":"call"},{"from":"leader.assess.confirm","to":"leader.assess.emergency","label":"高熱・けいれんを確認","kind":"call"},{"from":"leader.assess.emergency","to":"comm.notify.call_parent","label":"保護者へ緊急連絡","kind":"call"},{"from":"leader.assess.emergency","to":"clinic.visit.decide","label":"嘱託医への受診を決定","kind":"call"},{"from":"comm.notify.emergency_contact","to":"parent.respond.ack","label":"緊急連絡先の家族が迎えを承諾","kind":"call"},{"from":"parent.respond.ack","to":"parent.handover.arrive","label":"医療機関または園に到着","kind":"call"}],"flows":[{"id":"fever-normal-handover","title":"発熱→通常の引き渡し","category":"体調不良対応","trigger":"検温で37.5℃以上を確認（けいれん等の随伴症状なし）","steps":[{"from":"staff.onset.discover","to":"staff.onset.isolate","label":"静養室へ移動","branch":"main"},{"from":"staff.onset.isolate","to":"leader.assess.confirm","label":"体温再測定・症状を報告","branch":"main"},{"from":"leader.assess.confirm","to":"comm.notify.call_parent","label":"通常対応と判断し連絡","branch":"main"},{"from":"comm.notify.call_parent","to":"record.log.entry","label":"連絡時刻を記入","branch":"main"},{"from":"comm.notify.call_parent","to":"parent.respond.ack","label":"状況を説明し来園を依頼","branch":"main"},{"from":"parent.respond.ack","to":"staff.handover.prepare","label":"迎えの意思を保育士へ伝達","branch":"main"},{"from":"staff.handover.prepare","to":"parent.handover.arrive","label":"準備物と記録を用意","branch":"main"},{"from":"parent.handover.arrive","to":"staff.handover.complete","label":"保護者来園・状況説明","branch":"main"},{"from":"staff.handover.complete","to":"record.log.close","label":"引き渡し記録に署名","branch":"main"}],"notes":["第一連絡先に速やかに繋がった場合の標準経路。到着見込み時刻は保護者からの申告に依存する（推定）。","37.5℃台〜38℃台前半・けいれん等なしを目安に通常対応とする施設が多い（推定・具体的な閾値は各施設のマニュアルによる）。"]},{"id":"fever-emergency-clinic","title":"発熱→緊急対応・受診を経て引き渡し","category":"体調不良対応","trigger":"経過観察中に39.0℃以上・けいれん等の随伴症状を確認","steps":[{"from":"staff.onset.discover","to":"staff.onset.isolate","label":"静養室へ移動","branch":"main"},{"from":"staff.onset.isolate","to":"leader.assess.confirm","label":"体温再測定・症状を報告","branch":"main"},{"from":"leader.assess.confirm","to":"leader.assess.emergency","label":"高熱・けいれんを確認","branch":"alt"},{"from":"leader.assess.emergency","to":"comm.notify.call_parent","label":"保護者へ緊急連絡","branch":"alt"},{"from":"comm.notify.call_parent","to":"comm.notify.no_answer","label":"3回架電するも応答なし","branch":"error"},{"from":"comm.notify.no_answer","to":"comm.notify.emergency_contact","label":"緊急連絡先へ切替","branch":"error"},{"from":"leader.assess.emergency","to":"clinic.visit.decide","label":"嘱託医への受診を決定","branch":"alt"},{"from":"clinic.visit.decide","to":"record.log.entry","label":"対応経過を記録","branch":"alt"},{"from":"comm.notify.emergency_contact","to":"parent.respond.ack","label":"緊急連絡先の家族が迎えを承諾","branch":"alt"},{"from":"parent.respond.ack","to":"parent.handover.arrive","label":"医療機関または園に到着","branch":"alt"},{"from":"parent.handover.arrive","to":"staff.handover.complete","label":"受診結果を含め状況説明","branch":"alt"},{"from":"staff.handover.complete","to":"record.log.close","label":"引き渡し記録に署名","branch":"alt"}],"notes":["第一連絡先に繋がらない場合は緊急連絡先（祖父母等）へ切り替える。それでも連絡が取れない場合は救急要請の判断に進む（このフローには未収録・別フローで扱う想定）。","受診要否の判断基準（39.0℃・けいれん等）は代表的な運用例であり、実際には施設の嘱託医と定めた基準に従う（推定）。"]}]};
 
 /* ============================ 定数 ============================ */
 const META = DATA.meta || {};
@@ -526,7 +526,7 @@ function drawLaneBar(){
   const bar = document.getElementById('lanebar');
   const l = view.lay; if(!l){ bar.innerHTML=''; return; }
   bar.innerHTML = l.laneBoxes.map(lb=>
-    `<span class="lt" style="top:${(lb.top+4)*zoom}px;color:var(--${lb.lane})">${LANE_LABEL[lb.lane]}</span>`).join('');
+    `<span class="lt" style="top:${(lb.top+4)*zoom}px;color:var(--${lb.lane})">${esc(LANE_LABEL[lb.lane])}</span>`).join('');
   bar.style.height = (l.height*zoom)+'px';
   bar.style.transform = `translateX(${wrap.scrollLeft}px)`;
 }
@@ -544,7 +544,7 @@ function edgePath(a,b){
   return `M${a.x+NW/2},${a.y+NH} C${a.x+NW/2},${a.y+NH+lift} ${b.x+NW/2},${b.y+NH+lift} ${b.x+NW/2},${b.y+NH}`;
 }
 function showTip(ev,n){
-  tip.innerHTML = `<div class="tk" style="--c:var(--${n.lane})">${LANE_LABEL[n.lane]}</div>`+
+  tip.innerHTML = `<div class="tk" style="--c:var(--${n.lane})">${esc(LANE_LABEL[n.lane])}</div>`+
     `<div class="tt"></div><div class="td"></div>`+(n.ref?`<div class="tr"></div>`:'');
   tip.querySelector('.tt').textContent = n.label;
   tip.querySelector('.td').textContent = n.detail;
@@ -697,7 +697,8 @@ function renderPanel(){
   const el = document.getElementById('apanel');
   if(!cur){
     el.innerHTML = `<div class="empty">
-      上のボタンから${FLOW_WORD}を選ぶと<br>そのルートだけが光ります。<br><br>
+      上のボタンから${esc(FLOW_WORD)}を選ぶと<br>そのルートだけが光ります。<br><br>
+      <span class="k">ドラッグ</span> で移動、<span class="k">Ctrl+ホイール</span> で拡大縮小<br>
       <span class="k">←</span> <span class="k">→</span> で1ステップずつ、<span class="k">Space</span> で再生／停止<br>
       <span class="k">Esc</span> で選択解除
       </div>`;
@@ -718,7 +719,7 @@ function renderPanel(){
   el.innerHTML = `<div class="ahead">
       <div class="t">${esc(cur.title)}</div>
       <div class="g">${esc(cur.category)} ・ 全 ${cur.steps.length} ステップ <span id="prog"></span></div>
-      ${cur.trigger?`<div class="trigger">${FLOW_WORD}：${esc(cur.trigger)}</div>`:''}
+      ${cur.trigger?`<div class="trigger">${esc(FLOW_WORD)}：${esc(cur.trigger)}</div>`:''}
     </div>
     <div class="steps">${st}
       ${(cur.notes&&cur.notes.length)?`<div class="notes"><h3>注意点 / 仕様メモ</h3><ul>${cur.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div>`:''}
@@ -753,12 +754,12 @@ function showNodePanel(id){
   document.getElementById('apanel').innerHTML = `
     <div class="ahead">
       <div class="t" style="color:var(--${n.lane})">${esc(n.label)}</div>
-      <div class="g">${LANE_LABEL[n.lane]} ・ <code style="font-size:10px">${esc(n.id)}</code></div>
+      <div class="g">${esc(LANE_LABEL[n.lane])} ・ <code style="font-size:10px">${esc(n.id)}</code></div>
       ${n.detail?`<div class="trigger" style="color:var(--fg2);background:rgba(255,255,255,.04);border-color:var(--line2)">${esc(n.detail)}</div>`:''}
       ${n.ref?`<div class="g" style="margin-top:6px;font-family:ui-monospace,monospace">${esc(n.ref)}</div>`:''}
     </div>
     <div class="steps">
-      <div class="cat"><h2 style="margin:4px 0 6px">ここを通る${FLOW_WORD}（${via.length}）</h2></div>
+      <div class="cat"><h2 style="margin:4px 0 6px">ここを通る${esc(FLOW_WORD)}（${via.length}）</h2></div>
       ${via.map(f=>`<div class="step" data-f="${esc(f.id)}"><div class="no">▶</div><div class="body">
         <div class="arrow"><span class="to">${esc(f.title)}</span></div><div class="desc">${esc(f.category)}</div></div></div>`).join('') || '<div class="desc" style="padding:4px 8px;color:var(--fg3)">なし</div>'}
       <div class="cat"><h2 style="margin:14px 0 6px">前後の接続（← 入力 ${ins.length} / → 出力 ${outs.length}）</h2></div>
@@ -834,17 +835,62 @@ function fit(soft){
   } else if(!soft) wrap.scrollTo({left:0, top:0});
 }
 
+/* ============================ ドラッグ移動・ホイール拡縮 ============================ */
+/* マップはドラッグで掴んで動かせる。4px以上動いたらパン扱いにして、直後の click を1回だけ握りつぶす */
+let pan = null, suppressClick = false;
+wrap.style.cursor = 'grab';
+wrap.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  pan = { x: e.clientX, y: e.clientY, sl: wrap.scrollLeft, st: wrap.scrollTop, moved: false };
+  wrap.style.cursor = 'grabbing';
+  e.preventDefault();   // テキスト選択とネイティブドラッグを抑止
+});
+addEventListener('mousemove', e => {
+  if (!pan) return;
+  const dx = e.clientX - pan.x, dy = e.clientY - pan.y;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) pan.moved = true;
+  if (pan.moved) { wrap.scrollLeft = pan.sl - dx; wrap.scrollTop = pan.st - dy; }
+});
+addEventListener('mouseup', () => {
+  if (!pan) return;
+  suppressClick = pan.moved;
+  pan = null;
+  wrap.style.cursor = 'grab';
+  // click は mouseup 直後（タイマーより先）に配送されるので、次のタスクで必ず解除される
+  setTimeout(() => { suppressClick = false; }, 0);
+});
+wrap.addEventListener('click', e => {
+  if (suppressClick) { e.stopPropagation(); e.preventDefault(); suppressClick = false; }
+}, true);
+
+/* カーソル位置を不動点にした拡縮（Ctrl+ホイール／トラックパッドのピンチ） */
+function zoomAt(clientX, clientY, nz){
+  const rect = wrap.getBoundingClientRect();
+  const px = clientX - rect.left, py = clientY - rect.top;
+  const cx = (wrap.scrollLeft + px) / zoom, cy = (wrap.scrollTop + py) / zoom;
+  setZoom(nz);
+  wrap.scrollLeft = cx * zoom - px;
+  wrap.scrollTop  = cy * zoom - py;
+}
+wrap.addEventListener('wheel', e => {
+  if (!e.ctrlKey) return;   // 素のホイールは通常スクロールのまま
+  e.preventDefault();       // ブラウザのページ拡大を抑止
+  zoomAt(e.clientX, e.clientY, zoom * (e.deltaY < 0 ? 1.13 : 1/1.13));
+}, { passive: false });
+
 /* ============================ ヘッダ・凡例・キー ============================ */
 document.getElementById('stat').innerHTML =
-  `${FLOW_WORD} <b>${FLOWS.length}</b> ・ 処理ノード <b>${NODES.size}</b> ・ 経路 <b>${EDGELIST.length}</b>`;
+  `${esc(FLOW_WORD)} <b>${FLOWS.length}</b> ・ 処理ノード <b>${NODES.size}</b> ・ 経路 <b>${EDGELIST.length}</b>`;
 const STAMP = META.stamp || {};
 const stampBits = [];
-if (STAMP.builtAt) stampBits.push(String(STAMP.builtAt).slice(0,10) + ' 生成');
+if (STAMP.builtAt) stampBits.push(esc(String(STAMP.builtAt).slice(0,10)) + ' 生成');
 if (STAMP.commit) stampBits.push('commit ' + esc(STAMP.commit));
 if (STAMP.refTotal) stampBits.push('コード参照 ' + STAMP.refOk + '/' + STAMP.refTotal + ' 実在検証済み');
+/* creditUrl は http(s) のみリンク化する（javascript: 等のスキームを弾く） */
+const creditHref = /^https?:\/\//i.test(String(META.creditUrl || '')) ? META.creditUrl : null;
 const credit = META.credit === false ? '' :
-  (META.creditUrl
-    ? `<a href="${esc(META.creditUrl)}" target="_blank" rel="noopener" style="color:var(--fg3)">Generated with interactive-flow-map</a>`
+  (creditHref
+    ? `<a href="${esc(creditHref)}" target="_blank" rel="noopener" style="color:var(--fg3)">Generated with interactive-flow-map</a>`
     : `<span>Generated with interactive-flow-map</span>`);
 document.getElementById('legend').innerHTML =
   LANES.filter(([k])=>[...NODES.values()].some(n=>n.lane===k))
@@ -862,8 +908,9 @@ document.getElementById('btnPrev').onclick = ()=> stepBy(-1);
 document.getElementById('btnNext').onclick = ()=> stepBy(1);
 document.getElementById('btnClear').onclick = clearFlow;
 document.getElementById('btnFit').onclick = ()=> fit(false);
-document.getElementById('btnZoomIn').onclick = ()=> setZoom(zoom*1.18);
-document.getElementById('btnZoomOut').onclick = ()=> setZoom(zoom/1.18);
+const zoomAtCenter = f => { const r = wrap.getBoundingClientRect(); zoomAt(r.left + r.width/2, r.top + r.height/2, zoom * f); };
+document.getElementById('btnZoomIn').onclick = ()=> zoomAtCenter(1.18);
+document.getElementById('btnZoomOut').onclick = ()=> zoomAtCenter(1/1.18);
 document.getElementById('btnFold').onclick = e=>{
   const d = document.getElementById('deck');
   const folded = d.classList.toggle('folded');
@@ -899,7 +946,7 @@ function showHintOnce(){
   const d = document.createElement('div');
   d.id = 'hint';
   d.innerHTML = `上のボタンを押すと、その${esc(FLOW_WORD)}が通る経路だけが<b>順番に光ります</b>。`+
-    `ノードをクリックすると「ここを通る${esc(FLOW_WORD)}」を逆引きできます。<span class="x" title="閉じる">✕</span>`;
+    `図はドラッグで動かせます。ノードをクリックすると「ここを通る${esc(FLOW_WORD)}」を逆引きできます。<span class="x" title="閉じる">✕</span>`;
   document.body.appendChild(d);
   const r = document.getElementById('deck').getBoundingClientRect();
   d.style.left = Math.max(16, r.left + 16) + 'px';

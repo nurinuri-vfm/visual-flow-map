@@ -224,11 +224,21 @@ if (fs.existsSync(metaPath)) {
   catch (e) { problems.push(`[META] meta.json: ${e.message}`); }
 }
 if (Array.isArray(META.lanes)) {
-  // レーンキーはそのまま CSS 変数名（--<key>）になるので、書式不正は警告して除外する
+  // レーンキーはそのまま CSS 変数名（--<key>）になるので、書式不正と
+  // テンプレートの意味色変数（正常系/失敗系/背景など）との衝突は警告して除外する
+  const RESERVED = new Set(['main', 'alt', 'err', 'bg', 'bg2', 'panel', 'panel2', 'line', 'line2',
+    'fg', 'fg2', 'fg3', 'accent', 'accent2', 'rt', 'net']);
   META.lanes = META.lanes.filter(l => {
-    const ok = l && /^[a-z][a-z0-9_-]*$/.test(String(l.key || ''));
-    if (!ok) problems.push(`[META] lanes のキーが不正なので除外（英小文字始まり・英数字/-/_のみ）: ${l && l.key}`);
-    return ok;
+    const key = String((l && l.key) || '');
+    if (!l || !/^[a-z][a-z0-9_-]*$/.test(key)) {
+      problems.push(`[META] lanes のキーが不正なので除外（英小文字始まり・英数字/-/_のみ）: ${l && l.key}`);
+      return false;
+    }
+    if (RESERVED.has(key)) {
+      problems.push(`[META] lanes のキー「${key}」はテンプレートの予約変数と衝突するので除外（別名にする。例: ${key}2）`);
+      return false;
+    }
+    return true;
   });
 }
 const stamp = { builtAt: new Date().toISOString() };
@@ -260,7 +270,8 @@ if (!fs.existsSync(TPL)) { console.error(`[FATAL] テンプレートが無い: $
 const tpl = fs.readFileSync(TPL, 'utf8');
 const MARK = '/*__FLOW_DATA__*/{nodes:[],edges:[],flows:[]}';
 if (!tpl.includes(MARK)) { console.error(`[FATAL] テンプレートに差し込み位置 ${MARK} が無い`); process.exit(1); }
-const html = tpl.replace(MARK, JSON.stringify(data));
+// "</script>" を含む文字列が <script> ブロックを破らないよう "<" をエスケープして埋め込む（JSONとしては同値）
+const html = tpl.replace(MARK, () => JSON.stringify(data).replace(/</g, '\\u003c'));
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, html, 'utf8');
 
