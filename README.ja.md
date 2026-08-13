@@ -61,14 +61,14 @@
 **Claude Code（プラグインとして）**
 
 ```bash
-/plugin marketplace add <your-github-id>/visual-flow-map
+/plugin marketplace add nurinuri-vfm/visual-flow-map
 /plugin install visual-flow-map
 ```
 
 **手動**
 
 ```bash
-git clone https://github.com/<your-github-id>/visual-flow-map
+git clone https://github.com/nurinuri-vfm/visual-flow-map
 cp -r visual-flow-map/skills/visual-flow-map ~/.claude/skills/
 ```
 

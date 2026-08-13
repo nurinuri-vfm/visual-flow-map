@@ -1,6 +1,6 @@
 # GitHub 公開用の文言一式
 
-公開時にそのままコピペで使えるように用意したもの。`<your-github-id>` は実際のアカウント名に置換すること。
+公開時にそのままコピペで使えるように用意したもの。アカウント名は `nurinuri-vfm`。
 （この文書自体は運用メモなので、公開後に残しても消してもよい）
 
 ---
@@ -18,7 +18,7 @@ Turn a codebase, a manual or a runbook into one self-contained HTML flow map. Pr
 マニュアルのフローマップ化はほぼ空白地帯で、そこに気づいてもらえるかが流入の分かれ目になる。
 `"Wi-Fi won't connect"` という具体例は、エンジニア以外にも用途が一瞬で伝わるので外さない）
 
-**Website**: GitHub Pages を有効化したら `https://<your-github-id>.github.io/visual-flow-map/demo/conduit-flow-map.html`
+**Website**: GitHub Pages を有効化したら `https://nurinuri-vfm.github.io/visual-flow-map/demo/conduit-flow-map.html`
 （デモに直接飛ばすのが一番効く。トップページより「触れる図」）
 
 **Topics**（20個まで。以下を推奨。検索流入の主要ソース）
@@ -209,9 +209,9 @@ Settings → Pages → Source: `Deploy from a branch` → `main` / `/ (root)`。
 
 有効化後、デモは以下で直接開ける:
 
-- `https://<your-github-id>.github.io/visual-flow-map/demo/conduit-flow-map.html`
-- `https://<your-github-id>.github.io/visual-flow-map/demo/order-flow-map.html`
-- `https://<your-github-id>.github.io/visual-flow-map/demo/incident-flow-map.html`
+- `https://nurinuri-vfm.github.io/visual-flow-map/demo/conduit-flow-map.html`
+- `https://nurinuri-vfm.github.io/visual-flow-map/demo/order-flow-map.html`
+- `https://nurinuri-vfm.github.io/visual-flow-map/demo/incident-flow-map.html`
 
 **「触れるデモ」の URL が最大の営業資産**なので、有効化したら README 冒頭・About の Website・
 各アナウンス文面の `<URL>` を全てこれに差し替える。

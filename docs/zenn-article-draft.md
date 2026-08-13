@@ -6,7 +6,7 @@ topics: ["claudecode", "agentskills", "claude", "可視化", "ai"]
 published: false
 ---
 
-<!-- 下書き。公開前に: <your-github-id> の置換・GIFの追加・文体の調整 -->
+<!-- 下書き。公開前に: リポジトリURLの確認・GIFの追加・文体の調整 -->
 
 ## アーキテクチャ図が読まれない理由
 
@@ -76,7 +76,7 @@ PRレビューで「この変更でどの経路が変わったか」を10秒で�
 ## 使い方
 
 ```
-/plugin marketplace add <your-github-id>/visual-flow-map
+/plugin marketplace add nurinuri-vfm/visual-flow-map
 /plugin install visual-flow-map
 ```
 
@@ -94,6 +94,6 @@ Agent Skills 標準（agentskills.io）準拠なので、対応する他のエ�
 - 単一HTMLなのでコードは手元から出ない。SaaS 不要
 - コードのフローも、現実の出来事の流れも、同じ形式で描ける
 
-リポジトリ: https://github.com/<your-github-id>/visual-flow-map
+リポジトリ: https://github.com/nurinuri-vfm/visual-flow-map
 
 フィードバック歓迎です。
