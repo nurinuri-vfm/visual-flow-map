@@ -1,5 +1,5 @@
 {
   "name": "visual-flow-map",
   "version": "0.1.0",
-  "description": "Interactive flow-map generator: a single self-contained HTML where selecting an operation (or event) lights up its path step by step. Extracted from real code by AI agents, with file:line refs mechanically verified and stamped into the diagram."
+  "description": "Interactive flow-map generator: a single self-contained HTML where pressing an operation — or a symptom — lights up only its path, step by step. Works on a codebase, a manual, a runbook or an incident timeline. Node refs are verified against the source and each edge declares how strong its basis is."
 }

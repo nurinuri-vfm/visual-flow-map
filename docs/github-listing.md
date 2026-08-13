@@ -10,8 +10,13 @@
 **Description**（350字以内。英語。GitHub の検索結果と OGP に出る一等地）
 
 ```
-Turn a codebase — or a manual, runbook or procedure — into a single self-contained HTML flow map. Pick an operation and only its path lights up, step by step; click any node to see every situation passing through it. AI agents extract from the real source, every file:line ref is machine-verified, and the result is stamped into the diagram.
+Turn a codebase, a manual or a runbook into one self-contained HTML flow map. Press an operation — or a symptom like "Wi-Fi won't connect" — and only its path lights up, step by step. Click any node to see every situation that routes through it. AI agents extract it from the real source, and the diagram states what was verified and what wasn't.
 ```
+
+（346字。GitHub の About は350字が上限なので、これ以上足すなら何かを削ること。
+**「a manual or a runbook」を最初の一文に入れているのは意図的**——コード可視化ツールは競合が多いが、
+マニュアルのフローマップ化はほぼ空白地帯で、そこに気づいてもらえるかが流入の分かれ目になる。
+`"Wi-Fi won't connect"` という具体例は、エンジニア以外にも用途が一瞬で伝わるので外さない）
 
 **Website**: GitHub Pages を有効化したら `https://<your-github-id>.github.io/visual-flow-map/demo/conduit-flow-map.html`
 （デモに直接飛ばすのが一番効く。トップページより「触れる図」）
@@ -50,10 +55,11 @@ mermaid-alternative  llm  anthropic
 ```markdown
 First public release.
 
-**What it does** — Ask your agent to visualize a repo's flows. You get one self-contained
-HTML file: press a button for an operation and only its path lights up, step by step, across
-UI / API / DB / jobs / external services. Click any node to reverse-lookup every operation
-that passes through it.
+**What it does** — Ask your agent to visualize a repo's flows, or to turn a manual into
+something clickable. You get one self-contained HTML file: press an operation (or a symptom)
+and only its path lights up, step by step, across UI / API / DB / jobs / external services —
+or across the people and records of a procedure. Click any node to reverse-lookup every
+operation or situation that passes through it.
 
 **Why it's trustworthy** — Every node carries a `file:line` ref that is verified against the
 repo, and the verification result is stamped into the diagram (`59/59 refs verified ·

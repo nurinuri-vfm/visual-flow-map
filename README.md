@@ -1,11 +1,12 @@
 # visual-flow-map
 
-**One HTML file. Pick an operation — only its path lights up, step by step.**
+**One HTML file. Press an operation — or a symptom — and only its path lights up, step by step.**
 
-An [Agent Skill](https://agentskills.io) that turns a system — or a procedure that has no code
-at all — into a self-contained interactive diagram you can hand to anyone. For code, agents
-read the real repo and every `file:line` reference is machine-verified. For procedures and
-manuals, the same shape turns a document nobody reads into something you click through.
+An [Agent Skill](https://agentskills.io) that turns **a codebase, a manual, or a runbook** into a
+self-contained interactive diagram you can hand to anyone. For code, agents read the real repo
+and every node's `file:line` reference is verified against it. For a manual, the same shape turns
+300 pages nobody reads into something where you press *"Wi-Fi won't connect"* and see only your
+path — and clicking any step tells you every other situation that routes through it.
 
 [日本語版 → README.ja.md](README.ja.md)
 
