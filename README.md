@@ -40,7 +40,7 @@ with code: mapping the RealWorld app surfaced two real bugs in it.)
 | Typical diagrams | This skill |
 |---|---|
 | Hand-drawn — stale the moment they ship | Agents read the code and extract it; regenerating is cheap |
-| "Probably correct" | Every node carries a `file:line` ref, **verified against the repo**. The result (`59/59 refs verified · commit 4b95fb2`) is stamped into the diagram itself |
+| "Probably correct" | Every node carries a `file:line` ref **verified against the repo**. An edge ("A calls B") *cannot* be verified that way — so each edge declares the strength of its basis instead: direct, inferred, framework-implicit, or unverified. Both are stamped into the diagram, and the unverified ones are listed for a human to confirm |
 | One sequence diagram per scenario | Scenario paths are overlaid on a single static map — click any shared node to **reverse-lookup every operation that passes through it** |
 | A cloud service that ingests your code | **One self-contained HTML file.** No CDN, no server. Your code never leaves your machine |
 
@@ -81,6 +81,16 @@ Step 4 is the one that matters. Extraction agents are confidently wrong: in the 
 run, audits came back clean while adversarial verification still found 4 factual errors
 (a reversed decorator order, a missing join table, and more). Fixes live in a `patches.js`
 with the reasoning next to them, so they survive the next regeneration.
+
+**What is and isn't verified.** Node refs are checked against the repo — that part is
+mechanical. Edges are not, and cannot be: validating four real codebases (Go, Rust, a Java
+microservice monorepo, a TypeScript monorepo) showed that roughly a fifth of Go's edges have
+no corresponding line anywhere in the source (mux routing, middleware chaining, channels), and
+that Rust's twenty authorization guards are invoked by the framework with no call site to grep.
+So instead of quietly drawing those lines, each edge declares how it was established, the
+diagram marks the weak ones (`◇` implicit, `?` unverified), and the build lists them so a human
+can confirm and record the answer in `patches.js`. A diagram that admits what it doesn't know
+is worth more than one that claims certainty everywhere.
 
 ## Install
 
