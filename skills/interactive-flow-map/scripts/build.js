@@ -3,6 +3,12 @@
  * フローJSON群 → 単一HTML
  *
  *   node build.js --data <jsonのあるディレクトリ> --out <出力.html> [--template <template.html>] [--repo <リポジトリ>]
+ *                 [--diff-base <前回の出力.html>]
+ *
+ * --diff-base に前回生成したHTMLを渡すと差分を計算し、
+ *   - 追加/変更ノードに NEW/変更 バッジ
+ *   - 「前回からの変更点」という擬似フロー（追加された経路が光る・削除/変更は注記に列挙）
+ * を図に焼き込む。PRレビューや定期再生成で「何が変わったか」を10秒で見せるための機能。
  *
  * <data> 直下の *.json をすべて読み、ノード/エッジ/フローをマージして
  * assets/template.html の `const DATA = ...` に流し込む。
@@ -264,6 +270,68 @@ if (REPO) {
   try { stamp.commit = require('child_process').execSync('git rev-parse --short HEAD', { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch (e) {}
 }
 
+/* ---------- 前回ビルドとの差分 ---------- */
+const DIFF_BASE = arg('--diff-base', null);
+let diffSummary = null;
+if (DIFF_BASE) {
+  let old = null;
+  try {
+    const m = fs.readFileSync(path.resolve(DIFF_BASE), 'utf8').match(/const DATA = (\{[\s\S]*?\});\r?\n/);
+    if (m) old = JSON.parse(m[1]);
+  } catch (e) { problems.push(`[DIFF] --diff-base を読めない: ${e.message}`); }
+  if (old && old.nodes) {
+    const oldNodes = new Map(old.nodes.map(n => [n.id, n]));
+    const oldEdges = new Set((old.edges || []).map(e => ekey(e.from, e.to)));
+    const oldFlows = new Map((old.flows || []).map(f => [f.id, f]));
+    const flowSig = f => JSON.stringify((f.steps || []).map(s => [s.from, s.to, s.branch || 'main']));
+
+    const addedNodes = [...nodes.keys()].filter(id => !oldNodes.has(id));
+    const changedNodes = [...nodes.entries()]
+      .filter(([id, n]) => { const o = oldNodes.get(id); return o && (o.label !== n.label || o.detail !== n.detail || o.ref !== n.ref); })
+      .map(([id]) => id);
+    const removedNodes = [...oldNodes.values()].filter(n => !nodes.has(n.id));
+    const addedEdges = [...edges.values()].filter(e => !oldEdges.has(ekey(e.from, e.to)));
+    const newEdgeKeys = new Set([...edges.keys()]);
+    const removedEdges = (old.edges || []).filter(e => !newEdgeKeys.has(ekey(e.from, e.to)));
+    const addedFlows = kept.filter(f => !oldFlows.has(f.id)).map(f => f.id);
+    const changedFlows = kept.filter(f => { const o = oldFlows.get(f.id); return o && flowSig(o) !== flowSig(f); }).map(f => f.id);
+    const removedFlows = [...oldFlows.values()].filter(f => !kept.some(k => k.id === f.id));
+
+    const baseLabel = (old.meta && old.meta.stamp && (old.meta.stamp.commit || String(old.meta.stamp.builtAt || '').slice(0, 10))) || '前回';
+    const total = addedNodes.length + changedNodes.length + removedNodes.length + addedEdges.length + removedEdges.length;
+    diffSummary = { addedNodes: addedNodes.length, changedNodes: changedNodes.length, removedNodes: removedNodes.length,
+      addedEdges: addedEdges.length, removedEdges: removedEdges.length, baseLabel };
+    if (total === 0 && !addedFlows.length && !changedFlows.length && !removedFlows.length) {
+      diffSummary.unchanged = true;
+    } else {
+      META.diff = { baseLabel, addedNodes, changedNodes, addedFlows, changedFlows };
+      // 「前回からの変更点」擬似フロー: 追加された経路が光る。削除・変更は注記に列挙する
+      const label = n => `「${n.label}」(${n.id})`;
+      const notes = [];
+      if (removedNodes.length) notes.push('削除されたノード: ' + removedNodes.map(label).join('、'));
+      if (removedEdges.length) notes.push('削除された経路: ' + removedEdges.map(e => `${e.from} → ${e.to}`).join('、'));
+      if (removedFlows.length) notes.push('削除されたフロー: ' + removedFlows.map(f => `「${f.title}」`).join('、'));
+      if (changedNodes.length) notes.push('内容が変わったノード: ' + changedNodes.map(id => label(nodes.get(id))).join('、'));
+      if (changedFlows.length) notes.push('経路が変わったフロー: ' + changedFlows.map(id => `「${(kept.find(f => f.id === id) || {}).title}」`).join('、'));
+      if (addedNodes.length) notes.push('追加されたノード: ' + addedNodes.map(id => label(nodes.get(id))).join('、'));
+      if (addedEdges.length) {
+        kept.push({
+          id: 'diff-changes', title: '前回からの変更点', category: '変更点',
+          trigger: `前回ビルド（${baseLabel}）との差分`,
+          steps: addedEdges.map(e => ({ from: e.from, to: e.to, label: e.label || '追加された経路', branch: 'alt' })),
+          notes,
+        });
+      } else if (notes.length) {
+        // 追加経路が無い（削除・変更のみ）の場合もボタンは出す。既存の任意の1エッジを足場にする
+        const anchor = [...edges.values()][0];
+        if (anchor) kept.push({ id: 'diff-changes', title: '前回からの変更点', category: '変更点',
+          trigger: `前回ビルド（${baseLabel}）との差分（追加経路なし）`,
+          steps: [{ from: anchor.from, to: anchor.to, label: '（参考表示）追加された経路はない', branch: 'main' }], notes });
+      }
+    }
+  }
+}
+
 /* ---------- 出力 ---------- */
 const data = { meta: { ...META, stamp }, nodes: [...nodes.values()], edges: [...edges.values()], flows: kept.map(({ src, ...f }) => f) };
 if (!fs.existsSync(TPL)) { console.error(`[FATAL] テンプレートが無い: ${TPL}`); process.exit(1); }
@@ -292,6 +360,8 @@ if (!QUIET) {
   if (emptyFlows.length) console.log('EMPTY FLOWS:', emptyFlows.join(' '));
   if (problems.length) console.log('PROBLEMS   :\n  ' + problems.join('\n  '));
   if (META.lanes) console.log('meta       : レーン', META.lanes.length, '本に総入れ替え', META.title ? `| タイトル「${META.title}」` : '');
+  if (diffSummary) console.log('diff       :', diffSummary.unchanged ? `変更なし（基準: ${diffSummary.baseLabel}）` :
+    `+${diffSummary.addedNodes}ノード / 変更${diffSummary.changedNodes} / 削除${diffSummary.removedNodes} | 経路 +${diffSummary.addedEdges}/-${diffSummary.removedEdges}（基準: ${diffSummary.baseLabel}）`);
   if (stamp.refTotal !== undefined) {
     console.log('ref verify :', stamp.refOk + '/' + stamp.refTotal, '実在検証OK', stamp.commit ? `| commit ${stamp.commit}` : '');
     badRefs.slice(0, 20).forEach(r => console.log('   !', r));

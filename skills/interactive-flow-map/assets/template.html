@@ -165,6 +165,12 @@
   @keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.09)}100%{transform:scale(1)}}
   .node.pop{animation:pop .42s cubic-bezier(.3,1.5,.5,1)}
   .node.hit{outline:2px solid var(--accent2);outline-offset:2px}
+  .node .chg{position:absolute;left:-1px;top:-1px;padding:0 5px;height:15px;display:flex;align-items:center;
+    border-radius:10px 0 8px 0;font-size:8.5px;font-weight:800;background:#34d399;color:#052b1c;z-index:2}
+  .node .chg.mod{background:var(--alt);color:#3a2400}
+  button.flowbtn .fchip{display:inline-block;margin-left:6px;padding:0 5px;border-radius:6px;font-size:9px;font-weight:800;
+    background:rgba(52,211,153,.18);color:#34d399;border:1px solid rgba(52,211,153,.4)}
+  button.flowbtn .fchip.mod{background:rgba(255,182,72,.14);color:var(--alt);border-color:rgba(255,182,72,.4)}
 
   /* ---------- side panel ---------- */
   aside{
@@ -328,6 +334,12 @@ if (Array.isArray(META.lanes)) META.lanes.forEach((l, i) => {
 const LANE_LABEL = Object.fromEntries(LANES);
 const FALLBACK_LANE = LANES[0][0];
 const FLOW_WORD = META.flowWord || '操作';
+/* --diff-base 付きでビルドされた場合の差分情報（ノード/フローに NEW・変更 バッジを付ける） */
+const DIFF = META.diff || null;
+const DIFF_NEW = new Set(DIFF ? DIFF.addedNodes : []);
+const DIFF_MOD = new Set(DIFF ? DIFF.changedNodes : []);
+const DIFF_FLOW_NEW = new Set(DIFF ? DIFF.addedFlows : []);
+const DIFF_FLOW_MOD = new Set(DIFF ? DIFF.changedFlows : []);
 const NW = 176, NH = 52, COLW = 236, ROWH = 70, LANE_PAD = 26, XPAD = 74, YPAD = 16;
 
 /* ============================ 前処理 ============================ */
@@ -511,6 +523,8 @@ function render(ids, edges, grid){
       `<div class="nlabel"></div><div class="nmeta"></div>`;
     d.querySelector('.nlabel').textContent = n.label;
     d.querySelector('.nmeta').textContent = n.ref || n.id;
+    if (DIFF_NEW.has(id)) d.insertAdjacentHTML('beforeend', '<span class="chg">NEW</span>');
+    else if (DIFF_MOD.has(id)) d.insertAdjacentHTML('beforeend', '<span class="chg mod">変更</span>');
     d.addEventListener('mouseenter', ev=>showTip(ev, n));
     d.addEventListener('mousemove', moveTip);
     d.addEventListener('mouseleave', hideTip);
@@ -786,7 +800,7 @@ function renderDeck(){
   document.getElementById('deck').innerHTML = `<div class="catgrid">${cats.map(c=>`
     <div class="cat"><h2>${esc(c)}</h2><div class="btns">${byCat.get(c).map(f=>`
       <button class="flowbtn" data-id="${esc(f.id)}" data-s="${esc((f.title+' '+(f.trigger||'')+' '+f.steps.map(s=>NODES.get(s.to).label+' '+(NODES.get(s.to).ref||'')).join(' ')).toLowerCase())}">
-        ${esc(f.title)}${f.trigger?`<span class="trg">${esc(f.trigger)}</span>`:''}
+        ${esc(f.title)}${DIFF_FLOW_NEW.has(f.id)?'<span class="fchip">NEW</span>':DIFF_FLOW_MOD.has(f.id)?'<span class="fchip mod">変更</span>':''}${f.trigger?`<span class="trg">${esc(f.trigger)}</span>`:''}
       </button>`).join('')}</div></div>`).join('')}</div>`;
   document.querySelectorAll('button.flowbtn').forEach(b=>b.addEventListener('click',()=>{
     const f = FLOWS.find(x=>x.id===b.dataset.id);
@@ -880,7 +894,8 @@ wrap.addEventListener('wheel', e => {
 
 /* ============================ ヘッダ・凡例・キー ============================ */
 document.getElementById('stat').innerHTML =
-  `${esc(FLOW_WORD)} <b>${FLOWS.length}</b> ・ 処理ノード <b>${NODES.size}</b> ・ 経路 <b>${EDGELIST.length}</b>`;
+  `${esc(FLOW_WORD)} <b>${FLOWS.length}</b> ・ 処理ノード <b>${NODES.size}</b> ・ 経路 <b>${EDGELIST.length}</b>`
+  + (DIFF ? ` ・ 前回比 <b style="color:#34d399">+${DIFF.addedNodes.length}</b>/<b style="color:var(--alt)">変更${DIFF.changedNodes.length}</b>` : '');
 const STAMP = META.stamp || {};
 const stampBits = [];
 if (STAMP.builtAt) stampBits.push(esc(String(STAMP.builtAt).slice(0,10)) + ' 生成');
