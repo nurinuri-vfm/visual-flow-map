@@ -1,0 +1,282 @@
+{
+  "nodes": [
+    { "id": "api.articles.get_articles", "lane": "api", "label": "記事一覧取得", "detail": "GET /api/articles。tag/author/favorited/limit/offsetで絞込み可。認証任意(@jwt_optional)", "ref": "conduit/articles/views.py:28" },
+    { "id": "api.articles.make_article", "lane": "api", "label": "記事作成", "detail": "POST /api/articles。認証必須。未登録タグは新規作成し記事に紐付けてから保存", "ref": "conduit/articles/views.py:43" },
+    { "id": "api.articles.update_article", "lane": "api", "label": "記事更新", "detail": "PUT /api/articles/<slug>。slug×投稿者本人で検索、未検出時article_not_found(404)", "ref": "conduit/articles/views.py:61" },
+    { "id": "api.articles.delete_article", "lane": "api", "label": "記事削除", "detail": "DELETE /api/articles/<slug>。slug×投稿者本人で検索するが未検出チェックが無い", "ref": "conduit/articles/views.py:72" },
+    { "id": "api.articles.get_article", "lane": "api", "label": "記事取得", "detail": "GET /api/articles/<slug>。未検出時article_not_found(404)。認証任意でfavoritedは本人視点", "ref": "conduit/articles/views.py:81" },
+    { "id": "api.articles.favorite_an_article", "lane": "api", "label": "お気に入り登録", "detail": "POST .../favorite。認証必須。記事未検出時article_not_found(404)", "ref": "conduit/articles/views.py:91" },
+    { "id": "api.articles.unfavorite_an_article", "lane": "api", "label": "お気に入り解除", "detail": "DELETE .../favorite。認証必須。記事未検出時article_not_found(404)", "ref": "conduit/articles/views.py:104" },
+    { "id": "api.articles.articles_feed", "lane": "api", "label": "フィード取得", "detail": "GET /api/articles/feed。認証必須。フォロー中著者の記事を作成日時降順で取得", "ref": "conduit/articles/views.py:118" },
+    { "id": "api.articles.get_tags", "lane": "api", "label": "タグ一覧取得", "detail": "GET /api/tags。認証不要。marshal_withを使わずjsonifyで{tags:[...]}を直接返す", "ref": "conduit/articles/views.py:128" },
+    { "id": "api.articles.get_comments", "lane": "api", "label": "コメント一覧取得", "detail": "GET .../comments。認証デコレータなし(未ログイン可)。記事未検出時article_not_found(404)", "ref": "conduit/articles/views.py:139" },
+    { "id": "api.articles.make_comment_on_article", "lane": "api", "label": "コメント作成", "detail": "POST .../comments。認証必須。記事未検出時article_not_found(404)", "ref": "conduit/articles/views.py:150" },
+    { "id": "api.articles.delete_comment_on_article", "lane": "api", "label": "コメント削除", "detail": "DELETE .../comments/<cid>。所有者チェックはfilter_by埋め込みでcomment_not_owned例外は未使用", "ref": "conduit/articles/views.py:161" },
+
+    { "id": "svc.auth.jwt_required", "lane": "svc", "label": "JWT認証必須", "detail": "@jwt_requiredの検証境界。認証必須の全フローが通る共通ゲート", "ref": "conduit/extensions.py:48" },
+    { "id": "svc.crud.save", "lane": "svc", "label": "レコード保存", "detail": "CRUDMixin.save。db.session.addし既定でcommitする全モデル共通の保存処理", "ref": "conduit/extensions.py:27" },
+    { "id": "svc.crud.update", "lane": "svc", "label": "フィールド更新", "detail": "CRUDMixin.update。kwargsを各属性にsetattrし、commit=True既定で内部でsave()も呼ぶ", "ref": "conduit/extensions.py:21" },
+    { "id": "svc.crud.delete", "lane": "svc", "label": "レコード削除", "detail": "CRUDMixin.delete。db.session.deleteしcommitする全モデル共通の削除処理", "ref": "conduit/extensions.py:34" },
+    { "id": "svc.schema.article_schema", "lane": "svc", "label": "記事スキーマ", "detail": "ArticleSchema。use_kwargsで入力load、marshal_withで出力dump(article封筒)に使用", "ref": "conduit/articles/serializers.py:85" },
+    { "id": "svc.schema.articles_schema", "lane": "svc", "label": "記事一覧スキーマ", "detail": "ArticleSchemas(many=True)。articles配列とarticlesCountに封筒化して返す", "ref": "conduit/articles/serializers.py:86" },
+    { "id": "svc.schema.comment_schema", "lane": "svc", "label": "コメントスキーマ", "detail": "CommentSchema。use_kwargsで入力load、marshal_withで出力dump(comment封筒)に使用", "ref": "conduit/articles/serializers.py:87" },
+    { "id": "svc.schema.comments_schema", "lane": "svc", "label": "コメント一覧スキーマ", "detail": "CommentsSchema(many=True)。comments配列に封筒化して返す", "ref": "conduit/articles/serializers.py:88" },
+    { "id": "svc.article.__init__", "lane": "svc", "label": "Article生成", "detail": "Articleコンストラクタ。slug未指定ならtitleをslugify、authorに投稿者プロフィールを設定", "ref": "conduit/articles/models.py:72" },
+    { "id": "svc.tags.__init__", "lane": "svc", "label": "Tags生成", "detail": "Tagsコンストラクタ。既存タグが無い場合のみ呼ばれ直後にsave()される", "ref": "conduit/articles/models.py:27" },
+    { "id": "svc.comment.__init__", "lane": "svc", "label": "Comment生成", "detail": "Commentコンストラクタ。article/author(投稿者プロフィール)/bodyを紐付けて生成", "ref": "conduit/articles/models.py:45" },
+    { "id": "svc.article.favourite", "lane": "svc", "label": "お気に入り追加", "detail": "is_favourite判定後、未登録ならfavoritersに追加しTrue、既存ならFalse(戻り値は未使用)", "ref": "conduit/articles/models.py:76" },
+    { "id": "svc.article.unfavourite", "lane": "svc", "label": "お気に入り削除", "detail": "is_favourite判定後、登録済みならfavoritersから削除しTrue、未登録ならFalse(戻り値は未使用)", "ref": "conduit/articles/models.py:82" },
+    { "id": "svc.article.is_favourite", "lane": "svc", "label": "お気に入り判定", "detail": "favoriter_assocをprofile.idで検索しカウントが1以上かを判定", "ref": "conduit/articles/models.py:88" },
+    { "id": "svc.article.add_tag", "lane": "svc", "label": "タグ付与", "detail": "tagListに未登録のタグのみtag_assoc経由で追加、既存ならFalseで何もしない", "ref": "conduit/articles/models.py:91" },
+    { "id": "svc.article.favoritesCount", "lane": "svc", "label": "お気に入り数算出", "detail": "favoriters.all()の件数を返すプロパティ。記事シリアライズ時に常に参照される", "ref": "conduit/articles/models.py:104" },
+    { "id": "svc.article.favorited", "lane": "svc", "label": "本人お気に入り判定", "detail": "current_user在圈時のみ本人がお気に入り済みか判定。未ログイン時は常にFalse", "ref": "conduit/articles/models.py:108" },
+    { "id": "svc.error.article_not_found", "lane": "svc", "label": "記事未検出エラー", "detail": "InvalidUsage.article_not_found()。404 'Article not found'を送出", "ref": "conduit/exceptions.py:42" },
+
+    { "id": "db.article", "lane": "db", "label": "articleテーブル", "detail": "記事本体(slug/title/body等)。author_idでuserprofileに外部キー", "ref": "conduit/articles/models.py:50" },
+    { "id": "db.comment", "lane": "db", "label": "commentテーブル", "detail": "コメント本体。article_id/author_id(userprofile)で外部キー", "ref": "conduit/articles/models.py:35" },
+    { "id": "db.tags", "lane": "db", "label": "tagsテーブル", "detail": "タグ名マスタ(tagname)。記事とはtag_assocで多対多", "ref": "conduit/articles/models.py:22" },
+    { "id": "db.favoriter_assoc", "lane": "db", "label": "お気に入り関連", "detail": "favoritor_assoc。userprofile↔articleの多対多お気に入り関連テーブル", "ref": "conduit/articles/models.py:12" },
+    { "id": "db.tag_assoc", "lane": "db", "label": "タグ関連テーブル", "detail": "tag_assoc。tags↔articleの多対多タグ付け関連テーブル", "ref": "conduit/articles/models.py:16" },
+    { "id": "db.users", "lane": "db", "label": "usersテーブル", "detail": "ユーザー認証情報(username等)。境界外(user側モジュール)", "ref": "conduit/user/models.py:11" },
+    { "id": "db.userprofile", "lane": "db", "label": "userprofileテーブル", "detail": "公開プロフィール。記事/コメントのauthorの実体。境界外(profile側)", "ref": "conduit/profile/models.py:13" }
+  ],
+  "edges": [],
+  "flows": [
+    {
+      "id": "list-articles",
+      "title": "記事一覧を見る",
+      "category": "記事",
+      "trigger": "GET /api/articles",
+      "steps": [
+        { "from": "api.articles.get_articles", "to": "db.article", "label": "GET /api/articles", "kind": "http" },
+        { "from": "api.articles.get_articles", "to": "db.tags", "label": "tag指定時に絞込み", "branch": "alt", "kind": "db" },
+        { "from": "api.articles.get_articles", "to": "db.userprofile", "label": "author指定時にauthorへ結合", "branch": "alt", "kind": "db" },
+        { "from": "db.userprofile", "to": "db.users", "label": "usernameで絞込み", "branch": "alt", "kind": "db" },
+        { "from": "api.articles.get_articles", "to": "db.favoriter_assoc", "label": "favorited指定時に結合", "branch": "alt", "kind": "db" },
+        { "from": "db.favoriter_assoc", "to": "db.users", "label": "usernameで絞込み", "branch": "alt", "kind": "db" },
+        { "from": "api.articles.get_articles", "to": "svc.schema.articles_schema", "label": "一覧をシリアライズ", "kind": "call" }
+      ],
+      "notes": [
+        "tag/author/favoritedはいずれも任意で、指定された条件だけクエリに追加される(併用可)",
+        "author絞込みはArticle.author→Userを明示的にjoinするが、favorited絞込みはArticle.favoriters(UserProfile側)への結合のみでUserへの明示joinが無く、実装が非対称",
+        "認証不要(@jwt_optional)。ログイン中なら一覧内の各記事のfavoritedが本人視点の値になる"
+      ]
+    },
+    {
+      "id": "articles-feed",
+      "title": "フォロー中のフィードを見る",
+      "category": "記事",
+      "trigger": "GET /api/articles/feed",
+      "steps": [
+        { "from": "api.articles.articles_feed", "to": "svc.auth.jwt_required", "label": "GET /api/articles/feed", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.articles.articles_feed", "label": "認証OK", "kind": "call" },
+        { "from": "api.articles.articles_feed", "to": "db.userprofile", "label": "フォロー中プロフィールへ結合", "kind": "db" },
+        { "from": "db.userprofile", "to": "db.article", "label": "作成日時降順で取得", "kind": "db" },
+        { "from": "api.articles.articles_feed", "to": "svc.schema.articles_schema", "label": "一覧をシリアライズ", "kind": "call" }
+      ],
+      "notes": [
+        "current_user.profile.followsはフォロー中プロフィール一覧(follows関係の定義自体はprofile側で境界外)",
+        "未認証だと@jwt_requiredにより401相当で弾かれる"
+      ]
+    },
+    {
+      "id": "get-article",
+      "title": "記事を読む",
+      "category": "記事",
+      "trigger": "GET /api/articles/<slug>",
+      "steps": [
+        { "from": "api.articles.get_article", "to": "db.article", "label": "slugで記事検索", "kind": "http" },
+        { "from": "db.article", "to": "svc.error.article_not_found", "label": "該当slugなし", "branch": "error", "kind": "error" },
+        { "from": "api.articles.get_article", "to": "svc.schema.article_schema", "label": "記事をシリアライズ", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favoritesCount", "label": "お気に入り数を算出", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favorited", "label": "本人のお気に入り判定", "kind": "call" }
+      ],
+      "notes": [
+        "認証不要(@jwt_optional)。ログイン中のみfavoritedが本人視点の値になり、未ログイン時は常にfalse",
+        "記事が見つからない場合InvalidUsage.article_not_found()(404 'Article not found')を送出"
+      ]
+    },
+    {
+      "id": "create-article",
+      "title": "記事を書く",
+      "category": "記事",
+      "trigger": "POST /api/articles",
+      "steps": [
+        { "from": "api.articles.make_article", "to": "svc.auth.jwt_required", "label": "POST /api/articles", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.articles.make_article", "label": "認証OK", "kind": "call" },
+        { "from": "api.articles.make_article", "to": "svc.schema.article_schema", "label": "リクエストボディを検証", "kind": "call" },
+        { "from": "api.articles.make_article", "to": "svc.article.__init__", "label": "記事オブジェクトを生成", "kind": "call" },
+        { "from": "svc.article.__init__", "to": "db.userprofile", "label": "投稿者プロフィールを紐付け", "kind": "db" },
+        { "from": "api.articles.make_article", "to": "db.tags", "label": "tagList指定時タグを検索", "branch": "alt", "kind": "db" },
+        { "from": "db.tags", "to": "svc.tags.__init__", "label": "未登録タグは新規生成", "branch": "alt", "kind": "call" },
+        { "from": "svc.tags.__init__", "to": "svc.crud.save", "label": "新規タグを保存", "branch": "alt", "kind": "call" },
+        { "from": "api.articles.make_article", "to": "svc.article.add_tag", "label": "記事にタグを付与", "branch": "alt", "kind": "call" },
+        { "from": "svc.article.add_tag", "to": "db.tag_assoc", "label": "記事とタグの関連を追加", "branch": "alt", "kind": "db" },
+        { "from": "api.articles.make_article", "to": "svc.crud.save", "label": "記事を保存", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.article", "label": "記事レコードをコミット", "kind": "db" },
+        { "from": "api.articles.make_article", "to": "svc.schema.article_schema", "label": "作成結果をシリアライズ", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favoritesCount", "label": "お気に入り数を算出", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favorited", "label": "本人のお気に入り判定", "kind": "call" }
+      ],
+      "notes": [
+        "tagList未指定時はタグ関連処理を全てスキップし記事のみ作成する",
+        "同名タグが既存なら再利用し、新規作成時のみTags.save()が呼ばれる"
+      ]
+    },
+    {
+      "id": "update-article",
+      "title": "記事を編集する",
+      "category": "記事",
+      "trigger": "PUT /api/articles/<slug>",
+      "steps": [
+        { "from": "api.articles.update_article", "to": "svc.auth.jwt_required", "label": "PUT /api/articles/<slug>", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.articles.update_article", "label": "認証OK", "kind": "call" },
+        { "from": "api.articles.update_article", "to": "svc.schema.article_schema", "label": "リクエストボディを検証", "kind": "call" },
+        { "from": "api.articles.update_article", "to": "db.article", "label": "slug×本人所有で記事検索", "kind": "db" },
+        { "from": "db.article", "to": "svc.error.article_not_found", "label": "未検出or他人の記事", "branch": "error", "kind": "error" },
+        { "from": "api.articles.update_article", "to": "svc.crud.update", "label": "更新項目を反映", "kind": "call" },
+        { "from": "svc.crud.update", "to": "svc.crud.save", "label": "commit既定で内部保存", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.article", "label": "記事レコードをコミット", "kind": "db" },
+        { "from": "api.articles.update_article", "to": "svc.crud.save", "label": "直後に明示保存(冗長)", "kind": "call" },
+        { "from": "api.articles.update_article", "to": "svc.schema.article_schema", "label": "更新結果をシリアライズ", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favoritesCount", "label": "お気に入り数を算出", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favorited", "label": "本人のお気に入り判定", "kind": "call" }
+      ],
+      "notes": [
+        "所有者チェックはfilter_by(author_id=...)に埋め込まれ、他人の記事は「存在しない」と同じ扱いでarticle_not_found(404)になる",
+        "article.update()は内部で既にsave()を呼んでおり、直後の明示的なarticle.save()は冗長な二重呼び出し(実害はないが無駄なcommitが発生)",
+        "article_schemaにあるtagListをリクエストに含めるとsetattr(article,'tagList',[文字列...])が実行されるが、Tagsモデルへの変換もadd_tag経由の処理も無いため意図通りタグ関連を更新できない可能性がある"
+      ]
+    },
+    {
+      "id": "delete-article",
+      "title": "記事を削除する",
+      "category": "記事",
+      "trigger": "DELETE /api/articles/<slug>",
+      "steps": [
+        { "from": "api.articles.delete_article", "to": "svc.auth.jwt_required", "label": "DELETE /api/articles/<slug>", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.articles.delete_article", "label": "認証OK", "kind": "call" },
+        { "from": "api.articles.delete_article", "to": "db.article", "label": "slug×本人所有で記事検索", "kind": "db" },
+        { "from": "api.articles.delete_article", "to": "svc.crud.delete", "label": "取得した記事を削除", "kind": "call" },
+        { "from": "svc.crud.delete", "to": "db.article", "label": "記事レコードを削除", "kind": "db" }
+      ],
+      "notes": [
+        "他の記事系フローと異なりarticle_not_foundの存在チェックが無い実装上の穴がある。slugが存在しない、または他人の記事の場合articleはNoneのままとなり、直後のarticle.delete()でAttributeError(未捕捉の500相当)になる",
+        "成功時は本文なしの200を返す(削除後の記事はレスポンスに含まれない)"
+      ]
+    },
+    {
+      "id": "favorite-article",
+      "title": "記事をお気に入りにする",
+      "category": "記事",
+      "trigger": "POST /api/articles/<slug>/favorite",
+      "steps": [
+        { "from": "api.articles.favorite_an_article", "to": "svc.auth.jwt_required", "label": "POST .../favorite", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.articles.favorite_an_article", "label": "認証OK", "kind": "call" },
+        { "from": "api.articles.favorite_an_article", "to": "db.article", "label": "slugで記事検索", "kind": "db" },
+        { "from": "db.article", "to": "svc.error.article_not_found", "label": "該当slugなし", "branch": "error", "kind": "error" },
+        { "from": "api.articles.favorite_an_article", "to": "svc.article.favourite", "label": "お気に入りに追加", "kind": "call" },
+        { "from": "svc.article.favourite", "to": "svc.article.is_favourite", "label": "既に登録済みか判定", "kind": "call" },
+        { "from": "svc.article.is_favourite", "to": "db.favoriter_assoc", "label": "お気に入り関連を検索", "kind": "db" },
+        { "from": "svc.article.favourite", "to": "db.favoriter_assoc", "label": "未登録なら関連を追加", "branch": "alt", "kind": "db" },
+        { "from": "api.articles.favorite_an_article", "to": "svc.crud.save", "label": "記事を保存", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.article", "label": "変更をコミット", "kind": "db" },
+        { "from": "api.articles.favorite_an_article", "to": "svc.schema.article_schema", "label": "結果をシリアライズ", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favoritesCount", "label": "お気に入り数を算出", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favorited", "label": "本人のお気に入り判定", "kind": "call" }
+      ],
+      "notes": [
+        "既にお気に入り済みでも200で成功応答する。favourite()の戻り値(True/False)はビュー側で参照されず無視される(冪等的)"
+      ]
+    },
+    {
+      "id": "unfavorite-article",
+      "title": "お気に入りを解除する",
+      "category": "記事",
+      "trigger": "DELETE /api/articles/<slug>/favorite",
+      "steps": [
+        { "from": "api.articles.unfavorite_an_article", "to": "svc.auth.jwt_required", "label": "DELETE .../favorite", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.articles.unfavorite_an_article", "label": "認証OK", "kind": "call" },
+        { "from": "api.articles.unfavorite_an_article", "to": "db.article", "label": "slugで記事検索", "kind": "db" },
+        { "from": "db.article", "to": "svc.error.article_not_found", "label": "該当slugなし", "branch": "error", "kind": "error" },
+        { "from": "api.articles.unfavorite_an_article", "to": "svc.article.unfavourite", "label": "お気に入りを解除", "kind": "call" },
+        { "from": "svc.article.unfavourite", "to": "svc.article.is_favourite", "label": "現在登録済みか判定", "kind": "call" },
+        { "from": "svc.article.is_favourite", "to": "db.favoriter_assoc", "label": "お気に入り関連を検索", "kind": "db" },
+        { "from": "svc.article.unfavourite", "to": "db.favoriter_assoc", "label": "登録済みなら関連を削除", "branch": "alt", "kind": "db" },
+        { "from": "api.articles.unfavorite_an_article", "to": "svc.crud.save", "label": "記事を保存", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.article", "label": "変更をコミット", "kind": "db" },
+        { "from": "api.articles.unfavorite_an_article", "to": "svc.schema.article_schema", "label": "結果をシリアライズ", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favoritesCount", "label": "お気に入り数を算出", "kind": "call" },
+        { "from": "svc.schema.article_schema", "to": "svc.article.favorited", "label": "本人のお気に入り判定", "kind": "call" }
+      ],
+      "notes": [
+        "既にお気に入りでない場合も200で成功応答する。unfavourite()の戻り値は無視される(冪等的)"
+      ]
+    },
+    {
+      "id": "get-comments",
+      "title": "コメントを読む",
+      "category": "コメント・タグ",
+      "trigger": "GET /api/articles/<slug>/comments",
+      "steps": [
+        { "from": "api.articles.get_comments", "to": "db.article", "label": "GET .../comments", "kind": "http" },
+        { "from": "db.article", "to": "svc.error.article_not_found", "label": "該当slugなし", "branch": "error", "kind": "error" },
+        { "from": "api.articles.get_comments", "to": "db.comment", "label": "記事のコメント一覧を取得", "kind": "db" },
+        { "from": "api.articles.get_comments", "to": "svc.schema.comments_schema", "label": "一覧をシリアライズ", "kind": "call" }
+      ],
+      "notes": [
+        "このエンドポイントのみ@jwt_required/@jwt_optionalが付いておらず未ログインでも閲覧できる"
+      ]
+    },
+    {
+      "id": "create-comment",
+      "title": "コメントを書く",
+      "category": "コメント・タグ",
+      "trigger": "POST /api/articles/<slug>/comments",
+      "steps": [
+        { "from": "api.articles.make_comment_on_article", "to": "svc.auth.jwt_required", "label": "POST .../comments", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.articles.make_comment_on_article", "label": "認証OK", "kind": "call" },
+        { "from": "api.articles.make_comment_on_article", "to": "svc.schema.comment_schema", "label": "リクエストボディを検証", "kind": "call" },
+        { "from": "api.articles.make_comment_on_article", "to": "db.article", "label": "slugで記事検索", "kind": "db" },
+        { "from": "db.article", "to": "svc.error.article_not_found", "label": "該当slugなし", "branch": "error", "kind": "error" },
+        { "from": "api.articles.make_comment_on_article", "to": "svc.comment.__init__", "label": "コメントを生成", "kind": "call" },
+        { "from": "svc.comment.__init__", "to": "db.userprofile", "label": "投稿者プロフィールを紐付け", "kind": "db" },
+        { "from": "api.articles.make_comment_on_article", "to": "svc.crud.save", "label": "コメントを保存", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.comment", "label": "コメントレコードをコミット", "kind": "db" },
+        { "from": "api.articles.make_comment_on_article", "to": "svc.schema.comment_schema", "label": "作成結果をシリアライズ", "kind": "call" }
+      ],
+      "notes": []
+    },
+    {
+      "id": "delete-comment",
+      "title": "コメントを削除する",
+      "category": "コメント・タグ",
+      "trigger": "DELETE /api/articles/<slug>/comments/<cid>",
+      "steps": [
+        { "from": "api.articles.delete_comment_on_article", "to": "svc.auth.jwt_required", "label": "DELETE .../comments/<cid>", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.articles.delete_comment_on_article", "label": "認証OK", "kind": "call" },
+        { "from": "api.articles.delete_comment_on_article", "to": "db.article", "label": "slugで記事検索", "kind": "db" },
+        { "from": "db.article", "to": "svc.error.article_not_found", "label": "該当slugなし", "branch": "error", "kind": "error" },
+        { "from": "api.articles.delete_comment_on_article", "to": "db.comment", "label": "id×本人投稿でコメント検索", "kind": "db" },
+        { "from": "api.articles.delete_comment_on_article", "to": "svc.crud.delete", "label": "取得したコメントを削除", "kind": "call" },
+        { "from": "svc.crud.delete", "to": "db.comment", "label": "コメントレコードを削除", "kind": "db" }
+      ],
+      "notes": [
+        "所有者チェックはInvalidUsage.comment_not_owned()例外ではなく、検索クエリのfilter_by(id=cid, author=current_user.profile)に埋め込まれている",
+        "id不一致または他人のコメントの場合commentはNoneのままとなり、直後のcomment.delete()でAttributeError(未捕捉の500相当)になる。exceptions.pyに定義済みのInvalidUsage.comment_not_owned()(422 'Not your article')はこの経路では一度も呼ばれない"
+      ]
+    },
+    {
+      "id": "get-tags",
+      "title": "タグ一覧を見る",
+      "category": "コメント・タグ",
+      "trigger": "GET /api/tags",
+      "steps": [
+        { "from": "api.articles.get_tags", "to": "db.tags", "label": "全タグを取得", "kind": "http" }
+      ],
+      "notes": [
+        "marshal_withを使わず素のjsonifyで{tags:[tagname,...]}を返す唯一のエンドポイント。認証も不要"
+      ]
+    }
+  ]
+}

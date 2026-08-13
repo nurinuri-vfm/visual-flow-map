@@ -17,7 +17,8 @@ Works for software systems (UI → API → DB → workers → external services)
 
 ## Demos (in `demo/`)
 
-- [`demo/order-flow-map.html`](demo/order-flow-map.html) — code mode: a mini e-commerce app ([`demo/sample-app/`](demo/sample-app/)) with order / cancel / refund-retry / email flows across web, API, worker and DB layers. All 22 `file:line` refs verified
+- [`demo/order-flow-map.html`](demo/order-flow-map.html) — code mode (starter): a mini e-commerce app ([`demo/sample-app/`](demo/sample-app/)) with order / cancel / refund-retry / email flows across web, API, worker and DB layers. All 22 `file:line` refs verified
+- [`demo/conduit-flow-map.html`](demo/conduit-flow-map.html) — **code mode (real OSS, complex)**: the Flask implementation of [RealWorld](https://github.com/gothinkster/flask-realworld-example-app), mapped by 2 extraction agents + 1 adversarial verifier into **19 operations · 59 nodes · 130 edges**. Verification caught and patched 4 extraction errors, and incidentally uncovered 2 real bugs in the target OSS. The target code is vendored unmodified (MIT) under [`demo/conduit-app/`](demo/conduit-app/), so you can re-verify all 59 refs yourself with `audit.js --repo`
 - [`demo/incident-flow-map.html`](demo/incident-flow-map.html) — event-flow mode: a nursery-school fever incident, with actor lanes (staff / nurse / contact / parent / records / clinic) instead of tech layers
 
 In the diagram: click a flow button to replay its path · click a node for reverse lookup · share a specific path via `#flow=<id>` deep links · search, zoom, playback.

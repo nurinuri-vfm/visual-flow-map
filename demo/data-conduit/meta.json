@@ -1,0 +1,4 @@
+{
+  "title": "Conduit（RealWorld Flask）処理フロー全図",
+  "catOrder": ["認証・アカウント", "プロフィール", "記事", "コメント・タグ"]
+}

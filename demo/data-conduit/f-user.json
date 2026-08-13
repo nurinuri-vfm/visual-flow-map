@@ -1,0 +1,185 @@
+{
+  "nodes": [
+    { "id": "api.user.register_user", "lane": "api", "label": "アカウント登録", "detail": "POST /api/users。username/email/passwordを受け取りUser+UserProfileを作成しJWTを発行する", "ref": "conduit/user/views.py:20" },
+    { "id": "api.user.login_user", "lane": "api", "label": "ログイン", "detail": "POST /api/users/login。emailでUser検索しcheck_passwordで照合、成功時にfreshトークンを発行", "ref": "conduit/user/views.py:34" },
+    { "id": "api.user.get_user", "lane": "api", "label": "自分の情報取得", "detail": "GET /api/user。jwt_required必須。current_userにAuthorizationヘッダーのtokenを再設定して返す", "ref": "conduit/user/views.py:46" },
+    { "id": "api.user.update_user", "lane": "api", "label": "プロフィール更新", "detail": "PUT /api/user。jwt_required必須。passwordがあれば再ハッシュ化し、残りのkwargsでupdate", "ref": "conduit/user/views.py:57" },
+    { "id": "api.profiles.get_profile", "lane": "api", "label": "プロフィール取得", "detail": "GET /api/profiles/<username>。jwt_optional。usernameでUser検索し見つからなければ404", "ref": "conduit/profile/views.py:17" },
+    { "id": "api.profiles.follow_user", "lane": "api", "label": "フォローする", "detail": "POST /api/profiles/<username>/follow。jwt_required必須。current_user.profileでfollowを実行", "ref": "conduit/profile/views.py:27" },
+    { "id": "api.profiles.unfollow_user", "lane": "api", "label": "フォロー解除", "detail": "DELETE /api/profiles/<username>/follow。jwt_required必須。current_user.profileでunfollowを実行", "ref": "conduit/profile/views.py:39" },
+
+    { "id": "svc.auth.jwt_required", "lane": "svc", "label": "JWT検証必須", "detail": "@jwt_requiredの検証境界。認証必須の全フローが通る。失敗時はflask_jwt_extended既定の401(本コード未定義)", "ref": "conduit/extensions.py:48" },
+    { "id": "svc.auth.jwt_optional", "lane": "svc", "label": "JWT検証任意", "detail": "@jwt_optional。トークンがあれば検証しcurrent_userを設定、なくても処理は継続する", "ref": "conduit/user/views.py:31" },
+    { "id": "svc.auth.create_access_token", "lane": "svc", "label": "JWT発行", "detail": "flask_jwt_extendedのcreate_access_token。register/loginでトークン発行(loginはfresh=True)", "ref": "conduit/user/views.py:23" },
+    { "id": "svc.schema.user_schema", "lane": "svc", "label": "UserSchema", "detail": "@use_kwargs/@marshal_withで使用。リクエストのuserラップを外し、レスポンスをuserでラップして返す", "ref": "conduit/user/serializers.py:6" },
+    { "id": "svc.schema.profile_schema", "lane": "svc", "label": "ProfileSchema", "detail": "@marshal_withで使用。profileラップの解除/付与とfollowingフラグの出力を担う", "ref": "conduit/profile/serializers.py:4" },
+    { "id": "svc.user.init", "lane": "svc", "label": "User生成", "detail": "User.__init__。username/emailを設定し、passwordがあればset_password、なければNoneのまま", "ref": "conduit/user/models.py:21" },
+    { "id": "svc.user.set_password", "lane": "svc", "label": "パスワード設定", "detail": "bcrypt.generate_password_hashでハッシュ化して保存。registerとupdate-userの両方で使用", "ref": "conduit/user/models.py:29" },
+    { "id": "svc.user.check_password", "lane": "svc", "label": "パスワード照合", "detail": "bcrypt.check_password_hashで照合。falseなら呼び出し元でuser_not_foundにまとめられる", "ref": "conduit/user/models.py:33" },
+    { "id": "svc.profile.init", "lane": "svc", "label": "UserProfile生成", "detail": "UserProfile.__init__。保存済みUserを紐づけて生成(registerでUser.save()後に呼ばれる)", "ref": "conduit/profile/models.py:27" },
+    { "id": "svc.profile.follow", "lane": "svc", "label": "フォロー実行", "detail": "self以外かつ未フォローならfollowsに追加してTrue、それ以外は何もせずFalse(冪等)", "ref": "conduit/profile/models.py:33" },
+    { "id": "svc.profile.unfollow", "lane": "svc", "label": "フォロー解除実行", "detail": "self以外かつフォロー中ならfollowsから削除してTrue、それ以外は何もせずFalse(冪等)", "ref": "conduit/profile/models.py:39" },
+    { "id": "svc.profile.is_following", "lane": "svc", "label": "フォロー中か判定", "detail": "followers_assocをfollowed_by=profile.idで絞り込みcountで判定。follow/unfollow/followingが使用", "ref": "conduit/profile/models.py:30" },
+    { "id": "svc.profile.following", "lane": "svc", "label": "followingフラグ", "detail": "current_userがいればcurrent_user.profile.is_followingで判定、いなければ常にFalse", "ref": "conduit/profile/models.py:46" },
+    { "id": "svc.crud.save", "lane": "svc", "label": "CRUD保存", "detail": "CRUDMixin.save。db.session.add+commit。全モデル保存がここを通る", "ref": "conduit/extensions.py:27" },
+    { "id": "svc.crud.update", "lane": "svc", "label": "CRUD更新", "detail": "CRUDMixin.update。kwargsの各属性をsetattrしてからsave()を呼ぶ", "ref": "conduit/extensions.py:21" },
+    { "id": "svc.exceptions.user_not_found", "lane": "svc", "label": "user_not_foundエラー", "detail": "InvalidUsage.user_not_found。404 'User not found' を返す例外を生成してraise", "ref": "conduit/exceptions.py:30" },
+    { "id": "svc.exceptions.user_already_registered", "lane": "svc", "label": "重複登録エラー", "detail": "InvalidUsage.user_already_registered。422 'User already registered' を返す(IntegrityError捕捉時)", "ref": "conduit/exceptions.py:34" },
+
+    { "id": "db.users", "lane": "db", "label": "usersテーブル", "detail": "username/email(共にunique)・password(bcryptハッシュ)・bio・image等を保持", "ref": "conduit/user/models.py:11" },
+    { "id": "db.userprofile", "lane": "db", "label": "userprofileテーブル", "detail": "users.idを参照するuser_id(1:1)。username/bio/image/emailはUserへのプロパティ委譲", "ref": "conduit/profile/models.py:13" },
+    { "id": "db.followers_assoc", "lane": "db", "label": "followers_assoc中間表", "detail": "follower/followed_byの2列でuserprofile.user_id同士の多対多フォロー関係を保持", "ref": "conduit/profile/models.py:7" }
+  ],
+  "edges": [],
+  "flows": [
+    {
+      "id": "register",
+      "title": "アカウントを登録する",
+      "category": "認証・アカウント",
+      "trigger": "POST /api/users",
+      "steps": [
+        { "from": "api.user.register_user", "to": "svc.schema.user_schema", "label": "POST /api/users受信", "kind": "http" },
+        { "from": "svc.schema.user_schema", "to": "api.user.register_user", "label": "body/userをデシリアライズ", "kind": "call" },
+        { "from": "api.user.register_user", "to": "svc.user.init", "label": "User(username,email,password)生成", "kind": "call" },
+        { "from": "svc.user.init", "to": "svc.user.set_password", "label": "bcryptでパスワードハッシュ化", "kind": "call" },
+        { "from": "svc.user.set_password", "to": "svc.crud.save", "label": "User.save()", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.users", "label": "INSERT users", "kind": "db" },
+        { "from": "db.users", "to": "svc.exceptions.user_already_registered", "label": "username/email重複(IntegrityError)", "branch": "error", "kind": "error" },
+        { "from": "db.users", "to": "svc.profile.init", "label": "保存成功→UserProfile生成", "kind": "call" },
+        { "from": "svc.profile.init", "to": "svc.crud.save", "label": "UserProfile.save()", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.userprofile", "label": "INSERT userprofile", "kind": "db" },
+        { "from": "db.userprofile", "to": "svc.auth.create_access_token", "label": "JWTトークン発行", "kind": "call" },
+        { "from": "svc.auth.create_access_token", "to": "svc.schema.user_schema", "label": "userをシリアライズ", "kind": "call" },
+        { "from": "svc.schema.user_schema", "to": "api.user.register_user", "label": "レスポンス返却", "kind": "call" }
+      ],
+      "notes": [
+        "IntegrityErrorはUser.save()/UserProfile.save()どちらの保存でも発生しうるが、raise前に必ずdb.session.rollback()する",
+        "エラー時はDBロールバック後にInvalidUsage(422)を送出し、後続のUserProfile生成・JWT発行は行われない",
+        "use_kwargsによるusername/email/password欠落はwebargs側のバリデーションで別途弾かれる(この経路には現れない)"
+      ]
+    },
+    {
+      "id": "login",
+      "title": "ログインする",
+      "category": "認証・アカウント",
+      "trigger": "POST /api/users/login",
+      "steps": [
+        { "from": "api.user.login_user", "to": "svc.auth.jwt_optional", "label": "POST /api/users/login受信", "kind": "http" },
+        { "from": "svc.auth.jwt_optional", "to": "svc.schema.user_schema", "label": "認証任意で通過", "kind": "call" },
+        { "from": "svc.schema.user_schema", "to": "api.user.login_user", "label": "email/passwordをデシリアライズ", "kind": "call" },
+        { "from": "api.user.login_user", "to": "db.users", "label": "emailでUser検索", "kind": "db" },
+        { "from": "db.users", "to": "svc.exceptions.user_not_found", "label": "該当ユーザーなし", "branch": "error", "kind": "error" },
+        { "from": "db.users", "to": "svc.user.check_password", "label": "該当ユーザーあり→パスワード照合", "kind": "call" },
+        { "from": "svc.user.check_password", "to": "svc.exceptions.user_not_found", "label": "パスワード不一致", "branch": "error", "kind": "error" },
+        { "from": "svc.user.check_password", "to": "svc.auth.create_access_token", "label": "照合成功→freshトークン発行", "kind": "call" },
+        { "from": "svc.auth.create_access_token", "to": "svc.schema.user_schema", "label": "userをシリアライズ", "kind": "call" },
+        { "from": "svc.schema.user_schema", "to": "api.user.login_user", "label": "レスポンス返却", "kind": "call" }
+      ],
+      "notes": [
+        "ユーザー未検出とパスワード不一致は同じuser_not_found(404)にまとめて返す",
+        "jwt_optionalなので既存トークンの有無に関わらずログイン処理自体は常に実行される"
+      ]
+    },
+    {
+      "id": "get-current-user",
+      "title": "自分の情報を取得する",
+      "category": "認証・アカウント",
+      "trigger": "GET /api/user",
+      "steps": [
+        { "from": "api.user.get_user", "to": "svc.auth.jwt_required", "label": "GET /api/user受信", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.user.get_user", "label": "検証OK→current_user解決", "kind": "call" },
+        { "from": "api.user.get_user", "to": "svc.schema.user_schema", "label": "Authorizationヘッダーのtokenを再設定しシリアライズ", "kind": "call" },
+        { "from": "svc.schema.user_schema", "to": "api.user.get_user", "label": "レスポンス返却", "kind": "call" }
+      ],
+      "notes": [
+        "jwt_required検証失敗時の401はflask_jwt_extended側の既定処理で、本コードのInvalidUsageは経由しない",
+        "Authorizationヘッダーを'Token 'で分割する実装で、コード中に'Not sure about this'というコメントがあり形式依存を示唆"
+      ]
+    },
+    {
+      "id": "update-user",
+      "title": "プロフィール情報を更新する",
+      "category": "認証・アカウント",
+      "trigger": "PUT /api/user",
+      "steps": [
+        { "from": "api.user.update_user", "to": "svc.auth.jwt_required", "label": "PUT /api/user受信", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "svc.schema.user_schema", "label": "検証OK→ボディをデシリアライズ", "kind": "call" },
+        { "from": "svc.schema.user_schema", "to": "api.user.update_user", "label": "デシリアライズ済みkwargs取得", "kind": "call" },
+        { "from": "api.user.update_user", "to": "svc.user.set_password", "label": "passwordが含まれる場合のみ再ハッシュ化", "branch": "alt", "kind": "call" },
+        { "from": "svc.user.set_password", "to": "svc.crud.update", "label": "残りのkwargsで属性更新", "branch": "alt", "kind": "call" },
+        { "from": "api.user.update_user", "to": "svc.crud.update", "label": "passwordなしはkwargsそのまま属性更新", "kind": "call" },
+        { "from": "svc.crud.update", "to": "svc.crud.save", "label": "変更をsave()でコミット", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.users", "label": "UPDATE users", "kind": "db" },
+        { "from": "db.users", "to": "svc.schema.user_schema", "label": "更新後のuserをシリアライズ", "kind": "call" },
+        { "from": "svc.schema.user_schema", "to": "api.user.update_user", "label": "レスポンス返却", "kind": "call" }
+      ],
+      "notes": [
+        "kwargsに'updated_at'が含まれる場合、created_atの値で上書きしてから更新している(意図せずcreated_atを再代入している可能性がある実装)",
+        "passwordは更新前にkwargsから取り除かれてからupdate()に渡るため、set_password()とCRUD更新で二重に処理されることはない"
+      ]
+    },
+    {
+      "id": "get-profile",
+      "title": "他ユーザーのプロフィールを見る",
+      "category": "プロフィール",
+      "trigger": "GET /api/profiles/<username>",
+      "steps": [
+        { "from": "api.profiles.get_profile", "to": "svc.auth.jwt_optional", "label": "GET受信", "kind": "http" },
+        { "from": "svc.auth.jwt_optional", "to": "api.profiles.get_profile", "label": "認証任意で通過", "kind": "call" },
+        { "from": "api.profiles.get_profile", "to": "db.users", "label": "usernameでUser検索", "kind": "db" },
+        { "from": "db.users", "to": "svc.exceptions.user_not_found", "label": "該当usernameなし", "branch": "error", "kind": "error" },
+        { "from": "db.users", "to": "db.userprofile", "label": "見つかった→関連profile取得(backref)", "kind": "db" },
+        { "from": "db.userprofile", "to": "svc.schema.profile_schema", "label": "シリアライズ開始", "kind": "call" },
+        { "from": "svc.schema.profile_schema", "to": "svc.profile.following", "label": "following属性を評価", "kind": "call" },
+        { "from": "svc.profile.following", "to": "svc.profile.is_following", "label": "current_user起点でフォロー判定", "kind": "call" },
+        { "from": "svc.profile.is_following", "to": "api.profiles.get_profile", "label": "レスポンス返却", "kind": "call" }
+      ],
+      "notes": [
+        "未ログイン(current_userなし)ならfollowingは常にFalse",
+        "jwt_optionalなので未認証でもプロフィール閲覧自体はできる"
+      ]
+    },
+    {
+      "id": "follow-user",
+      "title": "ユーザーをフォローする",
+      "category": "プロフィール",
+      "trigger": "POST /api/profiles/<username>/follow",
+      "steps": [
+        { "from": "api.profiles.follow_user", "to": "svc.auth.jwt_required", "label": "POST受信", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.profiles.follow_user", "label": "検証OK", "kind": "call" },
+        { "from": "api.profiles.follow_user", "to": "db.users", "label": "usernameでUser検索", "kind": "db" },
+        { "from": "db.users", "to": "svc.exceptions.user_not_found", "label": "該当usernameなし", "branch": "error", "kind": "error" },
+        { "from": "db.users", "to": "svc.profile.follow", "label": "見つかった→フォロー実行", "kind": "call" },
+        { "from": "svc.profile.follow", "to": "svc.profile.is_following", "label": "自分自身/既フォローかを判定", "kind": "call" },
+        { "from": "svc.profile.is_following", "to": "svc.crud.save", "label": "followers_assocに追加しcurrent_userのprofileを保存", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.followers_assoc", "label": "INSERT follower関係", "kind": "db" },
+        { "from": "db.followers_assoc", "to": "svc.schema.profile_schema", "label": "対象userのprofileをシリアライズ", "kind": "call" },
+        { "from": "svc.schema.profile_schema", "to": "api.profiles.follow_user", "label": "レスポンス返却", "kind": "call" }
+      ],
+      "notes": [
+        "自分自身や既にフォロー済みの場合はfollow()が何もせずFalseを返すだけで、save()とレスポンスは常に200で成功のように見える(冪等)"
+      ]
+    },
+    {
+      "id": "unfollow-user",
+      "title": "フォローを解除する",
+      "category": "プロフィール",
+      "trigger": "DELETE /api/profiles/<username>/follow",
+      "steps": [
+        { "from": "api.profiles.unfollow_user", "to": "svc.auth.jwt_required", "label": "DELETE受信", "kind": "http" },
+        { "from": "svc.auth.jwt_required", "to": "api.profiles.unfollow_user", "label": "検証OK", "kind": "call" },
+        { "from": "api.profiles.unfollow_user", "to": "db.users", "label": "usernameでUser検索", "kind": "db" },
+        { "from": "db.users", "to": "svc.exceptions.user_not_found", "label": "該当usernameなし", "branch": "error", "kind": "error" },
+        { "from": "db.users", "to": "svc.profile.unfollow", "label": "見つかった→フォロー解除実行", "kind": "call" },
+        { "from": "svc.profile.unfollow", "to": "svc.profile.is_following", "label": "現在フォロー中かを判定", "kind": "call" },
+        { "from": "svc.profile.is_following", "to": "svc.crud.save", "label": "followers_assocから削除しcurrent_userのprofileを保存", "kind": "call" },
+        { "from": "svc.crud.save", "to": "db.followers_assoc", "label": "DELETE follower関係", "kind": "db" },
+        { "from": "db.followers_assoc", "to": "svc.schema.profile_schema", "label": "対象userのprofileをシリアライズ", "kind": "call" },
+        { "from": "svc.schema.profile_schema", "to": "api.profiles.unfollow_user", "label": "レスポンス返却", "kind": "call" }
+      ],
+      "notes": [
+        "自分自身やフォローしていない相手の場合はunfollow()が何もせずFalseを返すだけで、レスポンスは常に200で成功のように見える(冪等)"
+      ]
+    }
+  ]
+}

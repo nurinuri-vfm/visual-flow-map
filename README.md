@@ -21,7 +21,8 @@
 
 リポジトリの `demo/` に生成済みのデモが2枚入っています。ダウンロードしてダブルクリックするだけで動きます。
 
-- [`demo/order-flow-map.html`](demo/order-flow-map.html) — コード対象。ミニECサイト（[`demo/sample-app/`](demo/sample-app/)、web / api / worker / DB の4層）の「注文確定・キャンセル・返金再試行・メール送信」。全22ノードの `ファイル:行` は実在検証済み
+- [`demo/order-flow-map.html`](demo/order-flow-map.html) — コード対象（入門）。ミニECサイト（[`demo/sample-app/`](demo/sample-app/)、web / api / worker / DB の4層）の「注文確定・キャンセル・返金再試行・メール送信」。全22ノードの `ファイル:行` は実在検証済み
+- [`demo/conduit-flow-map.html`](demo/conduit-flow-map.html) — **コード対象（実在OSS・複雑版）**。[RealWorld](https://github.com/gothinkster/flask-realworld-example-app) の Flask 実装を抽出2体＋敵対的検証1体で図化した **19操作・59ノード・130経路**。検証では抽出の事実誤認4件を修正し、副産物として対象OSSの実バグ2件（削除時の存在チェック欠落・未使用の例外定義）も発見した。対象コードは [`demo/conduit-app/`](demo/conduit-app/) に同梱（MIT・無改変）してあり、`audit.js --repo` で全59参照をあなたの手元でも再検証できる
 - [`demo/incident-flow-map.html`](demo/incident-flow-map.html) — 事象フロー対象。保育園の発熱対応（通常の引き渡し／緊急受診）。レーンは技術レイヤでなく「保育士・主任・連絡・保護者・記録・医療機関」
 
 図の中でできること: 操作ボタンで経路が順番に光る／ノードをクリックで逆引き／`#flow=<id>` のURLで「この経路を見て」を共有／検索・ズーム・再生。
