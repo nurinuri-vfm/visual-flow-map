@@ -1,5 +1,6 @@
 {
   "title": "保育園 発熱対応の事象フロー",
+  "mode": "event",
   "flowWord": "事象",
   "lanes": [
     {

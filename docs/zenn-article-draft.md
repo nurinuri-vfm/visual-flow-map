@@ -6,7 +6,7 @@ topics: ["claudecode", "agentskills", "claude", "可視化", "ai"]
 published: false
 ---
 
-<!-- 下書き。公開前に: リポジトリURLの差し替え（★の箇所）・GIFの追加・文体の調整 -->
+<!-- 下書き。公開前に: <your-github-id> の置換・GIFの追加・文体の調整 -->
 
 ## アーキテクチャ図が読まれない理由
 
@@ -29,7 +29,7 @@ published: false
 
 <!-- ここに10秒のGIF -->
 
-触れるデモを2枚用意しています（★リポジトリの demo/ からダウンロード）。
+触れるデモを4枚用意しています（リポジトリの `demo/` からダウンロード）。ミニEC・RealWorld(Flask)・Uptime Kuma(425ノード76操作)・保育園のマニュアル由来の手順、の4種類です。
 
 ## 一番こだわった点：図が「信用できる」こと
 
@@ -40,7 +40,7 @@ AIに図を描かせる最大の不安は**ハルシネーション**です。�
 1. **並列抽出**: リポジトリを領域分割し、エージェントごとに JSON で書き出す（共有ノードのID規約を先に固定するのが肝）
 2. **機械監査**: `audit.js` が ID分裂・参照切れ・重複フローを検出。`--repo` を渡すと**全ノードの `ファイル:行番号` の実在を検査**
 3. **敵対的検証**: 抽出とは別のエージェントに「端から端までの鎖」を検証させる。「たぶん合っている」は報告禁止
-4. **検証スタンプ**: 生成されたHTMLの隅に `コード参照 22/22 実在検証済み ・ commit abc1234 ・ 生成日` が焼き込まれる
+4. **検証スタンプ**: 生成されたHTMLの隅に `ノード参照 22/22 実在 ・ 経路の根拠 直接18/推定3/暗黙2/未確認0 ・ commit abc1234 ・ 生成日` が焼き込まれる
 
 受け取った人は、図の鮮度と検証状況をその場で確認できます。「AIが描いた図でしょ？」への答えを図自身が持っている、というのがこのスキルの一番の主張です。
 
@@ -76,7 +76,7 @@ PRレビューで「この変更でどの経路が変わったか」を10秒で�
 ## 使い方
 
 ```
-/plugin marketplace add ★your-github-id/visual-flow-map
+/plugin marketplace add <your-github-id>/visual-flow-map
 /plugin install visual-flow-map
 ```
 
@@ -94,6 +94,6 @@ Agent Skills 標準（agentskills.io）準拠なので、対応する他のエ�
 - 単一HTMLなのでコードは手元から出ない。SaaS 不要
 - コードのフローも、現実の出来事の流れも、同じ形式で描ける
 
-リポジトリ: ★https://github.com/your-github-id/visual-flow-map
+リポジトリ: https://github.com/<your-github-id>/visual-flow-map
 
 フィードバック歓迎です。

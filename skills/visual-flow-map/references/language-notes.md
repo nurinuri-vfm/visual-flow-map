@@ -1,66 +1,68 @@
-# 言語・構成別の注意点
+# Language- and Stack-Specific Notes
 
-実在OSS 4件（Go 43.8k行 / Rust 34.6k行 / Java マイクロサービス8サービス / TypeScript モノレポ）で
-実際に抽出して確かめた結果。**担当環境の節だけを抽出エージェントに渡す。**
+[日本語版 → language-notes.ja.md](language-notes.ja.md)
 
-判定はすべて「条件付きで使える」。条件とは、下に書いた前提を満たすことを指す。
+Findings from actually running extraction against four real open-source projects (Go, 43.8k lines / Rust, 34.6k lines / Java microservices, 8 services / TypeScript monorepo).
+**Hand extraction agents only the section for their assigned stack.**
+
+Every verdict below is "usable, conditionally" — the condition being that the prerequisites stated in that item are met.
 
 ## Go
 
-1. **ノードIDは `<レーン>.<パッケージ名>.<レシーバ_メソッド>` に固定し、レシーバとメソッドはアンダースコアで繋ぐ**（`db.storage.Storage_CreateFeed`）。パッケージ名が衝突するとき（`reader/handler` と `api` の `handler`）はパッケージ部を親ディレクトリ込みに綴る（`readerhandler`）。着手前に扇入の大きい層のID一覧を確定して全エージェントに配る。storage 層は `grep -rn "func (s \*Storage) " internal/storage/` で列挙する。
-2. **`http.ServeMux` への登録は呼び出しではない。** 経路の辺は登録表の行を根拠に `kind: "dispatch"` / `evidence: "inferred"` で引く。ハンドラの ref はハンドラ定義行に置き、`mux.HandleFunc(...)` の登録行はルート表ノード1つに畳む。
-3. **ミドルウェアの `next.ServeHTTP` は追跡不能。** 組み立て式（`a(b(c(mux)))` の行）を読んで外側から内側の順に辺を引き、根拠にした行番号を notes に残す。`evidence: "framework"`。
-4. **チャネルで繋がる箇所はチャネル自体を1ノードにし、ref を `make(chan ...)` の行にする。** 送信側 → チャネル → 受信側の2本を `kind: "channel"` で引く。省くと goroutine 起動側と処理側が分断され、フローが物理的に切れる。
-5. **`go` 文で起動する呼び出しは `kind: "goroutine"` を付け、notes に「応答が返る時点で完了していない」と明記する。** 同じノードが N 並列で走る場合は並列度の設定名（`WORKER_POOL_SIZE` 等）も書く。`defer` された呼び出しはソース順に光らないので steps に入れず、notes に「関数終了時に走る」と書く。
-6. **ビルダのメソッドチェーンは「生成関数」と「終端メソッド」の2ノードに畳む**（終端＝戻り値がビルダ型でないメソッド）。中間の `WithXxx` はノードにしない。**同型の `if` が並ぶ巨大関数は1ノードに畳み、代表1つだけ子ノードにして notes に「残り N 件は同型」と件数を書く。**
+1. **Fix the node ID format to `<lane>.<package>.<receiver_method>`, joining receiver and method with an underscore** (`db.storage.Storage_CreateFeed`). When package names collide (`reader/handler` vs. `api`'s `handler`), spell the package segment with its parent directory folded in (`readerhandler`). Before starting, nail down the ID list for any layer with high fan-in and distribute it to every agent. Enumerate the storage layer with `grep -rn "func (s \*Storage) " internal/storage/`.
+2. **Registration on `http.ServeMux` is not a call.** Draw the route edge from the registration-table line with `kind: "dispatch"` / `evidence: "inferred"`. Put the handler's `ref` on the handler's definition line, and collapse the `mux.HandleFunc(...)` registration line into a single route-table node.
+3. **A middleware's `next.ServeHTTP` cannot be traced.** Read the composition expression (a line like `a(b(c(mux)))`) and draw edges outside-in, then record in `notes` the line number you based it on. `evidence: "framework"`.
+4. **Where a channel connects two sides, make the channel itself one node, with `ref` on the `make(chan ...)` line.** Draw two edges with `kind: "channel"`: sender → channel and channel → receiver. Skip this and the goroutine that starts the work gets severed from the one that processes it — the flow breaks physically.
+5. **Tag calls launched with a `go` statement as `kind: "goroutine"`, and state explicitly in `notes` that "this has not completed by the time the response returns."** If the same node runs N-way in parallel, also record the setting name for the parallelism (e.g. `WORKER_POOL_SIZE`). `defer`red calls don't light up in source order, so leave them out of `steps` and note instead that "this runs when the function returns."
+6. **Collapse a builder's method chain into two nodes — the constructor and the terminal method** (terminal = the method whose return type is not the builder type). Don't turn the intermediate `WithXxx` calls into nodes. **Collapse a giant function made of parallel same-shaped `if` blocks into a single node, make only one representative branch a child node, and record the count in `notes`: "the remaining N are the same shape."**
 
-残る限界: 辺の約2割（ServeMux の経路解決・ミドルウェアの next・チャネル）に検証手段が無い。N 並列ワーカーと `go` 文の完了順は notes 頼み。
+Remaining limits: about 20% of edges (ServeMux route resolution, a middleware's `next`, channels) have no way to be verified. Completion order for N-way parallel workers and `go` statements relies on `notes` alone.
 
-## Rust（Rocket / axum などの Web フレームワーク）
+## Rust (Rocket / axum and similar web frameworks)
 
-1. **ハンドラの引数に `Headers` / `DbConn` のような独自型があれば、その型の `impl FromRequest`（axum なら `FromRequestParts`）を探し、ハンドラより前に走るノードとして必ず描く。** ソースにこれらを呼ぶ行は1行も存在せず grep では見つからない。引数の型注釈が唯一かつ規約上確実な根拠である（`evidence: "framework"`）。**認可の実体はここにある。** 描かないと「なぜ401になるか」が図に出ない。
-2. **ルートが属性マクロ（`#[post("/path")]`）のときは、HTTP境界ノードの ref に属性行を、ハンドラノードの ref に直下の `fn` 行を割り当てて2ノードに分ける。** どちらを採るかを領域ごとに変えると同じルートに2つのIDが付いて経路が割れる。
-3. **`?` によるエラー伝播は、失敗した関数から最上位ハンドラへ直接 `branch: "error"` を引く**（中間フレームを経由する線は引かない）。ただし `if let Err(e) = f().await { error!(...) }` のように**握り潰している**箇所は `branch: "main"` のままにし、detail に「失敗してもログのみで続行」と書く。取り違えると図が「失敗すると止まる」と嘘をつく。**`err!` / `bail!` / `ensure!` は関数呼び出しではなく `return Err(...)` への展開なのでノードにせず、エッジの label で表現する**（実例で740箇所）。
-4. **`impl Drop` と `LazyLock` / `OnceLock` の static は呼び出し行が存在しない。** `impl Drop for X` を探して `X` が置かれたスコープの終端にノードを置き、static は初期化式の行を ref にする。切断時のクリーンアップと共有レジストリはここにしか無い。
-5. **`impl` ブロック内の同名メソッド（`save` / `new`）を ref にするときは、`impl` の開始行を先に確定してから直下のメソッド行を採る。ID には必ず型名を含める**（`db.user.save` であって `db.save` ではない）。トレイト impl が複数あると audit【1】が「ラベルが近い」を出すが、これは正常な検出なので畳んではいけない。
-6. **`tokio::spawn` で投げた呼び出しはエッジの label に「待たない」と明記する。`tokio::select!` の複数の腕は順序が無いので notes に「順序は実行時に決まる」と書く。** 常時接続（WebSocket / SSE / 購読ループ）のフローは `inspect.js --flow` が断線を1件出すのが正常で、偽の入口エッジを足して黙らせないこと。合流元のフロー名を notes に実名で書く。
-7. **DBアクセスの共通チョークポイントを先に1つ特定してハブIDとして配る。** マクロ経由と直接呼び出しの2系統が混在するので、両方が合流する関数（`DbConn::run` 等）をハブにする。
+1. **If a handler argument has a custom type like `Headers` or `DbConn`, find that type's `impl FromRequest` (`FromRequestParts` for axum) and always draw it as a node that runs before the handler.** Not a single line in the source calls these directly — `grep` will never find them. The argument's type annotation is the only evidence there is, but it's reliable by convention (`evidence: "framework"`). **This is where authorization actually lives.** Skip it and the map can't show why a request comes back 401.
+2. **When a route is defined by an attribute macro (`#[post("/path")]`), split it into two nodes: the HTTP-boundary node's `ref` on the attribute line, and the handler node's `ref` on the `fn` line right beneath it.** Switching which one you pick from area to area gives the same route two different IDs and splits it in two.
+3. **For error propagation via `?`, draw `branch: "error"` directly from the failing function to the top-level handler** (don't route it through the intermediate stack frames). But where the error is **swallowed** — as in `if let Err(e) = f().await { error!(...) }` — leave it as `branch: "main"` and note in `detail` that "execution continues after logging the failure." Get this wrong and the map lies, claiming "a failure stops everything." **`err!` / `bail!` / `ensure!` expand to `return Err(...)` rather than a function call, so don't turn them into nodes — express them through the edge's `label`** (740 occurrences in the codebase we tested).
+4. **`impl Drop` and `LazyLock`/`OnceLock` statics have no call site.** Find `impl Drop for X` and place a node at the end of the scope where `X` goes out of scope; for statics, use the initializer expression's line as `ref`. Disconnect-time cleanup and shared registries live nowhere else.
+5. **When using a same-named method inside an `impl` block (`save`, `new`) as `ref`, pin down the `impl` block's opening line first, then take the method line right beneath it. Always include the type name in the ID** (`db.user.save`, never `db.save`). Multiple trait impls will make audit check [1] flag "labels look similar" — that's a correct detection, so **do not collapse them**.
+6. **For calls fired off with `tokio::spawn`, state "not awaited" explicitly in the edge's `label`. `tokio::select!`'s multiple arms have no ordering, so note "order is determined at runtime."** For long-lived-connection flows (WebSocket / SSE / subscription loops), it's normal for `inspect.js --flow` to report one break — don't silence it by adding a fake entry edge. Write the actual name of the flow that merges in, in `notes`.
+7. **Identify the single common choke point for DB access first, and distribute it as the hub ID.** Macro-driven and direct-call paths coexist, so make the function where both converge (e.g. `DbConn::run`) the hub.
 
-残る限界: `tokio::select!` の順序の無さ。常時接続フローの断線1件は構造的に消せない。既定レーンのままだと `svc` が全体の47%になるので `guard` / `model` を足す。
+Remaining limits: `tokio::select!`'s lack of ordering. The one break in long-lived-connection flows can't be structurally eliminated. Stick with the default lanes and `svc` ends up holding 47% of everything, so add `guard` and `model` lanes.
 
-## Java / Spring Boot マイクロサービス（Maven モノレポ）
+## Java / Spring Boot Microservices (Maven Monorepo)
 
-1. **レーンはデプロイ単位（サービス）で切る。層で切らない。** `ui` / `gateway` / `<サービス名>`×N / `platform`（Eureka・Config Server）/ `ext` を使い、**DBノードは独立レーンにせず所有するサービスのレーン内の最下段に置く**。こうすると「サービス間の線＝必ずレーンを跨ぐ線」になり、跨ぐ線を数えるだけで結合度が読める。**サービス発見（Eureka）はノードにせずエッジの属性（`kind: "discovery"`）にする** — ノードにすると全フローが通る入次数7のハブになり、図の中心が「解決」だけの箱になる。`job` レーンは `@Scheduled` / `@Async` / メッセージリスナが実在するときだけ作る。
-2. **サービスを跨ぐ呼び出しは必ず「サービス名文字列 → `spring.application.name`」の突合せを行い、両方の行番号を notes に書く。** 形式は3つ: `uri: lb://xxx`（gateway の application.yml）、`"http://xxx/..."`（`@LoadBalanced` の WebClient/RestTemplate。付いていなければ DNS 解決で別物）、`discoveryClient.getInstances("xxx")`。**突合せ先が見つからないサービス名には線を引かず、`evidence: "unverified"` にして notes に「解決先未確認」と書く。**
-3. **Gateway ルートを通る操作では `StripPrefix` と `predicates` を読んでから接続先ハンドラを決める。** ブラウザ側 URL のまま `@GetMapping` を grep しても当たらない。`StripPrefix=2` なら先頭2セグメントを落とした残りで探す。ルート定義は関数ではないので ref は `application.yml` の `- id: xxx` の行を指す。
-4. **Spring Data リポジトリは 1インターフェース = 1ノードにする**（`findAll` / `save` を別ノードにすると全部が同じ ref を持ち、機械検証は通るのに図が嘘になる）。呼んだメソッド名はステップの label に `findByPetIdIn()` の形で書く。同一クラスにオーバーロードがあるときは ID に引数の意味を足して区別し、detail に「Java 上は同名の read」と必ず書く。
-5. **AOP・アノテーション由来の処理（`@Cacheable` `@Transactional` `@Async` `@Valid`）はノードにしてよく、ref はアノテーション行を指す**（`evidence: "framework"`）。ただし `@Profile` / `@ConditionalOnProperty` が付く Bean は特定条件でのみ経路に現れるので detail に有効条件を書く。
-6. **着手前に `git ls-tree -r HEAD --name-only` とディスク上のファイルを突合せ、欠損を把握してからフローを選ぶ。** 参照しているのに定義がリポジトリ内に無いクラスはノードを作らず、notes に「定義がリポジトリ内に無いため経路を確定できない」と書く。設定値が外部にあるとき（Spring Cloud Config の git バックエンド等）は外部を指している行を ref にし、detail に「実値は外部リポジトリ」と書く。**存在しない行番号を作ってはならない。**
+1. **Split lanes by deployment unit (service), not by layer.** Use `ui` / `gateway` / `<service-name>` × N / `platform` (Eureka, Config Server) / `ext`, and **don't give the DB its own lane — put the DB node at the bottom of the lane belonging to the service that owns it.** That way "a line between services" always means "a line that crosses a lane," and you can read coupling just by counting the lines that cross. **Don't make service discovery (Eureka) a node — make it an edge attribute (`kind: "discovery"`)** — as a node it becomes a hub with in-degree 7 that every flow passes through, and the map's center turns into a box that only does "resolution." Only create a `job` lane when `@Scheduled` / `@Async` / a message listener actually exists.
+2. **For any cross-service call, always cross-check the service-name string against `spring.application.name`, and record both line numbers in `notes`.** There are three forms: `uri: lb://xxx` (the gateway's `application.yml`), `"http://xxx/..."` (`@LoadBalanced` `WebClient`/`RestTemplate` — without that annotation it resolves via plain DNS and is a different thing), and `discoveryClient.getInstances("xxx")`. **If a service name has no matching target, don't draw the edge — set `evidence: "unverified"` and note "resolution target unconfirmed."**
+3. **For operations that go through a Gateway route, read `StripPrefix` and `predicates` before deciding the destination handler.** Grepping for `@GetMapping` using the browser-side URL as-is won't match. With `StripPrefix=2`, search using what's left after dropping the first two segments. A route definition isn't a function, so its `ref` points at the `- id: xxx` line in `application.yml`.
+4. **Treat each Spring Data repository as one interface = one node** (splitting `findAll`/`save` into separate nodes gives them all the same `ref` — machine verification passes, but the map ends up lying). Write the method actually called into the step's `label`, in the form `findByPetIdIn()`. When a class has overloads, disambiguate the ID by adding the argument's meaning, and always note in `detail` that "in Java this is a same-named read."
+5. **AOP- and annotation-driven processing (`@Cacheable`, `@Transactional`, `@Async`, `@Valid`) may be made into nodes, with `ref` pointing at the annotation line** (`evidence: "framework"`). But a bean carrying `@Profile` / `@ConditionalOnProperty` only appears on the route under specific conditions, so write the activation condition into `detail`.
+6. **Before starting, cross-check `git ls-tree -r HEAD --name-only` against the files on disk, understand what's missing, and only then pick a flow.** For a class that's referenced but whose definition isn't in the repo, don't create a node — note "definition not in the repo; the route cannot be confirmed." When a config value lives externally (e.g. Spring Cloud Config's git backend), use the line that points at the external source as `ref`, and note "the real value lives in an external repo." **Never invent a line number that doesn't exist.**
 
-残る限界: サービス間の接続根拠が人力の文字列突合せに依存し、誤ると経路が丸ごと間違う。
+Remaining limits: the basis for inter-service connections depends on manual string matching — get it wrong and the whole route is wrong.
 
-## モノレポ（npm/pnpm workspaces + turborepo など）
+## Monorepo (npm/pnpm workspaces + Turborepo, etc.)
 
-1. **ref は常にリポジトリルート相対の実ファイルパスにする。`@scope/pkg/...` のエイリアスを ref に書かない。** 着手前に package.json の `exports`/`main` と tsconfig の `paths` を読んで変換表を作ってからノードを起こす。例外が実在するので必ず確認する（同名ディレクトリより `client.ts` のようなファイルが勝つ、package → app の逆向き依存）。
-2. **読み始めは ARCHITECTURE.md → ルート package.json の workspaces → HTTP サーバの配線ファイル（`app.route` / `app.use` が並ぶファイル、Next.js なら app 配下の route.ts）の順。** 配線ファイルを最初にノード化して全フローの共通入口にする。個別の画面コンポーネントから読み始めない。
-3. **tRPC / ts-rest を使っているなら、ルータ合成ファイル（`*/router.ts`）を全部先に読んで「呼び出し文字列 → 実装ファイル」の索引を作る。** ルータのキー名と実装ファイル名は一致しない（`sign` → `sign-envelope-field.ts`）。UI 側の `trpc.a.b.c` を grep しただけで実装に飛ぼうとしない。
-4. **ジョブ/キューは「投入」「配送」「定義」「実処理」の4ノードに分け、投入→配送に `kind: "job"`、配送→実処理に `kind: "http"` か `kind: "queue"` を付ける。** ジョブ名は文字列リテラルで解決されるので、投入側の name 文字列と定義側のID定数を突合せ、notes に「文字列一致で確定」と根拠を明記する（`evidence: "inferred"`）。**差し替え可能な実装（storage / mailer / signer）は `process.env` を grep して分岐点を全列挙し、`branch: "alt"` にして label に env 名と値を書く。** env だけで決まらず DB や組織設定を読む分岐が混ざるので、分岐関数の本体を必ず開く。
-5. **サーバ実行とブラウザ実行の境界を必ずレーンで分け、判別根拠を notes に書く**（`server-only/` ディレクトリ、`*.server.ts`、`use client` の有無、loader/action か否か）。既定7レーンのままなら `app` を「サーバ側の HTTP/ルーティング」に限定し、loader は `ui` ではなく `app` に置いて label 先頭に `(server)` を付ける。
-6. **ノード候補を `grep "^export "` で集めない。** 対象ファイルを開いて `const name = async (` / `function name(` まで拾う（巨大な handler ほど中核処理が非 export のローカル関数）。**バレル（index.ts）は定義元ではないので、再 export しかなければ即座に定義元まで降りる。** 無名コールバック（`prisma.$transaction(async (tx) => ...)`）が50行を超えていたら `<module>.tx` のような人為IDで独立ノードにし、notes に「無名コールバックであり ID は本図の付与名」と書く。
+1. **`ref` must always be the real file path relative to the repo root. Never write a `@scope/pkg/...` alias as `ref`.** Before starting, read `exports`/`main` in `package.json` and `paths` in `tsconfig`, build a translation table, and only then create nodes. Exceptions really do exist, so always verify (a file like `client.ts` wins over a same-named directory; a package can depend back on an app).
+2. **Read in this order: `ARCHITECTURE.md` → the root `package.json`'s `workspaces` → the HTTP server's wiring file (the file where `app.route`/`app.use` line up — for Next.js, `route.ts` under `app/`).** Turn the wiring file into a node first and use it as the common entry point for every flow. Don't start reading from individual screen components.
+3. **If the project uses tRPC or ts-rest, read every router-composition file (`*/router.ts`) first and build a "call string → implementation file" index.** A router's key name and its implementation file name do not match (`sign` → `sign-envelope-field.ts`). Don't try to jump straight to the implementation just by grepping the UI side's `trpc.a.b.c`.
+4. **Split a job/queue into four nodes — enqueue, dispatch, definition, and execution — and tag enqueue→dispatch as `kind: "job"`, dispatch→execution as `kind: "http"` or `kind: "queue"`.** Job names resolve through string literals, so cross-check the `name` string on the enqueue side against the ID constant on the definition side, and spell out the basis in `notes` — "confirmed by string match" (`evidence: "inferred"`). **For swappable implementations (storage / mailer / signer), grep `process.env` to enumerate every branch point, mark them `branch: "alt"`, and write the env var name and value into `label`.** Some branches aren't decided by env vars alone and also read the database or org settings, so always open the branching function's body.
+5. **Always separate the server-execution/browser-execution boundary into its own lane, and record the basis for the distinction in `notes`** (a `server-only/` directory, `*.server.ts`, whether `use client` is present, whether it's a loader/action). If sticking with the default seven lanes, restrict `app` to "server-side HTTP/routing," place loaders in `app` rather than `ui`, and prefix the `label` with `(server)`.
+6. **Don't collect node candidates with `grep "^export "`.** Open the target file and read as far as `const name = async (` / `function name(` — the bigger the handler, the more likely its core logic is a non-exported local function. **A barrel file (`index.ts`) is never the definition site — if all it does is re-export, descend to the real definition immediately.** If an anonymous callback (`prisma.$transaction(async (tx) => ...)`) runs past 50 lines, give it its own node with a made-up ID like `<module>.tx`, and note "this is an anonymous callback; the ID is assigned by this map."
 
-残る限界: 「文字列キー → 自プロセス宛て HTTP → 動的 import」は型検査も定義ジャンプも届かず、根拠が grep のみ。投げっぱなしが同期呼び出しと同じ矢印になる。
+Remaining limits: "string key → HTTP call to your own process → dynamic import" is beyond the reach of both type checking and go-to-definition — grep is the only evidence available. A fire-and-forget call ends up drawn with the same arrow as a synchronous one.
 
 ---
 
-## 全環境に共通して現れた困難
+## Difficulties Common to Every Environment
 
-抽出を始める前に、この8つを頭に入れておく。
+Keep these eight in mind before starting extraction.
 
-1. **ノードは100%機械検証できるが、エッジは1本も検証できない。** だから `evidence` の申告を全ステップに義務づける（SKILL.md「経路の根拠」参照）。
-2. **「1ノード＝1関数」は同じ4つの形で壊れる**: 実体のない宣言（ルート表・DIの束縛）、無名コールバック、AOP/マクロ展開、ジェネリクスの単一化。
-3. **既定7レーンはどの環境でも合わず、ズレる方向が環境ごとに逆。** Java はデプロイ単位、Rust はガードとモデル、TS はサーバ/ブラウザ境界が要る。
-4. **「順番に光る」演出は非同期について3種類の嘘をつく**: 並列を順序に見せる、投げっぱなしを同期に見せる、完了順の逆転を隠す。該当箇所は必ず notes に書く。
-5. **3セグメントIDは同名多重定義を分離できない。** 型名・パッケージ名を含めて4セグメントにする。
-6. **ref を持てない実体は想定より広い**: 外部サービス、生成コード、依存ライブラリ内のクラス、設定の外部化。代用 ref を使うなら detail に「代用」と明記する。
-7. **図に出すべき重要な処理ほど grep に映らない**: フレームワークのガード、ライフサイクル、Drop、暗黙の初期化。
-8. **「1操作＝1起点＝1本の線形 steps」の前提が破れる**: 常時接続への合流、複数プロトコルの入口、循環。
+1. **Nodes can be machine-verified 100% of the time; not a single edge can be.** That's why declaring `evidence` is mandatory on every step (see "the basis of an edge" in SKILL.md).
+2. **"One node = one function" breaks down the same four ways every time**: declarations with no body (route tables, DI bindings), anonymous callbacks, AOP/macro expansion, and generic monomorphization.
+3. **The default seven lanes never fit any environment, and the direction of the mismatch flips from one environment to the next.** Java needs deployment-unit lanes, Rust needs `guard` and `model`, TypeScript needs a server/browser boundary.
+4. **The "light up in sequence" presentation tells three kinds of lies about async code**: it makes parallel work look sequential, makes fire-and-forget look synchronous, and hides reversals in completion order. Always write these cases up in `notes`.
+5. **A three-segment ID cannot separate multiple same-named definitions.** Include the type name or package name to make it four segments.
+6. **The set of entities that can't hold a `ref` is wider than you'd expect**: external services, generated code, classes inside dependency libraries, externalized configuration. If you use a substitute `ref`, say so explicitly in `detail`.
+7. **The more important a piece of logic is to the map, the less likely `grep` is to show it**: framework guards, lifecycle hooks, `Drop`, implicit initialization.
+8. **The assumption "one operation = one starting point = one linear `steps` list" breaks down**: merging into a long-lived connection, multiple protocol entry points, cycles.

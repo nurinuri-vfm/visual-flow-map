@@ -30,9 +30,9 @@ git push -u origin main
 
 ## push 前の置き換え（2箇所）
 
-- **`<your-github-id>` を実ユーザー名に置換**（`README.md` 2箇所 / `README.ja.md` 2箇所 / `PUBLISH.md` 1箇所 / `docs/github-listing.md` 5箇所）。一括なら:
+- **`<your-github-id>` を実ユーザー名に置換**（README.md 2 / README.ja.md 2 / PUBLISH.md 4 / docs/github-listing.md 5 / docs/zenn-article-draft.md 3 の計16箇所）。**この PUBLISH.md 自身の説明文も書き換わってしまうので除外すること**:
   ```bash
-  grep -rl '<your-github-id>' --include='*.md' . | xargs sed -i 's/<your-github-id>/実際のID/g'
+  grep -rl '<your-github-id>' --include='*.md' . | grep -v PUBLISH.md | xargs sed -i 's/<your-github-id>/実際のID/g'
   ```
 - `demo/data-code/meta.json` に `"creditUrl": "https://github.com/<ユーザー名>/visual-flow-map"` を追加してデモを再ビルドすると、図のクレジットがリポジトリへのリンクになる:
 
@@ -60,8 +60,8 @@ node skills/visual-flow-map/scripts/build.js --data demo/data-event --out demo/i
 | APIキー・トークン・秘密鍵 | 0件 |
 | 一時ファイル（`.tmp` 等） | 削除済み |
 | メールアドレス | 1件（`shop@example.com`＝自作サンプルの架空アドレス） |
-| localhost 参照 | 4件（`demo/conduit-app/conduit/settings.py`＝取り込んだ対象OSSの原文。無改変） |
-| `<your-github-id>` | 12件（**公開時に置換が必要**。上の手順参照） |
+| localhost 参照 | 5件（`demo/conduit-app/conduit/settings.py`＝取り込んだ対象OSSの原文。無改変） |
+| `<your-github-id>` | 16件（**公開時に置換が必要**。上の手順参照） |
 
 ## 未完了（公開の障害にはならないが、把握しておくこと）
 

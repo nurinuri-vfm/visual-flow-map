@@ -75,7 +75,7 @@ description: 「操作や事象を選ぶと、通る経路だけが順番に光�
 
 ## 2. 並列で抽出する
 
-`references/extraction-prompt.md` にプロンプトのひな形があります。**そのまま使わず、担当領域とハブIDをその案件に合わせて書き換えてから**渡してください。
+`references/extraction-prompt.ja.md` にプロンプトのひな形があります。**そのまま使わず、担当領域とハブIDをその案件に合わせて書き換えてから**渡してください。
 
 このフェーズで手を抜くと後が全部崩れる、という要点が3つあります。
 
@@ -302,7 +302,7 @@ node <skill>/scripts/inspect.js --html <出力.html> --node <nodeId>  # ノー�
 
 ## 言語・構成別の注意点
 
-実在OSS 4件（Go / Rust / Java マイクロサービス / TypeScript モノレポ）で実際に抽出して確かめた前提条件が `references/language-notes.md` にある。**担当環境の節だけを抽出エージェントに渡す。** 全環境「条件付きで使える」で、条件を満たさないと具体的にどこが壊れるかが書いてある。
+実在OSS 4件（Go / Rust / Java マイクロサービス / TypeScript モノレポ）で実際に抽出して確かめた前提条件が `references/language-notes.ja.md` にある。**担当環境の節だけを抽出エージェントに渡す。** 全環境「条件付きで使える」で、条件を満たさないと具体的にどこが壊れるかが書いてある。
 
 特に、既定7レーンは**どの環境でも合わず、しかもズレる方向が環境ごとに逆**（Java はデプロイ単位、Rust はガードとモデル、TS はサーバ/ブラウザ境界が要る）。着手前にレーン設計を決めること。
 
@@ -326,11 +326,11 @@ node <skill>/scripts/inspect.js --html <出力.html> --node <nodeId>  # ノー�
 
 ## よくある失敗
 
-`references/pitfalls.md` に、実例で実際に踏んだ8つの失敗と対処を書いてあります。**2周目に入る前に一度読んでください。** 特に、ID分裂・レイヤ別重複フロー・全体マップの横幅爆発・手順の並び順の4つは、知らないと必ず踏みます。
+`references/pitfalls.ja.md` に、実例で実際に踏んだ8つの失敗と対処を書いてあります。**2周目に入る前に一度読んでください。** 特に、ID分裂・レイヤ別重複フロー・全体マップの横幅爆発・手順の並び順の4つは、知らないと必ず踏みます。
 
 ## 参照ファイル
 
-- `references/extraction-prompt.md` — 抽出エージェントに渡すプロンプトのひな形（ID規約・スキーマ・出力指示つき）
-- `references/data-schema.md` — nodes / edges / flows の完全なスキーマ、レーン一覧、branch と kind の意味
-- `references/pitfalls.md` — 実例で踏んだ失敗と対処
+- `references/extraction-prompt.ja.md` — 抽出エージェントに渡すプロンプトのひな形（ID規約・スキーマ・出力指示つき）
+- `references/data-schema.ja.md` — nodes / edges / flows の完全なスキーマ、レーン一覧、branch と kind の意味
+- `references/pitfalls.ja.md` — 実例で踏んだ失敗と対処
 - `../../demo/` — 生成済みデモ3枚と、その入力データ・対象サンプルアプリの実物
