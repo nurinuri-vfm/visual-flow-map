@@ -10,9 +10,16 @@ path — and clicking any step tells you every other situation that routes throu
 
 [日本語版 → README.ja.md](README.ja.md)
 
-> The fastest way to understand this project is to open a demo: download
-> [`demo/conduit-flow-map.html`](demo/conduit-flow-map.html) and double-click it.
-> No server, no install, no network.
+### ▶ [Try the live demos](https://nurinuri-vfm.github.io/visual-flow-map/demo/)
+
+Four real diagrams, in your browser, nothing to install.
+Or download any file under [`demo/`](demo/) and double-click it — each one is a single
+self-contained HTML file with no server, no CDN and no network access.
+
+<!-- GIF goes here: a 10-second clip of pressing an operation and watching the path light up. -->
+<!-- Record it, drop the file into any GitHub issue comment to get a hosted URL, then: -->
+<!-- ![Pressing an operation lights up only its path](PASTE_URL_HERE) -->
+
 
 ## What you can map
 

@@ -6,9 +6,11 @@
 
 [English → README.md](README.md)
 
-> このプロジェクトを一番早く理解する方法は、デモを開くことです。
-> [`demo/conduit-flow-map.html`](demo/conduit-flow-map.html) をダウンロードしてダブルクリックしてください。
-> サーバーもインストールもネットワークも不要です。
+### ▶ [デモをブラウザで開く](https://nurinuri-vfm.github.io/visual-flow-map/demo/)
+
+実物の図が4枚。インストール不要です。
+[`demo/`](demo/) の中のファイルをダウンロードしてダブルクリックしても同じものが開きます
+（1枚が自己完結したHTMLで、サーバーもCDNもネットワークアクセスも使いません）。
 
 ## 何を図にできるか
 
