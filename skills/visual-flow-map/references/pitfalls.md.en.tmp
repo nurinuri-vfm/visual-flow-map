@@ -1,0 +1,114 @@
+# Failures Actually Hit, and Fixes
+
+All of these happened on a real project (a 3-layer mobile + cloud + IoT device system, 105 operations / 638 nodes).
+They're listed top to bottom in order of how much damage they caused.
+
+---
+
+## 1. ID Fragmentation — a cross-layer path splits into two separate rails
+
+**Symptom**: You merge everything, but "app → cloud → device" still doesn't connect. The path just vanishes partway through the diagram.
+
+**Cause**: Agent A named it `dev.main.on_cmd`, Agent B named it `dev.main._on_cmd`. Same function, two different nodes — Agent A's path and Agent B's path never merge. In the real run there were **49 pairs of nodes with the same ref and the same lane but different IDs**.
+
+**Fix**:
+- In the extraction prompt, state explicitly: "function names must match the real code exactly — do not drop the leading underscore on private names." This alone kills most of them.
+- For nodes that sit on a layer boundary, **enumerate them by their real name as hub IDs** and make every agent use those exact names.
+- Whatever still slips through gets caught by check [1] in `audit.js` and folded together in `aliases.js`.
+
+**Don't over-merge**: two nodes can reference the same line and still be genuinely different things. Cases we deliberately kept separate in the real run:
+- `gcs.snapshots` and `gcs.samples` — same constant-definition line, but different buckets
+- `ipv4_http.get` and `ipv4_http.post` — different functions
+- `ui.settings.logout` and `ui.settings.logout_confirm` — the confirmation dialog is a distinct step
+- "pull to refresh" on each screen — a different thing per screen
+
+When in doubt, only merge nodes where **both the ref and the lane match, and the normalized function name matches too**. For anything you keep separate, leave the reason in a comment in aliases.js.
+
+---
+
+## 2. The same operation shows up as 3-5 different buttons
+
+**Symptom**: The "Capture now" button ends up as five separate entries: `capture-now` / `device-capture-now` / `capture-manual` / `manual-capture` / `api-capture`. Far from being at-a-glance, the user can't even pick one.
+
+**Cause**: Five agents each described the same operation from their own layer's point of view. This is the expected outcome, not an agent mistake.
+
+**Fix**: Merge them in `merge.js`. In the real run this took **190 flows down to 105 operations**. Check [5] in `audit.js` surfaces the merge candidates.
+
+Once you merge, the original ordering no longer means anything, so build.js re-sorts the steps. Skip this re-sort and the error-handling branches end up at the front of the sequence, producing a diagram that makes no sense (see #4).
+
+---
+
+## 3. The full map is over 20,000px wide
+
+**Symptom**: Laying out every node with a hierarchical layout (the Sugiyama method) produced a 28232 × 9426 px canvas. Zoom out and you can't read the text; zoom in and you can't see the whole thing.
+
+**Cause**: A hierarchical layout's width is driven by **the rank count of the longest path**. Take the union of every flow and, once cycles are cut, you get a chain over 100 ranks long.
+
+**Fix**: Split the view into two modes.
+- **Path view (default)**: lay out only the subgraph for the selected operation hierarchically. Rank count stays around 15-25 at most.
+- **Full map**: pack every node into a **grid per lane**, overlay the selected path, and dim everything else. Width scales with the square root of the node count, so it stays around 4000px.
+
+Check [7] in `audit.js` reports the estimated size for both. If the full map is well over 4000px, your nodes are too fine-grained.
+
+---
+
+## 4. Step 1 of the sequence turns out to be "when it times out and fails"
+
+**Symptom**: Hit play and the animation starts lighting up the exception-handling path immediately. The actual starting point (pressing the button) shows up last.
+
+**Cause**: The merged flow was ordered purely by "distance from the entry point." Exception-path nodes that nobody drew an incoming edge for (e.g. `rec_watchdog.should_expire`) end up with in-degree 0, which reads as distance 0 — i.e., first.
+
+**Fix**: Sort by `branch` first, distance second. Ordering `main → alt → error` naturally pushes any exception branch with a missing entry edge toward the end. Already implemented in build.js.
+
+We also tried filtering by reachability, but that broke in a different way: **when the real starting node (the "Start training" button) had a different entry point than the flow's first member, it got shoved to the end**. Prioritizing `branch` is the more stable approach.
+
+---
+
+## 5. Extraction agents confidently get it wrong
+
+**Symptom**: Plausible-looking paths that don't actually exist end up in the diagram.
+
+**Real examples** (19 critical/high findings from three verifier agents alone):
+- **A UI button that doesn't exist**: drawn as an operation the user could trigger from a screen, but there wasn't a single call to it on the client side — it was actually only an automatic server-side action triggered by a condition.
+- **Wrong dispatch target**: every incoming message was wired to a single command handler, but that handler actually only processes a subset of them — the rest were routed by a separate subscription handler.
+- **A script that's never called**: drawn as a round trip where "script A launches B," but there wasn't a single call to it in the real code — A was strictly for manual operations.
+- **A flow that ends in a self-loop**: the screen transition after completion pointed back to itself (it was actually a replace-navigation to the list screen).
+- **Wrong queue**: the failure fallback destination was confused with a similarly-named table (different table, different database entirely).
+- **Contradictory notes**: for the same feature, one file's notes said "no downstream effect," another said "takes effect on the next run" (the latter was correct).
+
+**Fix**: Have a **separate agent from the one that did extraction** verify **each end-to-end chain** one at a time. The prompt for this lives at the end of `extraction-prompt.md`. Write corrections into `patches.js` with justification, not as direct edits to the JSON.
+
+---
+
+## 6. Returning the full JSON body blows out the context window
+
+**Symptom**: JSON for 10 domains (hundreds of KB combined) floods straight into the orchestrator's context.
+
+**Fix**: Have each agent **write its output to a file with Write and return only a summary**. The orchestrator only needs to read `audit.js` / `inspect.js` output to make decisions. In the real run, the extraction phase burned through 2.7 million tokens, but the orchestrator's own consumption stayed minimal.
+
+---
+
+## 7. Showing every edge label at once makes it unreadable
+
+**Symptom**: The path lights up fine, but the labels overlap into an unreadable clump.
+
+**Fix**: By default, show **only the label for the step currently lit up**. Make "show all labels" an optional toggle. Label text also appears in the step list in the right-hand panel, so there's no need to make people read it all on the diagram itself. Already implemented in the template.
+
+---
+
+## 8. Long flows never finish playing
+
+**Symptom**: 101 steps × 850ms = 86 seconds. Nobody watches it to the end.
+
+**Fix**: Auto-adjust the per-step interval to `max(170ms, min(selected value, 28000/step count))` so the whole thing fits in roughly 28 seconds. Already implemented in the template.
+
+Even so, a flow with more than 60 steps is probably too big to be a single operation in the first place. Check [7] in `audit.js` flags flows like this, so consider splitting them (e.g., making "Start training" and "When training fails" separate operations).
+
+---
+
+## Bonus: easy-to-miss checks
+
+- **Orphan nodes**: build.js automatically drops any node that doesn't appear on any edge. Miss that it got dropped and you'll end up with "processing that should exist, doesn't" — always read `ORPHANS` in the report.
+- **The `shared ids` count**: how many IDs show up across multiple files. If this number is low, layers aren't actually connected to each other.
+- **`no-ref`**: the count of nodes with no code reference. If it's not zero, extraction was sloppy.
+- **Existence check with `--repo`**: actually verifies that each ref's file exists and the line number is in range. Don't trust the graph until this hits 100%.

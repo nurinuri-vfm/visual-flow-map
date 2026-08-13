@@ -406,6 +406,13 @@ const STR = LANG === 'en' ? {
   hint:w=>`上のボタンを押すと、その${esc(w)}が通る経路だけが<b>順番に光ります</b>。図はドラッグで動かせます。ノードをクリックすると「ここを通る${esc(w)}」を逆引きできます。`,
 };
 const FLOW_WORD = META.flowWord || STR.flowWord;
+/* 同じ「順番に光る」演出が、モードによって別の順序を指す。図の側で宣言しないと受け手が誤読する */
+const MODE = ['code','event','concept'].includes(META.mode) ? META.mode : 'code';
+const MODE_NOTE = LANG==='en'
+  ? { code:'lights up in execution order', event:'lights up in the order things happened',
+      concept:'lights up in the order of understanding — not execution order' }[MODE]
+  : { code:'実行される順に光ります', event:'起きた順に光ります',
+      concept:'理解の順に光ります（実行順ではありません）' }[MODE];
 /* --diff-base 付きでビルドされた場合の差分情報（ノード/フローに NEW・変更 バッジを付ける） */
 const DIFF = META.diff || null;
 const DIFF_NEW = new Set(DIFF ? DIFF.addedNodes : []);
@@ -1133,6 +1140,8 @@ function dismissHint(){
 document.title = META.title || STR.defaultTitle;
 { const m = document.querySelector('h1 .mark'); if(m) m.textContent = META.title || STR.defaultTitle; }
 document.querySelector('header .sub').textContent = STR.subtitle;
+// concept モードは誤読の危険が大きいので、副題そのものを差し替えて常時見えるようにする
+if(MODE!=='code') document.querySelector('header .sub').textContent = STR.subtitle + '（' + MODE_NOTE + '）';
 document.getElementById('q').placeholder = STR.searchPh(FLOW_WORD);
 document.getElementById('btnFold').textContent = STR.foldHide(FLOW_WORD);
 document.getElementById('btnOnly').textContent = STR.overlayOn;

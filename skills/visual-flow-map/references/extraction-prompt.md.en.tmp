@@ -1,0 +1,177 @@
+# Template for the prompt handed to extraction agents
+
+Copy the text below, fill in the `{{ }}` placeholders for your project, then hand it to each agent.
+**Give every agent the exact same "shared section."** If this isn't consistent across agents, paths that cross layer boundaries won't merge.
+
+---
+
+## Shared section (identical for every agent — distribute unmodified)
+
+```
+You are examining the code at {{absolute path to the repository}} and producing,
+for every user action (or automatic trigger), which code runs in what order,
+as a machine-readable graph JSON.
+
+## Absolute rules
+- Never guess. Write only what you've confirmed by actually Reading / Grepping the real files.
+  Function names, endpoints, topic names, and table names must match the real thing character-for-character.
+- Attach a ref ("path relative to the repo:line number") to every node. The line number must be
+  the actual definition line you confirmed. This feeds both the later hallucination check and
+  duplicate detection, so always fill it in.
+- Write function names exactly as they appear in the real code. Don't drop a private function's
+  leading underscore (don't turn _on_cmd into on_cmd).
+- label / detail are in {{language}}. label is a short noun phrase, 22 characters or fewer
+  (short enough to fit inside a diagram box). detail is 120 characters or fewer, describing
+  concretely what the step does. Include conditions, branches, retries, and failure behavior.
+
+## Node ID naming convention (lowercase, ASCII, dot-separated)
+- ui.<screen>.<action>            A button the user clicks / a UI action
+- app.<module>.<function>         Client-side internals (hooks, stores, API clients, screen components)
+- net.http.<METHOD>_<path>        The client→server HTTP boundary. Replace / and - in the path with _
+- api.<handler function name>     Server-side request handler
+- svc.<module>.<function>         Server-side internal processing
+- db.<real table name>            Database
+- gcs.<region>                    Object storage
+- mqtt.<topic abbreviation>       Messaging (put the real topic string in detail)
+- dev.<module>.<function>         Device / edge side
+- hw.<device>                     Physical device
+- ext.<external>                  External service
+- job.<name>                      Scheduled / long-running process
+- rt.<subscription target>        Realtime subscription
+
+## Shared hub IDs (if your assigned area passes through one of these, use this exact spelling,
+character for character. Never invent an alias.)
+{{List the nodes that form layer boundaries here, using their real names. 5-15 of them. Example:
+svc.mqtt_client.publish_command / mqtt.cmd / mqtt.cmdres / mqtt.event
+dev.main._on_cmd / dev.uploader.upload
+net.http.POST_upload / api.upload
+app.lib.api.request / rt.events
+}}
+
+## lane values
+{{This project's lanes. Default is the following 11}}
+"ui" / "app" / "api" / "svc" / "job" / "db" / "store" / "mqtt" / "device" / "hw" / "ext"
+
+## flows (the unit that maps to a button)
+- 1 flow = "one button the user clicks" or "one automatic trigger."
+- category must always be chosen from the following: {{list 8-10 categories. Example:
+  Auth & Onboarding / Orders & Purchases / Inventory & Shipping / Settings Changes /
+  Notifications / History / Maintenance / Automated & Scheduled Processes}}
+- steps is "an ordered sequence of edges." Each step is {from, to, label, branch}.
+  branch is "main" (happy path) / "alt" (conditional branch, alternate route) /
+  "error" (failure, retry, timeout).
+- Always include the asynchronous return leg too (the result comes back, the DB gets updated,
+  the screen reflects it, etc.) and close the flow all the way to the end. Never leave it as a one-way trip.
+- In notes, write down the gotchas, timeout values, and what the user sees when it fails.
+
+## Output
+1. Write the JSON file with Write to {{output directory}}/<KEY>.json.
+   {"nodes":[{"id","lane","label","detail","ref"}...],
+    "edges":[{"from","to","label","kind"}...],
+    "flows":[{"id","title","category","trigger","steps":[{"from","to","label","branch"}...],"notes":[...]}]}
+   kind is "call"/"http"/"mqtt"/"db"/"storage"/"push"/"email"/"timer"/"realtime"/"retry"/"error".
+   flows[].id uses lowercase letters and hyphens. title is in {{language}}.
+   edges must include every edge used in steps (duplicates are fine).
+   nodes must include every ID referenced anywhere in steps/edges, with none missing.
+   No trailing commas, no comments, no BOM. It must always be parseable.
+2. Keep the final text (return value) short: the file path you wrote, the node count, the
+   edge count, the list of flow ids, and only warnings about anything you weren't confident in.
+   Never return the JSON body itself.
+   (Returning the body would overflow the orchestrator's context.)
+```
+
+## Per-agent section (swap this in per agent)
+
+```
+## Your assigned key <KEY> = "{{key}}"
+## Assigned area: {{title}}
+{{List the files you're responsible for concretely, and describe what you want turned into flows.
+ Being explicit about "which buttons must not be missed" improves accuracy.}}
+
+You may also read files outside your assigned area, to the extent needed to build boundary
+nodes when a flow crosses layers. But leave the detailed internal expansion to whoever owns
+that area, and connect through the shared hub ID instead.
+Produce at least 6 flows, ideally 10 or more. Never miss a button the user can click.
+```
+
+## Schema for structured output (for the return value)
+
+If you can constrain the agent's return value with a type, use the following.
+
+```json
+{
+  "type": "object",
+  "required": ["file", "nodeCount", "edgeCount", "flowIds"],
+  "properties": {
+    "file":       {"type": "string"},
+    "nodeCount":  {"type": "number"},
+    "edgeCount":  {"type": "number"},
+    "flowIds":    {"type": "array", "items": {"type": "string"}},
+    "hubIdsUsed": {"type": "array", "items": {"type": "string"}},
+    "warnings":   {"type": "array", "items": {"type": "string"}}
+  }
+}
+```
+
+Never take `warnings` lightly. In one real case, the extraction agent itself wrote in its
+warnings that "the button for this action doesn't exist on the screen side (zero grep hits),"
+and that finding was later reconfirmed as a critical issue during verification.
+
+---
+
+## Prompt handed to the verification agent
+
+Once extraction is done, have **a different agent** verify it. Having the same agent who did
+the extraction verify its own work won't surface the flaws.
+
+```
+You are an adversarial reviewer verifying a set of flow-graph JSON files for {{repository}}.
+The JSON files live in {{output directory}}/ under these keys: {{file list}}
+Each file has the shape {"nodes":[...], "edges":[...], "flows":[...]}.
+
+Read the JSON files you need, cross-check them against the real repository code, and surface
+factual errors, broken links, and ID inconsistencies.
+Never report "probably correct." Report only things you can confirm are wrong by checking the
+actual lines of code.
+Write fixes in a concrete, directly-applicable form (the correct node ID / the edge that should
+be added / the correct function name and line number).
+
+Verification theme: {{specify one end-to-end chain. Example:
+  Whether "order → payment → async post-processing" is actually connected at the node-ID level.
+  Enumerate any broken links (one side created an ID that the other side recreated under a
+  different name / a return leg is missing).}}
+```
+
+Return value schema:
+
+```json
+{
+  "type": "object",
+  "required": ["issues"],
+  "properties": {
+    "issues": {"type": "array", "items": {
+      "type": "object",
+      "required": ["severity", "where", "problem", "fix"],
+      "properties": {
+        "severity": {"enum": ["critical", "high", "medium", "low"]},
+        "where":    {"type": "string"},
+        "problem":  {"type": "string"},
+        "fix":      {"type": "string"},
+        "evidence": {"type": "string"}
+      }}},
+    "missingFlows":    {"type": "array", "items": {"type": "string"}},
+    "danglingNodeIds": {"type": "array", "items": {"type": "string"}}
+  }
+}
+```
+
+Cut verification themes along "end-to-end chains," not "layers."
+Cutting by layer makes each reviewer look only at their own layer and miss boundary
+breaks — the defect that shows up most often.
+
+Example themes (the standard trio is creation flow / cancellation flow / cross-cutting):
+1. Creation flow: input → payment/confirmation → save → async post-processing, followed all
+   the way through until it actually completes.
+2. Cancellation flow: cancel → compensating action (refund/rollback) → retry-on-failure,
+   followed all the way down to where it goes dead.
+3. Settings changes / scheduled jobs, plus ID hygiene across all files.

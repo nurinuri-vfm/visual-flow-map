@@ -1,0 +1,105 @@
+# Data Schema
+
+This shape stays fixed all the way through: extraction agents write it, `build.js` reads it, and it ends up in the template's `const DATA`.
+
+## Overview
+
+```jsonc
+{
+  "nodes": [ { "id": "...", "lane": "...", "label": "...", "detail": "...", "ref": "..." } ],
+  "edges": [ { "from": "...", "to": "...", "label": "...", "kind": "..." } ],
+  "flows": [ {
+    "id": "...", "title": "...", "category": "...", "trigger": "...",
+    "steps": [ { "from": "...", "to": "...", "label": "...", "branch": "main" } ],
+    "notes": [ "..." ]
+  } ]
+}
+```
+
+## nodes
+
+| Field | Required | Description |
+|---|---|---|
+| `id` | ● | Unique. Lowercase ASCII, dot-separated. The prefix should match the lane |
+| `lane` | ● | One of the values from the list below. Unknown values get rounded down to `svc` |
+| `label` | ● | Short noun phrase shown in the diagram box. 22 characters or fewer — longer labels get broken across two lines |
+| `detail` | | Description shown on hover and in the step list. 120 characters or fewer. Describe conditions and failure-mode behavior |
+| `ref` | ● | `repo-relative-path:line-number`. Used by the audit's existence check and duplicate detection. In event-flow mode, use a source citation instead (`document-name#section` / `interview:subject`, etc. — see the mapping table in SKILL.md) |
+
+If the same `id` shows up in multiple files, build.js merges them. When it does, it keeps **the longer `detail` and the shorter `label`** (so it still fits in the box), and keeps whichever `ref` was filled in first.
+
+## edges
+
+| Field | Required | Description |
+|---|---|---|
+| `from` / `to` | ● | Node IDs. An edge pointing at an ID that doesn't exist gets dropped as a broken reference |
+| `label` | | Short description shown on the path. Only displayed when this is the current step |
+| `kind` | | What the line means: `call` / `http` / `mqtt` / `db` / `storage` / `push` / `email` / `timer` / `realtime` / `retry` / `error` |
+
+`edges` is the set of "relationships that exist in the system"; `flows[].steps` is "the order a given operation actually follows." The same hop can appear in both, and build.js takes their union. **Any hop that only appears in steps gets added to edges automatically**, so during extraction it's enough to prioritize filling in steps.
+
+## flows
+
+| Field | Required | Description |
+|---|---|---|
+| `id` | ● | Lowercase English letters and hyphens. Identifies the button/operation |
+| `title` | ● | The text shown on the button. Write it in the user's words — "Press Start Training," not "Call trainSlot" |
+| `category` | ● | The button's group. Decide on 8–10 per project and hand them out to every agent |
+| `trigger` | | Shown at the top of the right panel as "Operation: …". What gets pressed, or — if it's automatic — what triggers it |
+| `steps` | ● | Ordered list of edges. They light up one step at a time |
+| `notes` | | Notes shown at the bottom of the right panel: timeout values, `retained` behavior, what appears on screen on failure |
+
+### steps[].branch
+
+| Value | Color | Meaning |
+|---|---|---|
+| `main` | Cyan | The happy path. Default when nothing is specified |
+| `alt` | Amber | An alternate route taken depending on conditions (e.g., offline, cache hit) |
+| `error` | Red (dashed) | Failure, retry, timeout |
+
+In the merged flow, build.js reorders steps as **main → alt → error**. This is because it's easier to read when the happy path plays out fully before the exceptions show up — and it also sidesteps a problem where an exception branch whose entry edge was never written ends up at depth 0 and jumps to the front.
+
+## Lane list (default)
+
+| lane | Display name | What goes here |
+|---|---|---|
+| `ui` | Screen / User action | Buttons, screens, taps |
+| `app` | Client internals | Hooks, state management, API clients, screen components |
+| `api` | API handlers | The HTTP boundary (`net.http.*`) and handlers (`api.*`) |
+| `svc` | Server-side processing | Service layer, auth, validation, notification assembly |
+| `job` | Scheduled / background jobs | cron, systemd timers, long-running loops |
+| `db` | Database | Tables |
+| `store` | Object storage | Buckets |
+| `mqtt` | Messaging (queue / topic) | MQTT, AMQP, SQS, and similar topics/queues |
+| `device` | Device / Edge | Edge-side modules |
+| `hw` | Hardware | Physical devices like sensors and cameras |
+| `ext` | External services | Push, email, payments, etc. |
+
+Lanes are drawn top-to-bottom in this order. If a project needs more or fewer, write `lanes` into the data directory's `meta.json` (never edit the template). In event-flow mode (for subjects with no code), don't use this list at all — swap it out entirely for lanes representing actors (people, organizations, records, external bodies) — see "Event-flow mode" in SKILL.md.
+
+## meta.json (optional)
+
+Placed in the data directory, build.js picks it up and embeds it as the diagram's configuration.
+
+| Field | Description |
+|---|---|
+| `title` | Title shown in the tab and header |
+| `lanes` | `[{ key, label, color? }]`. Writing this replaces the lane list entirely. `key` must start with a lowercase letter and contain only alphanumerics, `-`, and `_`. If `color` is omitted, one is assigned automatically from the built-in palette |
+| `catOrder` | Array giving the display order of categories |
+| `flowWord` | The label used in the UI (default "Operation"; "Event" in event-flow mode) |
+| `lang` | Setting `"en"` switches the UI strings (buttons, legend, help, badges) to English. Node and flow content stays in whatever language the author wrote it in |
+| `credit` | `false` hides the footer credit |
+| `creditUrl` | Link target for the credit |
+
+Passing `--repo` at build time automatically adds `meta.stamp` (generation date, commit, and the count of verified `ref`s) and shows it in the legend.
+
+`rt.*` (realtime subscriptions) and `net.http.*` don't have dedicated lanes. In practice we put `rt.*` under `app` and `net.http.*` under `api`. Add a dedicated lane to `LANES` if you want one.
+
+## Deciding naming granularity
+
+The baseline rule is **one node = one function**. There are two exceptions, though.
+
+- "Things" like screens or tables aren't functions, so name them after the entity instead — `ui.<screen>.<action>` / `db.<table>`
+- If you're torn on whether to split a single function into separate nodes because it's called in fundamentally different ways, don't. More nodes make the diagram harder to read and dilute the value of reverse lookup
+
+Conversely, you **must** split them when, like `uploader.upload_file` and `uploader.upload_wav`, they're actually separate functions taking separate paths. Even if the labels look similar, keep them as separate nodes whenever the `ref`s differ.
