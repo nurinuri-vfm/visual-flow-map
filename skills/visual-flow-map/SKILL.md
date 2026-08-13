@@ -1,336 +1,338 @@
 ---
 name: visual-flow-map
-description: 「操作や事象を選ぶと、通る経路だけが順番に光る」単一HTMLのフロー図を作る。対象はコードベース（実コードを読んで抽出）でも、業務手順・事故対応・出来事の経緯といったコードの無い事象の流れでもよい。「処理フローを可視化したい」「導線を図にして」「どのボタンで何が動くのか一目で見たい」「業務フロー・事象の流れ・経緯を図解」「アーキテクチャの流れ」「コードマップ」「システムの全体像を図解」「フロー図/流れ図/シーケンス図がほしい」などと言ったら必ずこのスキルを使うこと。図の形式を指定していなくても、複数のレイヤや主体（画面 / API / DB / デバイス、人 / 組織 / 外部機関など）にまたがる流れを人に説明したい場面ならこれを使う。既存のフロー図HTMLの更新・作り直しにも使う。
+description: Builds a single self-contained HTML flow map where pressing an operation — or a symptom — lights up only its path, step by step, and clicking any node shows everything that passes through it. Works on a codebase (agents read the real source; node refs are verified against it) and equally on things with no code: procedures, runbooks, product manuals, incident timelines. Use whenever someone wants to show how a system or a sequence of events flows across layers or actors — screens / API / DB / jobs, or people / teams / records / outside parties: "visualize the flow", "map the code paths", "diagram how this works", "architecture overview", "code map", "what happens when the user clicks X", "make our manual clickable", "troubleshooting guide", "flow or sequence diagram". Also use to rebuild an existing flow-map HTML. 日本語でも同じ（「処理フローを可視化」「導線を図にして」「業務フローを図解」「マニュアルを図にして」「システムの全体像」「フロー図がほしい」）。
 ---
 
-# 操作から追えるフロー図を作る
+# Build a Flow Map You Can Trace From Any Operation
 
-## これは何を作るのか
+[日本語版 → SKILL.ja.md](SKILL.ja.md)
 
-自己完結した HTML 1枚。外部CDNを一切参照せず、ダブルクリックで開ける。
+## What This Builds
 
-- **上段**: ユーザー操作のボタン群（カテゴリ別・検索可）
-- **下段**: 全処理をレーン（画面 / アプリ内部 / API / 内部処理 / DB / ストレージ / メッセージング / デバイス / 外部サービス…）に並べたノードリンク図
-- **押すと**: その操作が通る経路だけが起点から順に光る。正常系＝シアン、条件分岐＝アンバー、失敗・再試行＝レッド
-- **右側**: 手順が `ファイル:行番号` つきで並ぶ
-- **逆引き**: 処理ノードをクリックすると「この処理を通る操作」の一覧が出る
+A single self-contained HTML file. No external CDN references — just double-click to open it.
 
-シーケンス図との違いはここです。シーケンス図は1シナリオを時間軸で描くので、シナリオが100本あれば図も100枚になり、「この関数を通る操作はどれか」が分かりません。この形式は**静的な全体図の上にシナリオの経路を重ねる**ので、共有ノードからの逆引きができます。
+- **Top**: buttons for user operations (grouped by category, searchable)
+- **Bottom**: a node-link diagram laying out every process across lanes (screen / app-internal / API / internal processing / DB / storage / messaging / device / external service...)
+- **On click**: only the path that operation takes lights up, step by step from its origin. Happy path = cyan, conditional branch = amber, failure/retry = red
+- **Right side**: the steps are listed with `file:line` references
+- **Reverse lookup**: clicking a process node shows the list of "operations that pass through this process"
 
-## 使うかどうかの判断
+This is where it differs from a sequence diagram. A sequence diagram draws one scenario along a time axis, so 100 scenarios mean 100 diagrams, and you can never answer "which operations pass through this function?" This format instead **overlays scenario paths on top of one static full map**, so you can look up shared nodes in reverse.
 
-**向いている**: 複数レイヤをまたぐシステム、操作が20以上ある、「保存したのに反映されない」類の断線を追いたい、新メンバーに全体像を渡したい。
+## When to Use This
 
-**向いていない**: 単一ファイル・単一レイヤの小さなコード（Mermaid で十分）、処理そのものより状態遷移が主題（状態遷移図を書く）、実行時のプロファイルが欲しい（トレーシングツールを使う）。
+**Good fit**: systems spanning multiple layers, 20+ operations, tracking down "I saved it but it's not showing up" type breaks in the chain, handing the full picture to a new team member.
 
-## 3つのモード
+**Poor fit**: small single-file, single-layer code (Mermaid is enough), when state transitions matter more than the processing itself (draw a state diagram instead), when you want a runtime profile (use a tracing tool instead).
 
-対象によって、同じテンプレートを3通りに使い分ける。**どのモードで作ったかを `meta.mode` に必ず書く**（図の側に表示され、「順番に光る」が何の順序を指すのかが受け手に伝わる）。
+## Three Modes
 
-| モード | `meta.mode` | 対象 | ノード | レーン | ref | 「順番に光る」の意味 |
+The same template is used three different ways depending on the subject. **Always record which mode you built in `meta.mode`** — it's displayed on the diagram itself, so the viewer knows what order "lights up step by step" actually refers to.
+
+| Mode | `meta.mode` | Subject | Node | Lane | ref | What "lights up step by step" means |
 |---|---|---|---|---|---|---|
-| コード | `code`（既定） | リポジトリ | 関数・画面・テーブル | 技術層 | `パス:行番号` | 実行の順 |
-| 事象 | `event` | 業務手順・事故対応・**マニュアル** | 出来事・行動・判断 | 主体（人・組織・記録） | `文書名#条項` 等 | 発生の順 |
-| 概念 | `concept` | 知識・概念の体系 | 主張・概念 | 抽象度（前提→基本→実装→運用） | `docs:` `paper:` `経験則:` 等 | **理解の順（実行順ではない）** |
+| Code | `code` (default) | Repository | Functions, screens, tables | Technical layer | `path:line` | Execution order |
+| Event | `event` | Business procedures, incident response, **manuals** | Events, actions, decisions | Actors (people, organizations, records) | `doc-name#section`, etc. | Order of occurrence |
+| Concept | `concept` | A body of knowledge/concepts | Claims, concepts | Abstraction level (premise → core → implementation → operations) | `docs:`, `paper:`, `heuristic:`, etc. | **Order of understanding (not execution order)** |
 
-同じ視覚表現がモードによって別の意味を持つため、モード表示が無いと受け手は誤読します。詳細は下の各節を参照。
+The same visual language means something different in each mode, so without the mode label the viewer will misread it. See the sections below for details.
 
-## 全体の流れ
+## Overall Flow
 
 ```
-1. 範囲を決める      → コードを浅く見て「担当領域」に分割する
-2. 並列で抽出する    → 領域ごとにエージェントを立て、JSONで書き出させる
-3. 監査する          → audit.js。ID分裂・参照切れ・重複フローを洗う
-4. 統合と修正        → aliases.js / merge.js / patches.js を書く
-5. ビルドして目視    → build.js → inspect.js とブラウザで確認
+1. Scope it out        → skim the code and split it into "areas"
+2. Extract in parallel → spin up one agent per area, have each write JSON
+3. Audit                → audit.js. Sweeps for ID splits, dangling refs, duplicate flows
+4. Merge and fix        → write aliases.js / merge.js / patches.js
+5. Build and eyeball    → build.js → check with inspect.js and in the browser
 ```
 
-3〜5 は一度で終わりません。監査 → 直す → 再ビルドを2〜3周する前提で進めてください。
+Steps 3-5 never finish in one pass. Plan on 2-3 rounds of audit → fix → rebuild.
 
 ---
 
-## 1. 範囲を決める
+## 1. Scope It Out
 
-まずリポジトリの構造を浅く見て（`find`、ルーティング定義、エントリポイント）、**担当領域**に割ります。1領域＝1エージェント＝1 JSONファイル。
+Start by skimming the repo structure (`find`, routing definitions, entry points) and split it into **areas**. One area = one agent = one JSON file.
 
-領域は「レイヤ × 機能のまとまり」で切ります。例（ECサイトの場合）:
+Cut areas along "layer × feature cluster." Example (for an e-commerce site):
 
-| キー | 担当 |
+| Key | Covers |
 |---|---|
-| `w-browse-order` | フロント: 商品閲覧・注文画面 |
-| `w-account` | フロント: 認証・マイページ |
-| `a-api-core` | API: 全エンドポイント・決済・在庫 |
-| `a-jobs-notify` | API: ジョブ発行・通知・定期処理 |
-| `k-worker` | ワーカー: キュー消化・メール・再試行 |
+| `w-browse-order` | Frontend: product browsing, order screens |
+| `w-account` | Frontend: auth, account page |
+| `a-api-core` | API: all endpoints, payments, inventory |
+| `a-jobs-notify` | API: job dispatch, notifications, scheduled tasks |
+| `k-worker` | Worker: queue consumption, email, retries |
 
-規模の目安:
+Rough sizing:
 
-| リポジトリ | 抽出エージェント | 検証エージェント |
+| Repository | Extraction agents | Verification agents |
 |---|---|---|
-| 〜1万行・1レイヤ | 2〜3 | 1 |
-| 数万行・2〜3レイヤ | 5〜8 | 2 |
-| 大規模・4レイヤ以上 | 8〜12 | 3 |
+| ~10k lines, 1 layer | 2-3 | 1 |
+| Tens of thousands of lines, 2-3 layers | 5-8 | 2 |
+| Large, 4+ layers | 8-12 | 3 |
 
-1領域あたり6〜15フローを目安に指示します。これより少ないと粒度が粗すぎ、多いと1エージェントの精度が落ちます。
+Target roughly 6-15 flows per area. Fewer than that and the granularity is too coarse; more than that and a single agent's accuracy drops.
 
-## 2. 並列で抽出する
+## 2. Extract in Parallel
 
-`references/extraction-prompt.md` にプロンプトのひな形があります。**そのまま使わず、担当領域とハブIDをその案件に合わせて書き換えてから**渡してください。
+`references/extraction-prompt.md` has a prompt template. **Don't hand it over as-is — rewrite the assigned area and hub IDs for this specific project first.**
 
-このフェーズで手を抜くと後が全部崩れる、という要点が3つあります。
+There are three things that, if you cut corners on them at this phase, will collapse everything downstream.
 
-### (a) 共有ノードID規約を先に決めて、全エージェントに同じものを渡す
+### (a) Decide the shared node-ID convention first, and hand every agent the same one
 
-これが一番大事です。エージェントは互いを見ていないので、規約が無いと同じ関数に `dev.main.on_cmd` と `dev.main._on_cmd` のような別IDを付けます。すると層をまたぐ経路が**2本のレールに割れて、統合しても一生合流しません**。
+This is the single most important thing. Agents can't see each other's work, so without a convention they'll assign different IDs to the same function — say, `dev.main.on_cmd` versus `dev.main._on_cmd`. The cross-layer path then **splits into two parallel rails that will never merge back together, no matter how much you consolidate later**.
 
-規約は `<接頭辞>.<モジュール>.<関数>` の形で、接頭辞をレーンに対応させます（`ui` / `app` / `net.http` / `api` / `svc` / `db` / `gcs` / `mqtt` / `dev` / `hw` / `ext` / `job` / `rt`）。
+The convention takes the form `<prefix>.<module>.<function>`, with the prefix mapped to a lane (`ui` / `app` / `net.http` / `api` / `svc` / `db` / `gcs` / `mqtt` / `dev` / `hw` / `ext` / `job` / `rt`).
 
-加えて、**層の境界になるノードは「ハブID」として実名を列挙し、そこを通るなら一字一句そのまま使え**と明示します。境界とは、コマンド発行・メッセージトピック・アップロードAPI・共通HTTPクライアント・購読処理など、複数の領域が必ず触る点のことです。
+On top of that, **list the actual names of layer-boundary nodes as "hub IDs" up front, and state explicitly that any path crossing them must use that exact string, character for character**. A boundary is any point that multiple areas necessarily touch — command dispatch, message topics, upload APIs, the shared HTTP client, subscription handlers, and the like.
 
-さらに、**関数名は実コードのとおりに書く**（private の先頭アンダースコアも残す）と決めておくと、揺れがそもそも起きにくくなります。
+Also decide up front that **function names must be written exactly as they appear in the source** (keep the leading underscore on private functions too) — that alone prevents a lot of drift before it starts.
 
-### (b) ref（`パス:行番号`）を全ノードに必須にする
+### (b) Require a ref (`path:line`) on every node
 
-二重の意味があります。ハルシネーション検査ができること（`audit.js --repo` が実ファイルと行数を突き合わせる）と、**同一実体の判定キーになること**（ref とレーンが一致していれば同じものの可能性が高い）。ref が無いと後段の監査がほとんど機能しません。
+This serves two purposes: it enables hallucination checking (`audit.js --repo` cross-checks refs against the actual file and line count), and it **becomes the key for identifying duplicate entities** (matching ref and lane strongly suggests the same thing). Without refs, almost none of the downstream auditing works.
 
-### (b-2) 経路の根拠（evidence）を全ステップに申告させる
+### (b-2) Require every step to declare its evidence
 
-**ノードの ref は実ファイルと突き合わせて検証できますが、「AがBを呼ぶ」という経路は機械的に確かめようがありません。** 実在OSS 4件で検証したところ、Go では辺の約2割がソースのどこにも書かれておらず（ServeMux の経路解決・ミドルウェアの `next`・チャネル）、Rust では認可の実体である `FromRequest` ガード20個が grep に一切かかりませんでした。ここを黙って線で繋ぐと、図は**最も間違いやすい場所で嘘をつきます**。
+**A node's ref can be verified against the actual file, but an edge saying "A calls B" has no mechanical way to be confirmed.** Testing against four real open-source projects found that in Go, roughly a fifth of edges appear nowhere in the source (ServeMux's route resolution, middleware's `next`, channels); in Rust, all 20 `FromRequest` guards — the actual mechanism behind authorization — were invisible to grep. Draw the line anyway without flagging it, and the diagram **lies exactly where it's most likely to be wrong**.
 
-そこで全ステップに `evidence` を書かせます。判定は主観ではなく **「呼び出し行がソースに実在するか」** で切ります。
+So every step must carry an `evidence` field. The call is not subjective — it's decided strictly by **whether the calling line actually exists in the source**.
 
-| 値 | 条件 | 図での見え方 |
+| Value | Condition | How it renders |
 |---|---|---|
-| `direct` | 呼び出し行がソースにある（ref で示せる） | 実線 |
-| `inferred` | 型・DI・設定文字列・イベント名の対応から導いた | 実線＋手順にタグ |
-| `framework` | フレームワークが呼ぶため**該当行が存在しない** | 破線＋◇ |
-| `unverified` | 呼び出し先を特定できなかった | 点線＋**?** |
+| `direct` | The calling line exists in the source (can be pointed to with a ref) | Solid line |
+| `inferred` | Derived from type/DI/config-string/event-name correspondence | Solid line + tagged in the step list |
+| `framework` | The framework does the calling, so **no such line exists** | Dashed line + ◇ |
+| `unverified` | Couldn't pin down the callee | Dotted line + **?** |
 
-`unverified` は「分からなかった」と正直に書かせてください。推測で `direct` と書かれるほうが有害です。未確認はビルド時に一覧化され、「知っている人に確認して patches.js に確定させる」導線に乗ります。同じ経路に複数の申告があれば**弱いほうが残ります**（実態より強く見せない）。
+Have agents honestly mark `unverified` when they don't know. A guessed `direct` does more damage than an honest `unverified`. Unverified edges get listed at build time and funnel into a "check with someone who knows, then lock it in via patches.js" workflow. When the same edge gets multiple conflicting declarations, **the weaker one wins** — never make it look more certain than it is.
 
-### (c) JSONはエージェント自身にファイルへ書かせ、戻り値は要約だけにする
+### (c) Have each agent write its own JSON file; keep the return value to a summary
 
-JSON本文を戻り値で受け取ると、オーケストレータのコンテキストが数十万トークン食われます。各エージェントに `<出力先>/<キー>.json` を Write させ、戻り値は「書いたパス・ノード数・フローID一覧・確信が持てなかった点」だけにします。
+Returning the full JSON body burns hundreds of thousands of tokens of the orchestrator's context. Have each agent Write to `<output-dir>/<key>.json`, and limit its return value to: the path it wrote, node count, list of flow IDs, and anything it wasn't confident about.
 
-## 3. 監査する
+## 3. Audit
 
 ```bash
-node <skill>/scripts/audit.js --data <jsonディレクトリ> --repo <リポジトリのルート>
+node <skill>/scripts/audit.js --data <json-dir> --repo <repo-root>
 ```
 
-7項目を出します。**【1】ID分裂と【5】フロー重複が最重要**です。放置すると、経路が割れる／同じ操作のボタンが3〜5個並ぶ、という形で図の価値が消えます。
+It reports on 7 categories. **[1] ID splits and [5] duplicate flows matter most.** Leave them unaddressed and the diagram's value evaporates — paths fracture, or the same operation ends up with 3-5 duplicate buttons.
 
-`--repo` を渡すと【6】でコード参照の実在を検証します。ここが100%にならないうちは、その図は信用できません。
+Pass `--repo` and item [6] verifies that code refs actually exist. Until that reaches 100%, the diagram can't be trusted.
 
-## 4. 統合と修正
+## 4. Merge and Fix
 
-JSONディレクトリに置くと build.js が自動で拾う3つのファイルを書きます。3つとも任意です。
+Write three files in the JSON directory; build.js picks them up automatically. All three are optional.
 
-### aliases.js — 同一実体に付いた別IDを畳む
+### aliases.js — collapse duplicate IDs assigned to the same entity
 
 ```js
 module.exports = {
-  'dev.main._on_cmd': ['dev.main.on_cmd'],      // '正のID': ['畳む別名', ...]
+  'dev.main._on_cmd': ['dev.main.on_cmd'],      // 'canonical ID': ['alias to collapse', ...]
   'rt.events': ['app.lib.realtime.subscribeHistoryRealtime'],
 };
 ```
 
-audit.js の【1】が候補を出します。ただし**機械的に全部畳んではいけません**。同じ行を参照していても別物のことがあります（同じ定数定義行を指す2つのバケット、同じファイルの `get` と `post` など）。畳まなかったものは理由をコメントに残すと、次に見た人が再検討しなくて済みます。
+audit.js item [1] surfaces candidates. But **don't mechanically collapse every one of them** — two things can reference the same line and still be genuinely different (two buckets pointing at the same constant-definition line, or `get` and `post` in the same file). For anything you decide not to collapse, leave a comment explaining why, so the next person doesn't have to re-litigate it.
 
-### merge.js — レイヤ別に書かれた同一操作を1本に統合する
+### merge.js — merge one operation written up separately per layer into a single flow
 
 ```js
 module.exports = [
-  ['cancel-order', '注文', '注文をキャンセルする',
+  ['cancel-order', 'Order', 'Cancel an order',
     ['w-browse-order:cancel-order-click', 'a-api-core:api-cancel-order',
      'k-worker:refund-retry-job']],
 ];
 ```
 
-メンバーは `<ファイルキー>:<flowId>`。アプリ担当が書いた「ボタンを押してからHTTPまで」と、デバイス担当が書いた「MQTTを受けてから結果を返すまで」を1本に繋いで、**端から端までの経路**にします。統合後は元の並び順が意味を失うので、build.js が「正常系→条件分岐→失敗系、各組の中は起点からの距離順」に並べ直します。
+Members are `<file-key>:<flowId>`. It stitches together, say, the "from button press to HTTP call" written by whoever owns the app with the "from receiving MQTT to returning a result" written by whoever owns the device, into one **end-to-end path**. Once merged, the original ordering no longer means anything, so build.js reorders it as "happy path → conditional branch → failure path, and within each group, by distance from the origin."
 
-### patches.js — 検証で確定した誤りを直す
+### patches.js — fix errors confirmed during verification
 
 ```js
 module.exports = {
-  dropEdges: [['dev.main._on_cmd', 'mqtt.event']],                   // 事実と違う経路を消す
+  dropEdges: [['dev.main._on_cmd', 'mqtt.event']],                   // remove an edge that doesn't match reality
   addEdges: [{ from: 'dev.main._publish_event', to: 'mqtt.event',
-               label: 'kind=new を QoS1 で publish', kind: 'mqtt',
-               flows: ['c-api-core:mqtt-event-inbound'] }],          // flows に入れると手順にも差し込まれる
-  nodePatch: { 'api.user_promote': { detail: 'アプリからの呼び出し元は存在しない' } },
-  flowPatch: { 'c-train:pull-update': { trigger: '手動実行のみ', notesAdd: ['...'], notesDrop: ['cron'] } },
+               label: 'publish kind=new at QoS1', kind: 'mqtt',
+               flows: ['c-api-core:mqtt-event-inbound'] }],          // adding to flows also inserts it into the step list
+  nodePatch: { 'api.user_promote': { detail: 'no caller from the app exists' } },
+  flowPatch: { 'c-train:pull-update': { trigger: 'manual execution only', notesAdd: ['...'], notesDrop: ['cron'] } },
 };
 ```
 
-**JSONを直接書き換えず patches.js に分けるのは、修正の根拠を残すためです。** 各項目に「なぜそう直したか」をコメントで書いておくと、次回の再抽出でも同じ修正を再適用できます。
+**The reason to keep fixes in patches.js instead of editing the JSON directly is to preserve the rationale for each fix.** Comment each entry with "why this was changed," and the same fix can be reapplied the next time you re-extract.
 
-### 敵対的検証を必ず挟む
+### Always run adversarial verification
 
-抽出エージェントは自信を持って間違えます。実例では、10領域を精査した直後に3体で層をまたぐ連結性を検証させたところ、**critical/high だけで19件の事実誤認**が見つかりました（存在しないUIボタンの経路、ディスパッチ先の取り違え、呼ばれていないスクリプト、自己ループで終わるフローなど）。
+Extraction agents get things wrong confidently. In one real run, after refining 10 areas, having 3 agents verify cross-layer connectivity turned up **19 factual errors at critical/high severity alone** — paths through UI buttons that don't exist, mixed-up dispatch targets, scripts that are never called, flows that loop back on themselves and go nowhere.
 
-検証エージェントには次のように指示します。
+Instruct the verification agents as follows.
 
-- テーマを「端から端までの1本の鎖」で切る（例:「注文→決済→非同期の後処理が本当に繋がっているか」）
-- **「たぶん合っている」は報告するな。実コードの行を見て誤りだと断定できるものだけ出せ**
-- 修正案はそのまま適用できる具体形（正しいノードID、追加すべきエッジ、正しい関数名と行番号）で書け
+- Split themes into "one end-to-end chain" each (e.g., "does order → payment → async post-processing actually connect?")
+- **Do not report "probably correct." Only report what you can pin down as wrong by looking at the actual source line.**
+- Write fixes in a form that can be applied as-is: the correct node ID, the edge to add, the correct function name and line number.
 
-## 5. ビルドして目視する
+## 5. Build and Eyeball It
 
 ```bash
-node <skill>/scripts/build.js --data <jsonディレクトリ> --out <出力.html> --repo <リポジトリのルート>
+node <skill>/scripts/build.js --data <json-dir> --out <output.html> --repo <repo-root>
 ```
 
-`--repo` を渡すと、全ノードの ref を実ファイルと突き合わせた結果（「コード参照 n/m 実在検証済み」）・対象コミット・生成日が図の凡例に**スタンプとして焼き込まれる**。受け取った人が図の鮮度と信頼性をその場で確認できるので、コード対象では必ず付ける（事象フローモードでは付けない）。
+Pass `--repo` and the result of cross-checking every node's ref against the actual files ("code refs n/m verified to exist"), the target commit, and the generation date get **stamped into the diagram's legend**. That lets whoever receives it check the diagram's freshness and trustworthiness on the spot, so always include it for code subjects (don't for event-flow mode).
 
-データディレクトリに `meta.json` を置くと図の見た目を設定できる（全フィールド任意、無くても動く）:
+Placing a `meta.json` in the data directory configures the diagram's appearance (every field is optional; it works without one):
 
 ```jsonc
 {
-  "title": "◯◯ 処理フロー全図",          // タブとヘッダの題名
-  "catOrder": ["認証", "検知", "保守"],   // ボタン群のカテゴリ表示順
-  "flowWord": "操作",                     // UI上の呼び名。事象フローなら「事象」
-  "lang": "ja",                           // "en" でUIの文字列（ボタン・凡例・ヘルプ）が英語になる
-  "creditUrl": "https://…",              // フッタークレジットのリンク先（credit: false で非表示）
-  "lanes": [                              // 書けばレーンを総入れ替え（後述の事象フローモード用）
-    { "key": "staff", "label": "現場職員", "color": "#5b8cff" }
+  "title": "◯◯ Full Process Flow Map",   // tab and header title
+  "catOrder": ["Auth", "Detection", "Maintenance"],  // category display order for the button groups
+  "flowWord": "Operation",                // the term used in the UI. For event-flow mode, use "Event"
+  "lang": "ja",                           // "en" switches UI strings (buttons, legend, help) to English
+  "creditUrl": "https://…",              // link target for the footer credit (set credit: false to hide it)
+  "lanes": [                              // if present, replaces the lanes entirely (see event-flow mode below)
+    { "key": "staff", "label": "Field staff", "color": "#5b8cff" }
   ]
 }
 ```
 
-再生成のとき（PRレビュー・定期更新）は、前回の出力HTMLを `--diff-base` に渡す:
+When regenerating (for a PR review or periodic update), pass the previous output HTML as `--diff-base`:
 
 ```bash
-node <skill>/scripts/build.js --data <jsonディレクトリ> --out flow-v2.html --repo <ルート> --diff-base flow-v1.html
+node <skill>/scripts/build.js --data <json-dir> --out flow-v2.html --repo <repo-root> --diff-base flow-v1.html
 ```
 
-追加/変更ノードに NEW/変更 バッジ、フロー一覧に「前回からの変更点」ボタン（追加された経路が光り、削除・変更は注記に列挙）、ヘッダに前回比が付く。変更が無ければ何も足さず「変更なし」とだけ報告する。「この変更で何の経路が変わったか」を10秒で見せられるので、再生成時は必ず付ける。
+Added/changed nodes get a NEW/CHANGED badge, the flow list gets a "changes since last time" button (added paths light up; deletions and changes are listed in the notes), and the header shows a diff against the previous version. If nothing changed, it adds nothing and simply reports "no changes." This lets you show "what paths changed because of this" in 10 seconds, so always include it when regenerating.
 
-出力されるレポートで見るところ:
+What to check in the generated report:
 
-- `DANGLING` が0であること（参照切れが残っていると経路が途切れる）
-- `shared ids` が十分あること。これが少ないと層をまたいで繋がっていない
-- `no-ref` が0であること
-- `merged` の数が audit【5】の指摘と合っていること
+- `DANGLING` is 0 (a leftover dangling reference breaks the path)
+- `shared ids` is high enough — too few means layers aren't actually connected
+- `no-ref` is 0
+- the `merged` count matches what audit item [5] flagged
 
-続いて中身を読んで確かめます。
+Then read through the content to confirm it.
 
 ```bash
-node <skill>/scripts/inspect.js --html <出力.html> --list           # フロー一覧
-node <skill>/scripts/inspect.js --html <出力.html> --flow <flowId>  # 手順を順に表示（断線も検出）
-node <skill>/scripts/inspect.js --html <出力.html> --node <nodeId>  # ノードの前後と、通る操作
+node <skill>/scripts/inspect.js --html <output.html> --list           # flow list
+node <skill>/scripts/inspect.js --html <output.html> --flow <flowId>  # display the steps in order (also detects breaks)
+node <skill>/scripts/inspect.js --html <output.html> --node <nodeId>  # what's before/after the node, and which operations pass through it
 ```
 
-`--flow` は「その手順の起点が、それ以前の手順に一度も出てこない」箇所を**断線**として報告します。断線は「入口のエッジを誰も書かなかった」サインなので、patches.js で足します。
+`--flow` reports any point where "this step's origin never appeared in any earlier step" as a **break**. A break is a sign that "nobody wrote the entry edge," so add it via patches.js.
 
-最後にブラウザで開いて、代表的な操作を3つほど再生してください。可能なら全フローを機械的にクリックして、手順生成とハイライトが壊れないかを確認します（実例ではこれで105本すべてを検査しました）。
+Finally, open it in a browser and replay a handful of representative operations. If possible, mechanically click through every flow to confirm step generation and highlighting don't break (in one real run, this checked all 105 flows).
 
 ---
 
-## 事象フローモード（対象がコードベースでない場合）
+## Event-Flow Mode (When the Subject Isn't a Codebase)
 
-業務手順・事故対応・災害対応・製造工程・歴史的経緯など、コードの無い対象でも同じテンプレートで作る。上の 1〜5 を次の読み替えで実行する。**決めごとをその場で発明しない。この節のとおりにする。**
+Build with the same template even for subjects with no code — business procedures, incident response, disaster response, manufacturing processes, historical timelines. Run steps 1-5 above with the substitutions below. **Don't improvise conventions on the spot — follow this section exactly.**
 
-| コード対象 | 事象フロー対象 |
+| Code subject | Event-flow subject |
 |---|---|
-| レーン = 技術レイヤ | レーン = 主体（人・役割・組織・場所・記録・外部機関）。5〜9個 |
-| ノード = 関数・画面・テーブル | ノード = 出来事・行動・判断・記録。1ノード = 1出来事 |
-| フロー（ボタン）= ユーザー操作 | フロー = シナリオ（通常の経過 / 条件つきの経過 / 異常時の経過） |
-| 抽出元 = 実コード | 抽出元 = マニュアル・規程・報告書・ヒアリング・ユーザーの説明 |
-| 敵対的検証 = 実コード行と突合せ | 出典文書と突合せ、または当事者・有識者レビュー |
+| Lane = technical layer | Lane = actor (person, role, organization, location, record, external body). 5-9 of them |
+| Node = function, screen, table | Node = event, action, decision, record. 1 node = 1 event |
+| Flow (button) = user operation | Flow = scenario (normal course / conditional course / abnormal course) |
+| Extraction source = actual code | Extraction source = manuals, regulations, reports, interviews, the user's account |
+| Adversarial verification = cross-check against source lines | Cross-check against source documents, or review by parties involved / subject-matter experts |
 
-### ID・ハブ・ref
+### IDs, Hubs, and refs
 
-- ID 規約は同じ `<レーン接頭辞>.<場面>.<出来事>`（小文字ASCII）。接頭辞は主体レーンに対応させる
-- 複数シナリオが必ず通る出来事（連絡・記録・引き渡し・承認など）をハブIDとして先に実名列挙して配るのも同じ
-- **ref は出典に読み替える**。実在ファイルがある（リポジトリ内の規程・議事録など）なら `パス:行番号` を維持し `audit.js --repo` も使う。無いなら `文書名#条項` / `ヒアリング:相手` / `報道:媒体 日付` のいずれかの形式に**全ノードで統一**する。この場合 `--repo` は渡さない（【6】は対象外になるだけで他の監査は全て機能する）。出典が本当に無い推測ノードは detail に「推定」と明記する
-- 出典 ref は複数の出来事で共有されがちなので、監査【1】（同じ ref・同じレーン）は事象モードでは弱いシグナルになる。同一の出来事かどうかは label と時点で判断し、機械的に畳まない
+- Same ID convention: `<lane-prefix>.<scene>.<event>` (lowercase ASCII). Map the prefix to the actor lane.
+- Same as before: list the actual names of events that multiple scenarios necessarily pass through (notification, recording, handoff, approval, etc.) as hub IDs up front.
+- **Read "ref" as "source citation."** If an actual file exists (regulations, meeting minutes in a repo, etc.), keep `path:line` and use `audit.js --repo` too. If not, **standardize every node** on one of: `doc-name#section`, `interview:person`, or `press:outlet date`. In that case, don't pass `--repo` (item [6] just gets skipped; every other audit still works). For nodes that are genuinely speculative with no source, mark "inferred" in the detail field.
+- Source citations tend to get shared across multiple events, so audit item [1] (same ref, same lane) is a weak signal in event mode. Judge whether it's really the same event by its label and timing, not by mechanically collapsing matches.
 
 ### kind
 
-省略してよい（既定 call）。使うなら次だけ: 連絡・伝達 = `call`、記録・書類 = `db`、時間経過・待機 = `timer`、やり直し = `retry`、失敗 = `error`。`http` / `mqtt` / `storage` / `push` / `email` は実在するシステムを指すときのみ。電話連絡を `mqtt` にするような意味転用はしない。
+Fine to omit (defaults to `call`). If you use it, stick to these: contact/notification = `call`, record/document = `db`, elapsed time/wait = `timer`, redo = `retry`, failure = `error`. `http` / `mqtt` / `storage` / `push` / `email` only when they refer to an actual system — don't repurpose them, e.g. don't call a phone call `mqtt`.
 
-### レーンの差し替え（meta.json に書く。テンプレートは編集しない）
+### Swapping Out Lanes (write it in meta.json — don't edit the template)
 
-データディレクトリの `meta.json` に `lanes` を書けば、build.js がレーンを総入れ替えする。上から「起点になる主体 → 対応する主体 → 記録 → 外部」の順に並べると読みやすい。
+Write `lanes` in the data directory's `meta.json` and build.js replaces the lanes wholesale. Ordering them top to bottom as "the actor where it originates → the actor who responds → records → external" reads best.
 
 ```jsonc
 {
-  "title": "◯◯対応の事象フロー",
-  "flowWord": "事象",
+  "title": "◯◯ Response Event Flow",
+  "flowWord": "Event",
   "lanes": [
-    { "key": "victim", "label": "当事者" },
-    { "key": "staff",  "label": "現場職員" },
-    { "key": "lead",   "label": "管理者・判断" },
-    { "key": "record", "label": "記録・書類" },
-    { "key": "comm",   "label": "連絡・通報" },
-    { "key": "ext",    "label": "外部機関" }
+    { "key": "victim", "label": "Affected party" },
+    { "key": "staff",  "label": "Field staff" },
+    { "key": "lead",   "label": "Manager / decision-maker" },
+    { "key": "record", "label": "Records / documents" },
+    { "key": "comm",   "label": "Contact / notification" },
+    { "key": "ext",    "label": "External body" }
   ]
 }
 ```
 
-- `key` は ID の接頭辞・CSS変数名になる（英小文字始まり、英数字と `-` `_` のみ。不正なキーはビルド時に警告して除外される）
-- `color` は省略してよい（内蔵11色パレットから自動割当）。指定するなら `"color": "#5b8cff"`
-- `flowWord: "事象"` にすると、UI内の「操作」（件数表示・検索・一覧・逆引き見出し）が「事象」に置き換わる
+- `key` becomes the ID prefix and the CSS variable name (must start with a lowercase English letter, only alphanumerics plus `-`/`_`; invalid keys get warned about and excluded at build time)
+- `color` is optional (auto-assigned from the built-in 11-color palette). If you specify one: `"color": "#5b8cff"`
+- Setting `flowWord: "事象"` replaces "Operation" throughout the UI (count display, search, list, reverse-lookup headings) with "Event"
 
-### 規模
+### Scale
 
-単一テーマ（シナリオ10本以下）なら領域分割・並列抽出・merge.js を省略し、1エージェント・1JSONで書く。それ以上（事象の種類が複数・シナリオ20本超）なら「事象の種別 × 主体群」で領域を切り、コード対象と同じ並列手順に乗せる。
+For a single theme (10 or fewer scenarios), skip area splitting, parallel extraction, and merge.js — write it with one agent and one JSON file. Beyond that (multiple event types, 20+ scenarios), cut areas along "event type × actor group" and run the same parallel process used for code subjects.
 
-## マニュアル・手順書を対象にする場合（事象フローモードの一種）
+## When the Subject Is a Manual or Procedure Guide (a Variant of Event-Flow Mode)
 
-**この形式が最も効く対象のひとつ。** 300ページのマニュアルは誰も通読しない。「Wi-Fiが繋がらない」を押すとその対処だけが順番に光り、任意の手順から「ここを通る症状」を逆引きできる形にすると、索引より速く辿れる。
+**This is one of the subjects this format works best for.** Nobody reads a 300-page manual cover to cover. Set it up so pressing "Wi-Fi won't connect" lights up only that fix, step by step, and any step can look up "which symptoms pass through here" in reverse — that's faster to navigate than an index.
 
-事象フローモードの規約に加えて、次を守る。
+On top of the event-flow-mode conventions, also follow these:
 
-- **ref はマニュアルの章節番号をそのまま使う**（`取扱説明書#3.2`）。元々番号が振ってあるので、コードの `ファイル:行番号` に相当するものが最初から存在する
-- **「〜の場合のみ」は `branch: "alt"`、警告・禁止事項は `branch: "error"` か notes**
-- **トラブルシューティングは分岐が主役**。1シナリオが木構造になるので、症状ごとにフローを分ける（「〜しない」「〜が遅い」）
-- **フロー化するとマニュアルの欠落が露出する**（片側しか書かれていない分岐、前提条件が別章にしかない手順、同じ操作の食い違った説明）。見つけたものは notes に残す。これは副産物ではなく**マニュアル品質監査としての主目的**にしてよい
+- **Use the manual's own section numbers as the ref** (`User Guide#3.2`). Since manuals are already numbered, the equivalent of a code `file:line` already exists out of the box.
+- **"Only if X" gets `branch: "alt"`; warnings and prohibitions get `branch: "error"` or go in notes**
+- **In troubleshooting, branching is the main event.** A single scenario becomes a tree, so split flows by symptom ("X doesn't work," "X is slow").
+- **Turning it into a flow exposes gaps in the manual** — branches where only one side is documented, steps whose prerequisites live only in a different chapter, conflicting descriptions of the same operation. Log whatever you find in notes. This isn't a side effect — it's fine to treat it as **the primary goal, a manual quality audit in its own right**.
 
-## 概念マップモード（対象が概念・知識体系の場合）
+## Concept-Map Mode (When the Subject Is a Body of Concepts or Knowledge)
 
-`meta.mode: "concept"`。事象フローモードの拡張ではなく**別モード**として扱う（レーン・ノード・ref・演出の意味がすべて変わるため）。
+`meta.mode: "concept"`. Treat this as a **separate mode**, not an extension of event-flow mode — the meaning of lanes, nodes, refs, and the visual staging all change.
 
-1. **レーンは主体ではなく抽象度で切る**（例: `pre` 前提 / `core` 基本 / `impl` 実装手段 / `ops` 運用）。**横断カテゴリを1レーンだけ持ってよい**（`trap` 落とし穴など）。上から下に読むと理解の順になるよう並べる
-2. **flow は時間の流れではなく「説明の筋道」。** `flowWord` は `"筋道"` か `"問い"` にし、title は問いの文にする（「暴走を防ぐには？」）。trigger には「この筋道を辿る場面」を書く
-3. **`kind` は既定のまま使い、関係の種類はエッジの label に日本語で書く**（前提である / 対策になる / 帰結として起きる / 反例）。`branch` は main＝順路 / alt＝枝道 / error＝落とし穴への転落 に限定する
-4. **循環を許す。同じ概念に戻る steps は誤りではない。** `inspect.js` の断線指摘は概念マップでは無視してよい（起点が1つに定まらないのが正常）
-5. **`edges` を `steps` とは別に必ず書く。** 概念間の静的な関係を書かないと全体マップが無構造になる（実測でノード20に対しエッジ3本しか無く、点の集合になった）
-6. **ノードは20〜40で打ち止め、label は断定文にする**（「出力は毎回ゆれる」）。ref は出典種別の接頭辞で統一する。同じ ref が多数のノードで共有されるのは正常なので、audit【1】の指摘は無視する
+1. **Cut lanes by abstraction level, not by actor** (e.g., `pre` premises / `core` fundamentals / `impl` implementation means / `ops` operations). **You may have one cross-cutting lane** (e.g., `trap` for pitfalls). Order them so reading top to bottom follows the order of understanding.
+2. **A flow is not a timeline — it's a "line of reasoning."** Set `flowWord` to `"Thread"` or `"Question"`, and phrase the title as a question ("How do you prevent runaway behavior?"). In trigger, write "the situation where you'd follow this thread."
+3. **Leave `kind` at its default and write the relationship type in the edge's label instead** (is a premise for / serves as a countermeasure to / results in / is a counterexample to). Restrict `branch` to: main = the main thread / alt = a side branch / error = falling into a pitfall.
+4. **Allow cycles.** Steps that loop back to the same concept aren't a mistake. It's fine to ignore `inspect.js`'s break warnings in concept maps — not having a single fixed origin is normal here.
+5. **Always write `edges` separately from `steps`.** Without the static relationships between concepts, the full map has no structure — one real case had 20 nodes and only 3 edges, and it collapsed into a pile of dots.
+6. **Cap it at 20-40 nodes, and phrase labels as declarative statements** ("Output varies run to run"). Standardize refs on a source-type prefix. The same ref being shared across many nodes is normal here, so ignore audit item [1]'s flags.
 
-**向かないもの**: 包含・分類・対比のような順序を持たない関係は矢印にできず、丸ごと落ちる。マインドマップ（放射状・順序なし）が欲しいならこの形式ではない。
+**Poor fit**: order-less relationships like containment, classification, or contrast can't become arrows and get dropped entirely. If what you want is a mind map (radial, unordered), this isn't the format for it.
 
-## 言語・構成別の注意点
+## Notes by Language and Codebase Structure
 
-実在OSS 4件（Go / Rust / Java マイクロサービス / TypeScript モノレポ）で実際に抽出して確かめた前提条件が `references/language-notes.md` にある。**担当環境の節だけを抽出エージェントに渡す。** 全環境「条件付きで使える」で、条件を満たさないと具体的にどこが壊れるかが書いてある。
+`references/language-notes.md` has the preconditions we verified by actually extracting from four real open-source projects (Go / Rust / Java microservices / TypeScript monorepo). **Hand extraction agents only the section for their assigned environment.** Every environment is "usable, with conditions" — the file spells out exactly what breaks if those conditions aren't met.
 
-特に、既定7レーンは**どの環境でも合わず、しかもズレる方向が環境ごとに逆**（Java はデプロイ単位、Rust はガードとモデル、TS はサーバ/ブラウザ境界が要る）。着手前にレーン設計を決めること。
+In particular, the default 7 lanes **don't fit any of these environments, and they're off in opposite directions depending on the environment** — Java needs deployment-unit lanes, Rust needs guard-and-model lanes, TS needs a server/browser boundary. Decide the lane design before you start.
 
-## この形式で表現できないこと
+## What This Format Can't Express
 
-指示の追記では解決しない構造的な制約。**図を渡す相手に説明が必要な場合がある。**
+Structural limitations that no amount of extra instructions will fix. **Sometimes you need to explain these to whoever receives the diagram.**
 
-1. **`steps` は全順序の線形列**。並列度（N ワーカー同時・`Promise.all`）、順不同（`select!` の複数の腕）、完了順の逆転（投げっぱなし）、繰り返し回数と間隔は表現できない。しかも「順番に光る」演出自体が時間順序を主張するので、notes の補足では打ち消せない。該当箇所は notes に明記する
-2. **「条件付きで存在するノード」の語彙が無い**（`@Profile("production")`、フィーチャフラグ、ビルド時分岐）。`branch: "alt"` は経路の分岐であってノードの条件付き存在ではない。detail に有効条件を書く
-3. **1フロー＝1起点**。常時接続への外部リクエスト合流、同一処理への複数プロトコル入口は構造的に断線になる。偽エッジで黙らせず、notes に合流元を実名で書く
-4. **レーンは1軸しか表せない**（技術層 / デプロイ単位 / 実行プロセス / 実行頻度は独立した4軸）。どれを選んでも残り3つは図から消える
-5. **ref 検証100%は「実体が正しい」を意味しない**。外部サービス・生成コード・依存ライブラリのクラスには代用 ref を使うしかなく、代用 ref は実在するので検証を通る。代用したら detail に明記する
+1. **`steps` is a fully-ordered linear sequence.** It can't express parallelism (N workers at once, `Promise.all`), unordered arms (`select!`'s multiple branches), out-of-order completion (fire-and-forget), or repeat counts and intervals. And since the "lights up step by step" staging itself asserts a time order, a note can't undo that impression — flag the affected spots in notes explicitly.
+2. **There's no vocabulary for "a node that exists only under certain conditions"** (`@Profile("production")`, feature flags, build-time branching). `branch: "alt"` is a branch in the path, not conditional existence of a node — write the activating condition in detail instead.
+3. **One flow = one origin.** External requests merging into an always-on connection, or multiple protocol entry points into the same process, are structurally breaks. Don't paper over it with a fake edge — name the merging source explicitly in notes.
+4. **Lanes can only express one axis** (technical layer / deployment unit / execution process / execution frequency are four independent axes). Whichever you pick, the other three vanish from the diagram.
+5. **100% ref verification doesn't mean "the content is correct."** For external services, generated code, and classes from dependency libraries, you have no choice but to use a stand-in ref, and since the stand-in ref genuinely exists, it passes verification anyway. Whenever you use a stand-in, say so explicitly in detail.
 
-## テンプレートについて
+## About the Template
 
-`assets/template.html` がレンダラです。`/*__FLOW_DATA__*/{nodes:[],edges:[],flows:[]}` の位置に JSON が差し込まれます。**触る必要はありません。** 題名・レーン・カテゴリ順・用語は `meta.json` で設定します（上の「5. ビルドして目視する」参照）。テンプレートを直接編集するのは、UI文字列を英語にする／ノードの大きさ・間隔（`NW / NH / COLW / ROWH`）を変える場合だけです。
+`assets/template.html` is the renderer. JSON gets inserted at the `/*__FLOW_DATA__*/{nodes:[],edges:[],flows:[]}` marker. **You shouldn't need to touch it.** Title, lanes, category order, and terminology are all configured through `meta.json` (see "5. Build and Eyeball It" above). The only reasons to edit the template directly are switching UI strings to English, or changing node size/spacing (`NW` / `NH` / `COLW` / `ROWH`).
 
-生成されたHTMLには、初回オープン時の操作ヒント（1回だけ表示）、`#flow=<flowId>` のディープリンク（特定の経路を選択した状態のURLを共有できる）、凡例のスタンプ（生成日・commit・ref検証数）とクレジットが入ります。
+The generated HTML includes a first-open usage hint (shown once), `#flow=<flowId>` deep links (so you can share a URL with a specific path already selected), a legend stamp (generation date, commit, ref verification count), and a credit line.
 
-レンダラは2つの表示を持ちます。**経路ビュー**（既定）は選んだ操作の部分グラフだけを階層レイアウトで描き、**全体マップ**は全ノードをレーンごとに格子詰めして経路を重ねます。全体マップを階層レイアウトで描こうとすると、最長経路が100段を超えて横幅が2万px以上になり実用に耐えません（実例で踏みました）。この2モードの使い分けは意図的なものなので、片方だけにしないでください。
+The renderer has two views. **Route view** (the default) draws only the selected operation's subgraph in a hierarchical layout; the **full map** packs every node into a grid by lane and overlays the paths on top. Trying to draw the full map in a hierarchical layout blows the longest path past 100 tiers and the width past 20,000px, which is unusable — we hit this in practice. The split between these two views is deliberate, so don't ship only one of them.
 
-## よくある失敗
+## Common Failures
 
-`references/pitfalls.md` に、実例で実際に踏んだ8つの失敗と対処を書いてあります。**2周目に入る前に一度読んでください。** 特に、ID分裂・レイヤ別重複フロー・全体マップの横幅爆発・手順の並び順の4つは、知らないと必ず踏みます。
+`references/pitfalls.md` covers 8 failures we actually hit in real runs, along with the fix for each. **Read it once before starting your second pass.** Four of them in particular — ID splits, duplicate flows written per layer, full-map width blowup, and step ordering — you will hit if you don't know about them going in.
 
-## 参照ファイル
+## Reference Files
 
-- `references/extraction-prompt.md` — 抽出エージェントに渡すプロンプトのひな形（ID規約・スキーマ・出力指示つき）
-- `references/data-schema.md` — nodes / edges / flows の完全なスキーマ、レーン一覧、branch と kind の意味
-- `references/pitfalls.md` — 実例で踏んだ失敗と対処
-- `../../demo/` — 生成済みデモ3枚と、その入力データ・対象サンプルアプリの実物
+- `references/extraction-prompt.md` — the prompt template to hand to extraction agents (includes the ID convention, schema, and output instructions)
+- `references/data-schema.md` — the complete schema for nodes / edges / flows, the lane list, and what `branch` and `kind` mean
+- `references/pitfalls.md` — failures we actually hit in real runs, and their fixes
+- `../../demo/` — three pre-built demos, plus their input data and the actual sample app they were built from

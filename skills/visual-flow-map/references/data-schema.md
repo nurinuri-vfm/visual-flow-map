@@ -1,8 +1,10 @@
-# データスキーマ
+# Data Schema
 
-抽出エージェントが書き、`build.js` が読み、テンプレートの `const DATA` に入るまで、同じ形を保つ。
+[日本語版 → data-schema.ja.md](data-schema.ja.md)
 
-## 全体
+This shape stays consistent all the way from when extraction agents write it, through `build.js` reading it, to where it lands in the template's `const DATA`.
+
+## Overview
 
 ```jsonc
 {
@@ -18,90 +20,90 @@
 
 ## nodes
 
-| フィールド | 必須 | 説明 |
+| Field | Required | Description |
 |---|---|---|
-| `id` | ● | 一意。小文字ASCIIのドット区切り。接頭辞は lane に対応させる |
-| `lane` | ● | 下の一覧から。未知の値は `svc` に丸められる |
-| `label` | ● | 図の枠に出る短い名詞句。22文字以内。長いと2行で切られる |
-| `detail` | | ホバーと手順リストに出る説明。120文字以内。条件・失敗時の挙動を書く |
-| `ref` | ● | `リポジトリ相対パス:行番号`。監査の実在検査と重複判定に使う。事象フローモードでは出典（`文書名#条項` / `ヒアリング:相手` 等、SKILL.md の読み替え表参照）に統一する |
+| `id` | ● | Unique. Lowercase ASCII, dot-separated. The prefix should match the `lane`. |
+| `lane` | ● | One of the values from the list below. Unknown values are coerced to `svc`. |
+| `label` | ● | The short noun phrase shown in the node box. 22 characters or fewer — longer text wraps to two lines and gets clipped. |
+| `detail` | | The description shown on hover and in the step list. 120 characters or fewer. Describe conditions and failure behavior. |
+| `ref` | ● | `repo-relative-path:line-number`. Used by the audit's existence check and for deduplication. In event-flow mode, use a source citation instead (e.g. `document-name#clause` / `interview:person`, etc. — see the terminology-mapping table in SKILL.md). |
 
-同じ `id` が複数ファイルに現れたら build.js がマージする。そのとき **detail は長いほう、label は短いほう**（枠に収まる）を採り、ref は先に埋まったほうを残す。
+If the same `id` appears in multiple files, `build.js` merges them. When it does, it keeps **the longer `detail` and the shorter `label`** (so it still fits in the box), and keeps whichever `ref` was filled in first.
 
 ## edges
 
-| フィールド | 必須 | 説明 |
+| Field | Required | Description |
 |---|---|---|
-| `from` / `to` | ● | ノードID。存在しないIDを指すと参照切れとして落とされる |
-| `label` | | 経路上に出る短い説明。現在のステップのときだけ表示される |
-| `kind` | | 線の意味。`call` / `http` / `mqtt` / `db` / `storage` / `push` / `email` / `timer` / `realtime` / `retry` / `error` |
-| `evidence` | | 経路の根拠。`direct`（呼び出し行がソースにある）/ `inferred`（型・DI・設定文字列から導いた）/ `framework`（フレームワークが呼ぶため該当行が存在しない）/ `unverified`（呼び出し先を特定できず）。**ノードの ref は検証できるがエッジは検証できない**ため、代わりに根拠の強さを申告する。同じ経路に複数の申告があれば弱いほうが残る。`steps[]` にも同じフィールドを書ける |
+| `from` / `to` | ● | Node IDs. An edge pointing at a nonexistent ID is dropped as a broken reference. |
+| `label` | | A short label shown on the route. Only displayed for the current step. |
+| `kind` | | What the line represents: `call` / `http` / `mqtt` / `db` / `storage` / `push` / `email` / `timer` / `realtime` / `retry` / `error` |
+| `evidence` | | The basis of an edge (evidence). `direct` (the call site exists in the source) / `inferred` (derived from types, DI, or a config string) / `framework` (framework-implicit — invoked by the framework, so no matching line exists) / `unverified` (the call target couldn't be identified). **Node `ref`s can be verified, but edges can't**, so this field declares the strength of the evidence instead. If the same route carries multiple declarations, the weaker one wins. The same field can also be set on `steps[]`. |
 
-`edges` は「システムに存在する関係」の集合、`flows[].steps` は「ある操作が実際に辿る順序」です。両方に同じホップが出てよく、build.js が和集合を取ります。**steps にしか無いホップは自動で edges に足される**ので、抽出時は steps を優先して埋めれば足ります。
+`edges` is the set of "relationships that exist in the system," while `flows[].steps` is "the order a given operation actually follows." The same hop can legitimately appear in both, and `build.js` takes the union. **Any hop that exists only in `steps` is automatically added to `edges`**, so during extraction it's enough to prioritize filling in `steps`.
 
 ## flows
 
-| フィールド | 必須 | 説明 |
+| Field | Required | Description |
 |---|---|---|
-| `id` | ● | 英小文字とハイフン。ボタンの識別子 |
-| `title` | ● | ボタンに出る文言。ユーザーの言葉で書く（「学習を始めるを押す」であって「trainSlot を呼ぶ」ではない） |
-| `category` | ● | ボタンのグループ。案件ごとに8〜10個決めて全エージェントに配る |
-| `trigger` | | 「操作: …」として右パネル上部に出る。どこを押すのか、または自動なら何が引き金か |
-| `steps` | ● | エッジの順序付き列。1手ずつ光る |
-| `notes` | | 右パネル下部の注意書き。タイムアウト値・retained の挙動・失敗時に画面に何が出るか |
+| `id` | ● | Lowercase letters and hyphens. The identifier for the operation/button. |
+| `title` | ● | The text shown on the button. Write it in the user's words — e.g. "Press Start Training," not "Call trainSlot." |
+| `category` | ● | The button's group. Decide on 8-10 per project and hand them out to all agents. |
+| `trigger` | | Shown at the top of the right panel as "Operation: …". What gets pressed, or — if automatic — what triggers it. |
+| `steps` | ● | An ordered list of edges. They light up one step at a time. |
+| `notes` | | Notes shown at the bottom of the right panel: timeout values, `retained` behavior, what appears on screen on failure. |
 
 ### steps[].branch
 
-| 値 | 色 | 意味 |
+| Value | Color | Meaning |
 |---|---|---|
-| `main` | シアン | 正常系。何も指定しなければこれ |
-| `alt` | アンバー | 条件によって通る別ルート（オフライン時、キャッシュヒット時など） |
-| `error` | レッド（破線） | 失敗・リトライ・タイムアウト |
+| `main` | Cyan | The happy path. Default if nothing else is specified. |
+| `alt` | Amber | An alternate route taken under certain conditions (e.g. offline, cache hit). |
+| `error` | Red (dashed) | Failure, retry, timeout. |
 
-統合フローでは build.js が **main → alt → error** の順に並べ替えます。これは「正常系を最後まで見せてから例外を見せる」ほうが読みやすいからで、同時に「入口のエッジが書かれなかった例外系の枝が深さ0になって先頭に来てしまう」問題も回避できます。
+In a merged flow, `build.js` reorders steps as **main → alt → error**. This is because it's easier to read when the happy path is shown in full before the exceptions, and it also sidesteps the problem where an exception branch whose entry edge was never written ends up at depth 0 and gets sorted to the front.
 
-## lane 一覧（既定）
+## Lane List (Default)
 
-| lane | 表示名 | 何を置くか |
+| lane | Display Name | What Goes Here |
 |---|---|---|
-| `ui` | 画面 / ユーザー操作 | ボタン、画面、タップ |
-| `app` | クライアント内部 | hook、状態管理、APIクライアント、画面コンポーネント |
-| `api` | API ハンドラ | HTTP境界（`net.http.*`）とハンドラ（`api.*`） |
-| `svc` | サーバ内部処理 | サービス層、認証、バリデーション、通知組み立て |
-| `job` | 定期 / バックグラウンド処理 | cron、systemd timer、常駐ループ |
-| `db` | データベース | テーブル |
-| `store` | オブジェクトストレージ | バケット |
-| `mqtt` | メッセージング（キュー / トピック） | MQTT・AMQP・SQS などのトピック / キュー |
-| `device` | デバイス / エッジ | エッジ側のモジュール |
-| `hw` | ハードウェア | センサー・カメラなどの物理デバイス |
-| `ext` | 外部サービス | プッシュ、メール、決済など |
+| `ui` | Screen / User Action | Buttons, screens, taps |
+| `app` | Client Internals | Hooks, state management, API clients, screen components |
+| `api` | API Handlers | The HTTP boundary (`net.http.*`) and handlers (`api.*`) |
+| `svc` | Server Internals | Service layer, auth, validation, notification assembly |
+| `job` | Scheduled / Background Jobs | cron, systemd timers, long-running loops |
+| `db` | Database | Tables |
+| `store` | Object Storage | Buckets |
+| `mqtt` | Messaging (Queue / Topic) | Topics/queues such as MQTT, AMQP, SQS |
+| `device` | Device / Edge | Edge-side modules |
+| `hw` | Hardware | Physical devices such as sensors and cameras |
+| `ext` | External Services | Push notifications, email, payments, etc. |
 
-レーンは上から下へこの順で描かれます。案件に合わせて増減する場合は、データディレクトリの `meta.json` に `lanes` を書きます（テンプレートは編集しない）。事象フローモード（コードの無い対象）ではこの一覧を使わず、主体（人・組織・記録・外部機関）のレーンに総入れ替えします（SKILL.md「事象フローモード」参照）。
+Lanes are drawn top to bottom in this order. To add or remove lanes for a given project, write `lanes` in the data directory's `meta.json` (don't edit the template). Event-flow mode (for subjects with no code) doesn't use this list at all — it's replaced entirely with lanes for the actors involved (people, organizations, records, external bodies). See "Event-Flow Mode" in SKILL.md.
 
-## meta.json（任意）
+## meta.json (Optional)
 
-データディレクトリに置くと build.js が拾い、図の設定として埋め込む。
+Place this in the data directory and `build.js` picks it up, embedding it as the diagram's configuration.
 
-| フィールド | 説明 |
+| Field | Description |
 |---|---|
-| `title` | タブとヘッダの題名 |
-| `lanes` | `[{ key, label, color? }]`。書くとレーン総入れ替え。key は英小文字始まり・英数字/-/_のみ。color 省略時は内蔵パレットから自動割当 |
-| `catOrder` | カテゴリの表示順の配列 |
-| `mode` | `"code"`（既定）/ `"event"` / `"concept"`。**「順番に光る」が何の順序を指すか**が変わるため、code 以外では図の副題に明示される |
-| `flowWord` | UI上の呼び名（既定「操作」。事象フローでは「事象」、概念マップでは「筋道」） |
-| `lang` | `"en"` でUIの文字列（ボタン・凡例・ヘルプ・バッジ）が英語になる。ノード・フローの本文は書き手の言語のまま |
-| `credit` | `false` でフッタークレジット非表示 |
-| `creditUrl` | クレジットのリンク先 |
+| `title` | The title shown in the tab and header. |
+| `lanes` | `[{ key, label, color? }]`. Setting this replaces the lane list entirely. `key` must start with a lowercase letter and contain only alphanumerics, `-`, or `_`. If `color` is omitted, one is auto-assigned from the built-in palette. |
+| `catOrder` | An array specifying the display order of categories. |
+| `mode` | `"code"` (default) / `"event"` / `"concept"`. Since this changes **what order "lights up in sequence" refers to**, any mode other than `code` is called out explicitly in the diagram's subtitle. |
+| `flowWord` | The term used in the UI (default 操作/"operation"; 事象/"event" in event-flow mode, 筋道/"path" in concept-map mode). |
+| `lang` | `"en"` switches the UI strings (buttons, legend, help, badges) to English. Node and flow content stays in whatever language the author wrote it in. |
+| `credit` | `false` hides the footer credit. |
+| `creditUrl` | The link target for the credit. |
 
-ビルド時に `--repo` を渡すと、`meta.stamp` が自動で追加され凡例に表示される。内容は生成日・commit・**ノード参照の実在数**（`refScope: "node"`。経路は検査対象外であることを明示するため）・`evidence` の内訳。
+Passing `--repo` at build time automatically adds `meta.stamp`, which is shown in the legend. It includes the generation date, the commit, **the count of verified node refs** (`refScope: "node"`, to make explicit that routes are excluded from this check), and a breakdown of `evidence`.
 
-`rt.*`（リアルタイム購読）と `net.http.*` には専用レーンがありません。実例では `rt.*` を `app`、`net.http.*` を `api` に入れました。専用レーンが欲しければ `LANES` に足します。
+`rt.*` (realtime subscriptions) and `net.http.*` don't have dedicated lanes. In practice, `rt.*` has been placed under `app` and `net.http.*` under `api`. Add a dedicated lane to `LANES` if you need one.
 
-## 命名の粒度をどう決めるか
+## How to Decide Naming Granularity
 
-**1ノード＝1関数** が基本です。ただし例外が2つあります。
+The basic rule is **one node = one function**. There are two exceptions, though.
 
-- **画面やテーブルのような「もの」** は関数ではないので、`ui.<画面>.<操作>` / `db.<テーブル>` のように実体で名前を付ける
-- **同じ関数でも呼ばれ方が本質的に違うなら分ける**か迷ったら、分けないほうが良い。ノードが増えるほど図は読みにくくなり、逆引きの価値も薄れる
+- **"Things" like screens or tables** aren't functions, so name them after the entity instead: `ui.<screen>.<action>` / `db.<table>`
+- If you're torn over **whether to split a node because the same function is invoked in essentially different ways**, don't split it. More nodes make the diagram harder to read, and dilute the value of reverse lookup.
 
-逆に**分けなければいけない**のは、`uploader.upload_file` と `uploader.upload_wav` のように、実際に別の関数で別の経路を通る場合です。ラベルが似ていても、ref が違うなら別ノードのままにします。
+Conversely, **you must split nodes** when — as with `uploader.upload_file` and `uploader.upload_wav` — they're actually different functions taking different routes. Even if the labels look similar, keep them as separate nodes when the `ref`s differ.

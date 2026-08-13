@@ -1,114 +1,116 @@
-# 実際に踏んだ失敗と対処
+# Failures We Actually Hit, and How We Fixed Them
 
-すべて実案件（モバイル + クラウド + IoTデバイスの3層、105操作 / 638ノード）で本当に起きたもの。
-上から順に、被害が大きい順に並べてある。
+[日本語版 → pitfalls.ja.md](pitfalls.ja.md)
 
----
-
-## 1. ID分裂 — 層をまたぐ経路が2本のレールに割れる
-
-**症状**: 統合したのに「アプリ→クラウド→デバイス」が繋がらない。図の上で経路が途中で消える。
-
-**原因**: エージェントAが `dev.main.on_cmd`、エージェントBが `dev.main._on_cmd` と名付けた。同じ関数なのにノードが2つできて、Aが作った経路とBが作った経路が合流しない。実例では **同じ ref・同じレーンで別IDのノードが49組**あった。
-
-**対処**:
-- 抽出プロンプトで「関数名は実コードのとおり。private の先頭アンダースコアも省略しない」と明示する（これだけで大半が消える）
-- 層の境界になるノードは**ハブIDとして実名で列挙**し、そのまま使わせる
-- それでも残る分は `audit.js` の【1】で洗い出し、`aliases.js` に畳む
-
-**畳みすぎない**: 同じ行を参照していても別物のことがある。実例で意図的に残したもの:
-- `gcs.snapshots` と `gcs.samples` — 同じ定数定義行だが別バケット
-- `ipv4_http.get` と `ipv4_http.post` — 別関数
-- `ui.settings.logout` と `ui.settings.logout_confirm` — 確認ダイアログは別ステップ
-- 各画面の「引っ張って更新」 — 画面ごとに別物
-
-判断に迷ったら **ref とレーンが一致し、かつ正規化した関数名が一致するもの**だけ畳む。残したものは理由を aliases.js のコメントに残す。
+All of these happened for real, on an actual project (three layers — mobile, cloud, and IoT device — 105 operations / 638 nodes).
+They're listed roughly in order from most to least damaging.
 
 ---
 
-## 2. 同じ操作のボタンが3〜5個並ぶ
+## 1. ID Fragmentation — a Cross-Layer Route Splits into Two Parallel Rails
 
-**症状**: 「今すぐ撮影」のボタンが `capture-now` / `device-capture-now` / `capture-manual` / `manual-capture` / `api-capture` と5個できる。一目瞭然どころか選べない。
+**Symptom**: Even after merging, "app → cloud → device" doesn't connect. On the diagram, there's a break in the chain partway through the route.
 
-**原因**: 5人のエージェントが、それぞれ自分の層の視点で同じ操作を書いた。当然の帰結であって、エージェントのミスではない。
+**Cause**: Extraction agent A named it `dev.main.on_cmd`; extraction agent B named it `dev.main._on_cmd`. Same function, but two separate nodes got created, so the route agent A built and the route agent B built never converge. In the real case there were **49 pairs of nodes with the same ref and the same lane but different IDs**.
 
-**対処**: `merge.js` で統合する。実例では **190フロー → 105操作**になった。`audit.js` の【5】が候補を出す。
+**Fix**:
+- State explicitly in the extraction prompt: "Use function names exactly as they appear in the real code — don't drop the leading underscore on private names." (This alone kills most of the problem.)
+- For nodes that sit at a layer boundary, **enumerate them by their real name as hub IDs** and have every agent reuse them as-is.
+- Whatever still slips through gets caught by check [1] in `audit.js` and merged in `aliases.js`.
 
-統合すると元の並び順は意味を失うので、build.js が並べ替える。この並べ替えを入れないと、例外系の枝が手順の先頭に来て意味不明な図になる（→ 4番）。
+**Don't over-merge**: Two nodes that point at the same line aren't necessarily the same thing. Cases we deliberately kept separate:
+- `gcs.snapshots` and `gcs.samples` — same constant-definition line, but different buckets
+- `ipv4_http.get` and `ipv4_http.post` — different functions
+- `ui.settings.logout` and `ui.settings.logout_confirm` — the confirmation dialog is its own step
+- "pull to refresh" on each screen — a distinct thing per screen
 
----
-
-## 3. 全体マップの横幅が2万px を超える
-
-**症状**: 全ノードを階層レイアウト（Sugiyama法）で描いたら 28232 × 9426 px になった。ズームアウトすると文字が読めず、拡大すると全体が見えない。
-
-**原因**: 階層レイアウトの横幅は**最長経路の段数**で決まる。全フローの和集合を取ると、閉路を切った結果として100段を超える鎖ができる。
-
-**対処**: 表示を2モードに分ける。
-- **経路ビュー（既定）**: 選んだ操作の部分グラフだけを階層レイアウトで描く。段数はせいぜい15〜25段に収まる
-- **全体マップ**: 全ノードを**レーンごとに格子詰め**し、選んだ経路を重ねて他を減光する。幅はノード数の平方根で効くので4000px程度に収まる
-
-`audit.js` の【7】が両方の推定サイズを出す。全体マップが4000pxを大きく超えるならノードの粒度が細かすぎる。
+When in doubt, only merge nodes where **both the ref and the lane match, and the normalized function name matches too**. For anything you keep separate, leave the reason in a comment in aliases.js.
 
 ---
 
-## 4. 手順の1番目が「タイムアウトで失敗したとき」になる
+## 2. The Same Operation Shows Up as 3 to 5 Different Buttons
 
-**症状**: 再生ボタンを押すと、いきなり例外処理から光り始める。本来の起点（ボタンを押す）が最後に出てくる。
+**Symptom**: The "capture now" button ends up as five separate entries: `capture-now` / `device-capture-now` / `capture-manual` / `manual-capture` / `api-capture`. Far from being obvious at a glance, you can't even tell which one to pick.
 
-**原因**: 統合フローを「起点からの距離」だけで並べたため。入口のエッジを誰も書かなかった例外系ノード（`rec_watchdog.should_expire` など）は入次数0になり、距離0＝先頭に来る。
+**Cause**: Five extraction agents each described the same operation from their own layer's point of view. This is the expected outcome, not an agent mistake.
 
-**対処**: `branch` を第1キー、距離を第2キーにする。`main → alt → error` の順に並べれば、入口が欠けた例外系の枝は自然に後ろへ行く。build.js に実装済み。
+**Fix**: Merge them with `merge.js`. In the real case this took **190 flows down to 105 operations**. Check [5] in `audit.js` surfaces the merge candidates.
 
-到達可能性でフィルタする案も試したが、**本当の起点ノード（「学習を始める」ボタン）が第1メンバーの起点と違う場合に、それが末尾に飛ぶ**という別の壊れ方をした。branch を優先するほうが安定する。
-
----
-
-## 5. 抽出エージェントが自信を持って間違える
-
-**症状**: もっともらしいが実在しない経路が図に載る。
-
-**実例**（3体の検証で見つかった critical/high だけで19件）:
-- **存在しないUIボタン**: 画面から実行できる操作として経路を描いていたが、クライアント側にその呼び出しは1件も無かった（実際はサーバ側の条件成立時の自動処理のみ）
-- **ディスパッチ先の取り違え**: 受信メッセージをすべて単一のコマンドハンドラに繋いでいたが、実際にそのハンドラが処理するのは一部だけで、残りの種別は別の購読処理が振り分けていた
-- **呼ばれていないスクリプト**: 「スクリプトAがBを起動する」という往復を描いていたが、実コードに呼び出しは1行も無く、Aは手動運用専用だった
-- **自己ループで終わるフロー**: 処理完了後の画面遷移が自分自身に戻っていた（実際は一覧画面への置き換え遷移）
-- **キューの取り違え**: 失敗時の退避先を名前の似た別テーブルと取り違えていた（別テーブル・別DB）
-- **notes の相互矛盾**: 同じ機能について、あるファイルは「後段への反映は無い」、別のファイルは「次回処理で反映される」と書いていた（後者が正しい）
-
-**対処**: 抽出とは**別のエージェント**に、**端から端までの鎖**を1本ずつ検証させる。プロンプトは `extraction-prompt.md` の末尾。修正は JSON 直書きではなく `patches.js` に根拠つきで書く。
+Once flows are merged, their original ordering stops meaning anything, so build.js re-sorts them. Skip this re-sort and the error-handling branches end up at the front of the steps, producing a nonsensical diagram (see #4 below).
 
 ---
 
-## 6. JSON本文を戻り値で受け取ってコンテキストが溢れる
+## 3. The Full Map Ends Up Over 20,000px Wide
 
-**症状**: 10領域ぶんの JSON（合計数百KB）がオーケストレータのコンテキストに流れ込む。
+**Symptom**: Laying out every node with a hierarchical (Sugiyama-style) layout produced a canvas 28,232 × 9,426 px. Zoomed out, the text is unreadable; zoomed in, you can't see the whole thing.
 
-**対処**: 各エージェントに **Write でファイルへ書かせ、戻り値は要約だけ**にする。オーケストレータは `audit.js` / `inspect.js` の出力だけを読めば判断できる。実例では抽出フェーズで270万トークンを消費したが、オーケストレータ側の消費はごくわずかに抑えられた。
+**Cause**: A hierarchical layout's width is driven by **the number of ranks in the longest route**. Taking the union of every flow, and then cutting cycles, produces a chain over 100 ranks deep.
 
----
+**Fix**: Split rendering into two modes.
+- **Route view (default)**: lay out only the subgraph for the selected operation hierarchically. That keeps the rank count to at most 15–25.
+- **Full map**: pack all nodes **into a grid, per lane**, overlay the selected route on top, and dim everything else. Width scales with the square root of the node count, so this stays around 4,000px.
 
-## 7. エッジのラベルを全部出すと読めない
-
-**症状**: 経路が光っても、ラベルが重なって団子になる。
-
-**対処**: 既定では**いま光っているステップのラベルだけ**を出す。全表示はトグルで任意にする。ラベルの内容は右パネルの手順リストにも出るので、図の上で全部読ませる必要はない。テンプレートに実装済み。
+Check [7] in `audit.js` reports the estimated size for both modes. If the full map comes out way past 4,000px, your nodes are too fine-grained.
 
 ---
 
-## 8. 長いフローの再生が終わらない
+## 4. Step One of the Sequence Turns Out to Be "When It Times Out and Fails"
 
-**症状**: 101手順 × 850ms = 86秒。誰も最後まで見ない。
+**Symptom**: Hit play, and the animation starts by lighting up the exception-handling path right away. The real starting point (pressing the button) shows up last.
 
-**対処**: 全体がおよそ28秒に収まるよう、1手の間隔を `max(170ms, min(選択値, 28000/手順数))` に自動調整する。テンプレートに実装済み。
+**Cause**: The merged flow was ordered purely by "distance from the start." Error-path nodes that nobody wired an incoming edge to (e.g. `rec_watchdog.should_expire`) end up with in-degree 0, which reads as distance 0 — i.e., first.
 
-それでも手順が60を超えるフローは、そもそも1操作としては大きすぎる可能性が高い。`audit.js` の【7】が該当フローを警告するので、分割（例:「学習を始める」と「学習が失敗したとき」を別ボタンにする）を検討する。
+**Fix**: Sort by `branch` as the primary key and distance as the secondary key. Ordering `main → alt → error` naturally pushes error branches with a missing entry edge to the back. Already implemented in build.js.
+
+We also tried filtering by reachability, but that broke in a different way: **when the real starting node (the "start training" button) differs from the starting point of the flow's first merge member, it gets bumped all the way to the end.** Prioritizing `branch` is the more stable approach.
 
 ---
 
-## おまけ: 見落としやすい検査
+## 5. The Extraction Agent Gets It Confidently Wrong
 
-- **孤立ノード**: どのエッジにも出てこないノードは build.js が自動で落とす。落ちたことに気づかないと「あるはずの処理が無い」ことになるので、レポートの `ORPHANS` は必ず読む
-- **`shared ids` の数**: 複数ファイルに登場したIDの数。これが少ないなら、層をまたいで繋がっていない
-- **`no-ref`**: コード参照が無いノードの数。0でないなら抽出が甘い
-- **`--repo` つきの実在検査**: ref のファイル存在と行番号の範囲を実際に確認する。100%になるまで信用しない
+**Symptom**: Plausible-looking routes that don't actually exist end up in the diagram.
+
+**Real examples** (19 critical/high findings from three separate verification passes alone):
+- **A UI button that doesn't exist**: drew a route as an operation the screen could trigger, but there wasn't a single client-side call for it (in reality it only ran as an automatic server-side process once a condition was met)
+- **Wrong dispatch target**: wired every incoming message to a single command handler, but that handler actually only processed a subset of them — the rest of the message types were routed by a separate subscription handler
+- **A script that's never called**: drew a round trip where "script A launches B," but there wasn't a single call to it anywhere in the real code — A was for manual operations only
+- **A flow that ends in a self-loop**: the post-completion screen transition looped back to itself (in reality it was a replace-transition to the list screen)
+- **Wrong queue**: mixed up the failure fallback destination with a similarly named but different table (different table, different DB)
+- **Contradicting notes**: for the same feature, one file said "nothing propagates downstream," while another said "it takes effect on the next run" (the latter was correct)
+
+**Fix**: Have a **separate agent from the one that did the extraction** verify each **end-to-end chain** one at a time — adversarial verification. The prompt for this is at the end of `extraction-prompt.md`. Write corrections into `patches.js` with supporting evidence, rather than editing the JSON directly.
+
+---
+
+## 6. Returning Raw JSON Blows Out the Context Window
+
+**Symptom**: JSON for 10 areas (several hundred KB combined) floods straight into the orchestrator's context.
+
+**Fix**: Have each extraction agent **write its output to a file with Write, and return only a summary**. The orchestrator can make its decisions just by reading the output of `audit.js` / `inspect.js`. In the real case, the extraction phase burned 2.7 million tokens total, but the orchestrator's own consumption stayed minimal.
+
+---
+
+## 7. Showing Every Edge Label at Once Makes It Unreadable
+
+**Symptom**: Even when a route lights up, the labels overlap into an unreadable clump.
+
+**Fix**: By default, show **only the label for the step that's currently lit**. Make "show all labels" an optional toggle. The label text also appears in the step list in the side panel, so there's no need to make people read everything directly off the diagram. Already implemented in the template.
+
+---
+
+## 8. Playback of a Long Flow Never Seems to End
+
+**Symptom**: 101 steps × 850ms = 86 seconds. Nobody watches it to the end.
+
+**Fix**: Auto-tune the per-step interval to `max(170ms, min(selected value, 28000 / step count))` so the whole playback fits in roughly 28 seconds. Already implemented in the template.
+
+Even so, a flow with more than 60 steps is probably too big to be a single operation in the first place. Check [7] in `audit.js` flags these flows, so consider splitting them apart (e.g., making "start training" and "when training fails" separate buttons).
+
+---
+
+## Bonus: Easy-to-Miss Checks
+
+- **Orphan nodes**: build.js automatically drops any node that doesn't appear on any edge. If you don't notice the drop, a process that should exist quietly disappears — always read `ORPHANS` in the report
+- **The `shared ids` count**: how many IDs appear in more than one file. If this is low, the layers aren't actually connected to each other
+- **`no-ref`**: the count of nodes with no code reference. If it's nonzero, the extraction was too loose
+- **Existence check with `--repo`**: actually verify that each ref's file exists and that the line-number range is valid. Don't trust the map until this hits 100%

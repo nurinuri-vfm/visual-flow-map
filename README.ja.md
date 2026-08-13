@@ -130,6 +130,7 @@ node skills/visual-flow-map/scripts/build.js \
 
 - Node.js（`build.js` / `audit.js` / `inspect.js` 用。npm 依存はありません）
 - サブエージェントを並列実行できるエージェント環境（Claude Code を想定。Agent Skills 標準に準拠しており、他のハーネス向けに単一エージェントの縮退手順も用意しています）
+- スキルの指示は英語（[`SKILL.md`](skills/visual-flow-map/SKILL.md)）で、日本語版（[`SKILL.ja.md`](skills/visual-flow-map/SKILL.ja.md)）を併置しています。**生成される図の言語はこれとは無関係**で、日本語で頼めば日本語の図になります
 - 対象リポジトリの読み取り権限。コードは実行もアップロードもしません
 
 ## 向いていない場合

@@ -187,6 +187,9 @@ plan. Multiply by your own.
 - An agent environment that can run subagents in parallel (built for Claude Code; the skill
   follows the open Agent Skills standard, and a smaller single-agent path is documented for
   other harnesses)
+- The skill's instructions are in English ([`SKILL.md`](skills/visual-flow-map/SKILL.md));
+  a Japanese version ships alongside it ([`SKILL.ja.md`](skills/visual-flow-map/SKILL.ja.md)).
+  The diagram is written in whichever language you ask in — that's independent of this
 - Read access to the target repo. Nothing is executed and nothing is uploaded
 
 ## When not to use it

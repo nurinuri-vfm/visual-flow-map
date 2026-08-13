@@ -1,93 +1,104 @@
-# 抽出エージェントに渡すプロンプトのひな形
+# Prompt Template for Extraction Agents
 
-以下をコピーして、`{{ }}` の箇所を案件に合わせて埋めてから各エージェントに渡す。
-**全エージェントに同じ「共通部」を渡すこと。** ここが揃っていないと、層をまたぐ経路が合流しない。
+[日本語版 → extraction-prompt.ja.md](extraction-prompt.ja.md)
+
+Copy the template below, fill in the `{{ }}` placeholders for your project, and hand it to each agent.
+**Give every agent the same "shared section."** If this isn't consistent across agents, routes that cross layers won't merge.
 
 ---
 
-## 共通部（全エージェント共通・改変せずに配る）
+## Shared Section (identical for every agent — distribute unmodified)
 
 ```
-あなたは {{リポジトリの絶対パス}} のコードを精査し、
-「ユーザー操作（または自動トリガ）ごとに、どのコードがどの順で動くか」を
-機械可読なグラフJSONとして出力します。
+You will examine the code at {{absolute path to the repository}} and output,
+for every user operation (or automatic trigger), which code runs in which order,
+as a machine-readable graph JSON.
 
-## 絶対ルール
-- 推測禁止。実ファイルを Read / Grep して確認した内容だけを書く。
-  関数名・エンドポイント・トピック名・テーブル名は実物と一字一句一致させること。
-- すべてのノードに ref（"リポジトリ相対パス:行番号"）を付ける。行番号は実際に確認した定義行。
-  ここが後段のハルシネーション検査と重複判定の両方に効くので、必ず埋める。
-- 関数名は実コードのとおりに書く。private の先頭アンダースコアも省略しない（_on_cmd を on_cmd にしない）。
-- label / detail は{{言語}}。label は22文字以内の短い名詞句（図の枠に収まる長さ）。
-  detail は120文字以内で「何をするか」を具体的に。条件・分岐・リトライ・失敗時の挙動を含める。
+## Absolute Rules
+- Never guess. Write only what you have confirmed by Reading / Grepping the actual files.
+  Function names, endpoints, topic names, and table names must match the real thing character for character.
+- Attach a ref ("path-relative-to-repo:line-number") to every node. The line number must be the definition
+  line you actually confirmed. This field matters for both the downstream hallucination audit and duplicate
+  detection, so always fill it in.
+- Write function names exactly as they appear in the real code. Do not drop a leading underscore that marks
+  something private (do not turn _on_cmd into on_cmd).
+- label / detail are in {{language}}. label is a short noun phrase, 22 characters or fewer (short enough to
+  fit in the diagram's node box). detail is 120 characters or fewer and describes concretely "what it does" —
+  include conditions, branches, retries, and failure behavior.
 
-## ノードID命名規約（小文字・ASCII・ドット区切り）
-- ui.<画面>.<操作>          ユーザーが押すボタン / UI操作
-- app.<モジュール>.<関数>    クライアント内部（hook, store, APIクライアント, 画面コンポーネント）
-- net.http.<METHOD>_<パス>   クライアント→サーバのHTTP境界。パスの / と - は _ に
-- api.<ハンドラ関数名>       サーバのリクエストハンドラ
-- svc.<モジュール>.<関数>    サーバ内部処理
-- db.<実テーブル名>          データベース
-- gcs.<領域>                オブジェクトストレージ
-- mqtt.<トピック略>          メッセージング（実トピック文字列は detail に書く）
-- dev.<モジュール>.<関数>    デバイス / エッジ側
-- hw.<装置>                 物理デバイス
-- ext.<外部>                外部サービス
-- job.<名前>                定期・常駐処理
-- rt.<購読対象>              リアルタイム購読
+## Node ID Naming Convention (lowercase, ASCII, dot-separated)
+- ui.<screen>.<action>          Button the user presses / UI operation
+- app.<module>.<function>       Client-side internals (hook, store, API client, screen component)
+- net.http.<METHOD>_<path>      Client→server HTTP boundary. Replace / and - in the path with _
+- api.<handler function name>   Server-side request handler
+- svc.<module>.<function>       Server-side internal processing
+- db.<actual table name>        Database
+- gcs.<area>                    Object storage
+- mqtt.<topic abbreviation>     Messaging (write the actual topic string in detail)
+- dev.<module>.<function>       Device / edge side
+- hw.<device>                   Physical device
+- ext.<external>                External service
+- job.<name>                    Scheduled / long-running process
+- rt.<subscription target>      Realtime subscription
 
-## 共有ハブID（担当範囲がここを通るなら、この綴りを一字一句そのまま使う。別名を作らない）
-{{ここに、層の境界になるノードを実名で列挙する。5〜15個。例:
+## Shared Hub IDs (if your assigned scope passes through one of these, use this exact spelling
+character-for-character. Do not invent an alias.)
+{{List here, by real name, the nodes that sit at layer boundaries. 5-15 of them. Example:
 svc.mqtt_client.publish_command / mqtt.cmd / mqtt.cmdres / mqtt.event
 dev.main._on_cmd / dev.uploader.upload
 net.http.POST_upload / api.upload
 app.lib.api.request / rt.events
 }}
 
-## lane の値
-{{案件のレーン。既定は次の11種}}
+## lane values
+{{The lanes for this project. Default is the following 11}}
 "ui" / "app" / "api" / "svc" / "job" / "db" / "store" / "mqtt" / "device" / "hw" / "ext"
 
-## flows（ボタンになる単位）
-- 1 flow = 「ユーザーが押す1ボタン」または「1つの自動トリガ」。
-- category は次から必ず選ぶ: {{カテゴリ一覧を8〜10個。例: 認証・初期設定 / 注文・購入 / 在庫・配送 / 設定変更 / 通知 / 履歴 / 保守 / 自動・定期処理}}
-- steps は「エッジの順序付き列」。各 step は {from, to, label, branch}。
-  branch は "main"(正常系) / "alt"(条件分岐・別ルート) / "error"(失敗・リトライ・タイムアウト)。
-- 非同期の折り返し（結果が返ってきてDBが更新され画面に反映される、など）も必ず steps に含め、
-  フローを最後まで閉じること。片道で終わらせない。
-- notes には「ハマりどころ・タイムアウト値・失敗時にユーザーに何が見えるか」を書く。
+## flows (the unit that becomes a button)
+- 1 flow = "one button the user presses" or "one automatic trigger."
+- category must be chosen from the following: {{list of 8-10 categories. Example: Auth & initial setup /
+  Ordering & purchase / Inventory & shipping / Settings changes / Notifications / History / Maintenance /
+  Automated & scheduled processing}}
+- steps is "an ordered sequence of edges." Each step is {from, to, label, branch}.
+  branch is "main" (happy path) / "alt" (conditional branch / alternate route) / "error" (failure, retry,
+  timeout).
+- Always include the asynchronous return leg (e.g., the result comes back, the DB is updated, and the screen
+  reflects it) in steps, and close the flow all the way to the end. Do not leave it one-way.
+- In notes, write down "gotchas, timeout values, and what the user sees on failure."
 
-## 出力
-1. JSONファイルを Write で {{出力ディレクトリ}}/<KEY>.json に書く。
+## Output
+1. Write the JSON file with Write to {{output directory}}/<KEY>.json.
    {"nodes":[{"id","lane","label","detail","ref"}...],
     "edges":[{"from","to","label","kind"}...],
     "flows":[{"id","title","category","trigger","steps":[{"from","to","label","branch"}...],"notes":[...]}]}
-   kind は "call"/"http"/"mqtt"/"db"/"storage"/"push"/"email"/"timer"/"realtime"/"retry"/"error"。
-   flows[].id は英小文字とハイフン。title は{{言語}}。
-   edges には steps で使った全エッジを含める（重複可）。
-   nodes には steps/edges で参照した全IDを漏れなく含める。
-   末尾カンマ・コメント・BOM 禁止。必ずパース可能にすること。
-2. 最終テキスト（戻り値）は短く。書いたファイルパス、node数、edge数、flow idの一覧、
-   確信が持てなかった点の警告だけ。JSON本文は返さないこと。
-   （本文を返すとオーケストレータのコンテキストが溢れる）
+   kind is one of "call"/"http"/"mqtt"/"db"/"storage"/"push"/"email"/"timer"/"realtime"/"retry"/"error".
+   flows[].id uses lowercase letters and hyphens. title is in {{language}}.
+   edges must include every edge used in steps (duplicates are fine).
+   nodes must include, without omission, every ID referenced by steps/edges.
+   No trailing commas, no comments, no BOM. The file must always be parseable.
+2. Keep the final text (your return value) short. Report only the file path you wrote, the node count, the
+   edge count, the list of flow ids, and warnings about anything you weren't confident in. Do not return the
+   JSON body itself.
+   (Returning the body would overflow the orchestrator's context.)
 ```
 
-## 個別部（エージェントごとに差し替える）
+## Per-Agent Section (replace this for each agent)
 
 ```
-## あなたの担当キー <KEY> = "{{key}}"
-## 担当領域: {{タイトル}}
-{{担当ファイルを具体的に列挙し、何を flow 化してほしいかを書く。
- 「どのボタンを漏らさないでほしいか」を明示すると精度が上がる。}}
+## Your assigned key <KEY> = "{{key}}"
+## Assigned area: {{title}}
+{{List the specific files you're responsible for, and describe what you want turned into flows.
+ Accuracy improves when you spell out "which buttons must not be missed."}}
 
-担当外のファイルも、フローが層をまたぐ場合は境界ノードを作るために必要な範囲で読んでよい。
-ただし詳細な内部展開は担当者に任せ、共有ハブIDで接続すること。
-flow は最低6個、可能なら10個以上。ユーザーが押せるボタンは漏らさないこと。
+You may also read files outside your assigned scope, to the extent needed to create boundary nodes where a
+flow crosses layers. However, leave the detailed internal expansion to the owning agent, and connect via the
+shared hub IDs.
+Produce at least 6 flows, ideally 10 or more. Do not miss any button the user can press.
 ```
 
-## 構造化出力のスキーマ（戻り値用）
+## Structured Output Schema (for the return value)
 
-エージェントの戻り値を型で縛れる場合は次を使う。
+If you can constrain the agent's return value by type, use the following.
 
 ```json
 {
@@ -104,31 +115,36 @@ flow は最低6個、可能なら10個以上。ユーザーが押せるボタン
 }
 ```
 
-`warnings` は軽視しないこと。実例では抽出エージェント自身が
-「その操作のボタンは画面側に存在しない（grep で0件）」と警告に書いており、
-それが後の検証で critical 指摘として再確認された。
+Do not take `warnings` lightly. In a real case, the extraction agent itself wrote in a warning that "the
+button for that operation does not exist on the screen side (zero grep hits)" — and that was later
+reconfirmed as a critical finding during verification.
 
 ---
 
-## 検証エージェントに渡すプロンプト
+## Prompt for the Verification Agent
 
-抽出が終わったら、**別のエージェント**に検証させる。抽出した本人に検証させても粗は出ない。
+Once extraction is done, have **a different agent** verify it. Having the same agent that did the extraction
+verify its own work will not surface the flaws.
 
 ```
-あなたは {{リポジトリ}} のフローグラフJSON群を検証する敵対的レビュアです。
-JSONは {{出力ディレクトリ}}/ に次のキーであります: {{ファイル一覧}}
-各ファイルは {"nodes":[...], "edges":[...], "flows":[...]} 形式。
+You are an adversarial reviewer verifying the flow-graph JSON files for {{repository}}.
+The JSON files live in {{output directory}}/ under the following keys: {{file list}}
+Each file has the form {"nodes":[...], "edges":[...], "flows":[...]}.
 
-必要なJSONを Read し、リポジトリの実コードと突き合わせて事実誤認・断線・ID不整合を洗い出してください。
-「たぶん合っている」は報告しない。実コードの行を確認して誤りだと断定できるものだけを報告する。
-修正案は、そのまま適用できる具体形（正しいノードID / 追加すべきエッジ / 正しい関数名と行番号）で書く。
+Read whichever JSON files you need, cross-check them against the real code in the repository, and surface
+factual errors, breaks in the chain, and ID inconsistencies.
+Do not report "probably correct." Report only what you can confirm as wrong by checking the actual line of
+code.
+Write proposed fixes in a concrete, directly-applicable form (the correct node ID / the edge that needs to
+be added / the correct function name and line number).
 
-検証テーマ: {{端から端までの鎖を1本指定する。例:
-  「注文 → 決済 → 非同期の後処理」がノードIDレベルで実際に繋がっているか。
-  断線（片方が作ったIDを他方が別名で作っている / 折り返しが欠けている）を列挙する。}}
+Verification theme: {{Specify one end-to-end chain. Example:
+  Whether "order → payment → asynchronous post-processing" is actually connected at the node-ID level.
+  Enumerate breaks in the chain (one side created an ID that the other side recreated under a different
+  name / the return leg is missing).}}
 ```
 
-戻り値のスキーマ:
+Return value schema:
 
 ```json
 {
@@ -151,10 +167,13 @@ JSONは {{出力ディレクトリ}}/ に次のキーであります: {{ファ�
 }
 ```
 
-検証テーマの切り方は「レイヤ」ではなく「端から端までの鎖」にする。
-レイヤで切ると各自が自分の層だけを見て、境界の断線という一番出やすい欠陥を見逃す。
+Cut verification themes along "end-to-end chains," not "layers."
+Cutting by layer means each reviewer only looks at their own layer and misses the most common defect: breaks
+at the boundary.
 
-テーマの例（作成系・取り消し系・横断系の3本立てが定石）:
-1. 作成系: 入力 → 決済/確定 → 保存 → 非同期の後処理が実際に最後まで動くまで
-2. 取り消し系: 取り消し → 補償処理（返金・巻き戻し） → 失敗時の再試行が dead に落ちるまで
-3. 設定変更・定期処理 ＋ 全ファイル横断のID衛生
+Example themes (the standard three-way split is creation / cancellation / cross-cutting):
+1. Creation flow: input → payment/confirmation → save → through to where the asynchronous post-processing
+   actually runs to completion
+2. Cancellation flow: cancel → compensating action (refund / rollback) → through to where the failure retry
+   lands in a dead end
+3. Settings changes / scheduled processing + ID hygiene across all files

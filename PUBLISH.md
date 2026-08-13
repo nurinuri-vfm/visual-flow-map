@@ -65,10 +65,8 @@ node skills/visual-flow-map/scripts/build.js --data demo/data-event --out demo/i
 
 ## 未完了（公開の障害にはならないが、把握しておくこと）
 
-- **SKILL.md 本体は日本語のまま**。description はバイリンガルなので英語の依頼でも発火するが、
-  スキルの中身を英語話者が読むには翻訳が要る。README に「skill instructions are in Japanese」と明記済み
-- `references/*.md` の英訳は一度作ったが、evidence・mode の追記前の内容だったため破棄した。
-  英訳するなら SKILL.md と references を最新版でまとめてやり直すこと
+- ~~SKILL.md 本体は日本語のまま~~ → **2026-08-14 に英語化完了**（SKILL.md=英語 / SKILL.ja.md=日本語）。
+- references も英訳済み（data-schema / extraction-prompt / pitfalls / language-notes）。日本語版は `*.ja.md` に併置。
 
 ## 公開しない場合
 
