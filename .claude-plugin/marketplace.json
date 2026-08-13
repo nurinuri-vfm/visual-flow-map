@@ -1,0 +1,12 @@
+{
+  "name": "interactive-flow-map",
+  "owner": { "name": "tty" },
+  "plugins": [
+    {
+      "name": "interactive-flow-map",
+      "source": "./",
+      "description": "操作や事象を選ぶと通る経路だけが順番に光る、単一HTMLのインタラクティブなフロー図をAIエージェントが実コードから抽出・検証して生成するスキル。事象フロー（業務手順・事故対応の経緯）にも対応。",
+      "version": "0.1.0"
+    }
+  ]
+}

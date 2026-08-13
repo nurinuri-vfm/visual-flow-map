@@ -1,0 +1,30 @@
+{
+  "title": "保育園 発熱対応の事象フロー",
+  "flowWord": "事象",
+  "lanes": [
+    {
+      "key": "staff",
+      "label": "保育士"
+    },
+    {
+      "key": "leader",
+      "label": "主任・看護師"
+    },
+    {
+      "key": "comm",
+      "label": "連絡・伝達"
+    },
+    {
+      "key": "parent",
+      "label": "保護者"
+    },
+    {
+      "key": "record",
+      "label": "記録・書類"
+    },
+    {
+      "key": "clinic",
+      "label": "外部医療機関"
+    }
+  ]
+}
