@@ -164,6 +164,7 @@ node <skill>/scripts/build.js --data <jsonディレクトリ> --out <出力.html
   "title": "◯◯ 処理フロー全図",          // タブとヘッダの題名
   "catOrder": ["認証", "検知", "保守"],   // ボタン群のカテゴリ表示順
   "flowWord": "操作",                     // UI上の呼び名。事象フローなら「事象」
+  "lang": "ja",                           // "en" でUIの文字列（ボタン・凡例・ヘルプ）が英語になる
   "creditUrl": "https://…",              // フッタークレジットのリンク先（credit: false で非表示）
   "lanes": [                              // 書けばレーンを総入れ替え（後述の事象フローモード用）
     { "key": "staff", "label": "現場職員", "color": "#5b8cff" }

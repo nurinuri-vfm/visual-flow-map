@@ -38,7 +38,7 @@ git clone https://github.com/<your-github-id>/interactive-flow-map
 cp -r interactive-flow-map/skills/interactive-flow-map ~/.claude/skills/
 ```
 
-The skill follows the open [Agent Skills](https://agentskills.io) standard. Node.js is required for the build/audit scripts. Note: the skill instructions and the generated UI are currently in Japanese.
+The skill follows the open [Agent Skills](https://agentskills.io) standard. Node.js is required for the build/audit scripts. Note: the skill instructions are in Japanese, but the generated diagram UI can be switched to English with `"lang": "en"` in `meta.json`.
 
 ## Use
 
