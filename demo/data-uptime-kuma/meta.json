@@ -1,0 +1,23 @@
+{
+  "title": "Uptime Kuma 処理フロー全図",
+  "mode": "code",
+  "catOrder": [
+    "認証・アカウント",
+    "モニター管理",
+    "監視の実行",
+    "通知",
+    "ステータスページ",
+    "メンテナンス",
+    "設定・保守",
+    "公開API・タグ"
+  ],
+  "lanes": [
+    { "key": "ui",     "label": "画面 / ユーザー操作" },
+    { "key": "app",    "label": "フロント内部（socket.js）" },
+    { "key": "api",    "label": "socket.io / HTTP 受信口" },
+    { "key": "svc",    "label": "サーバ内部処理" },
+    { "key": "job",    "label": "常駐・定期処理（監視ビート）" },
+    { "key": "db",     "label": "テーブル" },
+    { "key": "ext",    "label": "外部（監視対象・通知先）" }
+  ]
+}

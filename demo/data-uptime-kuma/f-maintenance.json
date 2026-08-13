@@ -1,0 +1,1017 @@
+{
+  "nodes": [
+    {
+      "id": "ui.managemaintenance.list",
+      "lane": "ui",
+      "label": "メンテナンス一覧",
+      "detail": "$root.maintenanceList を状態順(実施中>予定>停止中>終了)に並べて表示。0件なら No Maintenance。status がそのまま行の色になる",
+      "ref": "src/pages/ManageMaintenance.vue:23"
+    },
+    {
+      "id": "ui.managemaintenance.schedule_btn",
+      "lane": "ui",
+      "label": "メンテナンスを予定ボタン",
+      "detail": "/add-maintenance へ遷移するリンク。新規登録画面を開く",
+      "ref": "src/pages/ManageMaintenance.vue:9"
+    },
+    {
+      "id": "ui.managemaintenance.pause_btn",
+      "lane": "ui",
+      "label": "一時停止ボタン",
+      "detail": "item.active が真の行だけに出る。押すと確認ダイアログを開き、対象IDを selectedMaintenanceID に控える",
+      "ref": "src/pages/ManageMaintenance.vue:38"
+    },
+    {
+      "id": "ui.managemaintenance.resume_btn",
+      "lane": "ui",
+      "label": "再開ボタン",
+      "detail": "item.active が偽の行だけに出る。確認ダイアログなしで即 resumeMaintenance を送る",
+      "ref": "src/pages/ManageMaintenance.vue:48"
+    },
+    {
+      "id": "ui.managemaintenance.clone_btn",
+      "lane": "ui",
+      "label": "複製ボタン",
+      "detail": "/maintenance/clone/:id へ遷移。読み込み後に id を消して題名に cloneOf を付けるので保存すると新規登録になる",
+      "ref": "src/pages/ManageMaintenance.vue:58"
+    },
+    {
+      "id": "ui.managemaintenance.edit_btn",
+      "lane": "ui",
+      "label": "編集ボタン",
+      "detail": "/maintenance/edit/:id へ遷移して編集画面を開く",
+      "ref": "src/pages/ManageMaintenance.vue:67"
+    },
+    {
+      "id": "ui.managemaintenance.delete_btn",
+      "lane": "ui",
+      "label": "削除ボタン",
+      "detail": "確認ダイアログを開き、対象IDを selectedMaintenanceID に控える",
+      "ref": "src/pages/ManageMaintenance.vue:76"
+    },
+    {
+      "id": "ui.managemaintenance.confirm_pause",
+      "lane": "ui",
+      "label": "一時停止の確認ダイアログ",
+      "detail": "「はい」で pauseMaintenance を実行。いいえなら何も送らない",
+      "ref": "src/pages/ManageMaintenance.vue:95"
+    },
+    {
+      "id": "ui.managemaintenance.confirm_delete",
+      "lane": "ui",
+      "label": "削除の確認ダイアログ",
+      "detail": "「はい」で deleteMaintenance を実行。取り消しはできない",
+      "ref": "src/pages/ManageMaintenance.vue:99"
+    },
+    {
+      "id": "ui.editmaintenance.strategy_select",
+      "lane": "ui",
+      "label": "実施方式の選択",
+      "detail": "手動/単発/cron式/繰り返し(間隔・曜日・日付)の6択。選んだ方式で下の入力欄と必須項目が入れ替わる",
+      "ref": "src/pages/EditMaintenance.vue:110"
+    },
+    {
+      "id": "ui.editmaintenance.affected_monitors",
+      "lane": "ui",
+      "label": "対象モニターの複数選択",
+      "detail": "先頭に「すべて選択」の擬似項目がある。停止中のモニターは後ろに並ぶ",
+      "ref": "src/pages/EditMaintenance.vue:42"
+    },
+    {
+      "id": "ui.editmaintenance.show_all_pages",
+      "lane": "ui",
+      "label": "全ステータスページに表示",
+      "detail": "チェックすると個別選択欄が隠れ、保存時は候補の全ページを送る。後からページを追加しても自動では入らない",
+      "ref": "src/pages/EditMaintenance.vue:75"
+    },
+    {
+      "id": "ui.editmaintenance.status_pages",
+      "lane": "ui",
+      "label": "ステータスページの複数選択",
+      "detail": "告知を出すステータスページを選ぶ。未選択でもモニターが1つ以上あれば保存できる",
+      "ref": "src/pages/EditMaintenance.vue:87"
+    },
+    {
+      "id": "ui.editmaintenance.quick_duration_btn",
+      "lane": "ui",
+      "label": "所要時間のクイック指定",
+      "detail": "単発のときだけ表示。開始時刻+分数で終了時刻を埋める。開始時刻が空だとエラートーストで終わる",
+      "ref": "src/pages/EditMaintenance.vue:335"
+    },
+    {
+      "id": "ui.editmaintenance.save_btn",
+      "lane": "ui",
+      "label": "保存ボタン",
+      "detail": "処理中は disabled。フォームの required 検証を通ってから submit が走る",
+      "ref": "src/pages/EditMaintenance.vue:431"
+    },
+    {
+      "id": "ui.editmaintenance.confirm_no_monitors",
+      "lane": "ui",
+      "label": "モニター未選択の確認",
+      "detail": "モニター0件だがステータスページ指定ありのときだけ出る。はいで保存続行",
+      "ref": "src/pages/EditMaintenance.vue:438"
+    },
+    {
+      "id": "ui.editmaintenance.toast",
+      "lane": "ui",
+      "label": "エラートースト",
+      "detail": "モニターもステータスページも空、通信失敗、サーバ側例外のメッセージをそのまま表示する",
+      "ref": "src/pages/EditMaintenance.vue:825"
+    },
+    {
+      "id": "ui.maintenancetime.timeslot",
+      "lane": "ui",
+      "label": "実施時間の表示",
+      "detail": "手動なら「Manual」、それ以外は timeslotList の先頭(実施中か次回)を時間帯とUTCオフセットで表示",
+      "ref": "src/components/MaintenanceTime.vue:6"
+    },
+    {
+      "id": "app.editmaintenance.init",
+      "lane": "app",
+      "label": "編集画面の初期化",
+      "detail": "追加なら既定値(単発・現在時刻から1時間)を作る。編集/複製なら getMaintenance と対象2種を続けて取りに行く",
+      "ref": "src/pages/EditMaintenance.vue:677"
+    },
+    {
+      "id": "app.editmaintenance.onMonitorSelect",
+      "lane": "app",
+      "label": "全選択の切替",
+      "detail": "「すべて選択」を選んだときだけ動く。全選択済みなら空に、そうでなければ候補全部を入れ直す",
+      "ref": "src/pages/EditMaintenance.vue:762"
+    },
+    {
+      "id": "app.editmaintenance.setQuickDuration",
+      "lane": "app",
+      "label": "終了時刻を計算して入れる",
+      "detail": "開始時刻が未入力ならトーストを出して中断。開始+分数をローカル時刻の文字列にして終了欄へ書く",
+      "ref": "src/pages/EditMaintenance.vue:786"
+    },
+    {
+      "id": "app.editmaintenance.submit",
+      "lane": "app",
+      "label": "保存の入口",
+      "detail": "モニター0件かつステータスページ指定ありなら確認ダイアログを出して待つ。それ以外は即 doSubmit",
+      "ref": "src/pages/EditMaintenance.vue:808"
+    },
+    {
+      "id": "app.editmaintenance.doSubmit",
+      "lane": "app",
+      "label": "保存の本体",
+      "detail": "両方空ならエラーで中断。追加/複製は addMaintenance、編集は editMaintenance を送り、成功後に対象2種を続けて登録",
+      "ref": "src/pages/EditMaintenance.vue:821"
+    },
+    {
+      "id": "app.editmaintenance.addMonitorMaintenance",
+      "lane": "app",
+      "label": "対象モニターを送る",
+      "detail": "選択中のモニター配列をそのまま送る。失敗してもトーストを出すだけで次の処理へ進む",
+      "ref": "src/pages/EditMaintenance.vue:871"
+    },
+    {
+      "id": "app.editmaintenance.addMaintenanceStatusPage",
+      "lane": "app",
+      "label": "対象ページを送る",
+      "detail": "全ページ指定なら候補全件、そうでなければ選択分を送る。失敗してもトーストのみで画面遷移は続く",
+      "ref": "src/pages/EditMaintenance.vue:889"
+    },
+    {
+      "id": "app.managemaintenance.sortedMaintenanceList",
+      "lane": "app",
+      "label": "一覧の並べ替え",
+      "detail": "状態の重み(実施中1000〜不明0)で降順、同じなら題名順。maintenanceList が届くたび再計算される",
+      "ref": "src/pages/ManageMaintenance.vue:135"
+    },
+    {
+      "id": "app.managemaintenance.pauseMaintenance",
+      "lane": "app",
+      "label": "一時停止を送る",
+      "detail": "控えておいた selectedMaintenanceID で pauseMaintenance を emit し、結果をトーストする",
+      "ref": "src/pages/ManageMaintenance.vue:203"
+    },
+    {
+      "id": "app.managemaintenance.resumeMaintenance",
+      "lane": "app",
+      "label": "再開を送る",
+      "detail": "行のIDを引数で受けて resumeMaintenance を emit する。確認は挟まない",
+      "ref": "src/pages/ManageMaintenance.vue:214"
+    },
+    {
+      "id": "app.managemaintenance.deleteMaintenance",
+      "lane": "app",
+      "label": "削除を送る",
+      "detail": "selectedMaintenanceID で deleteMaintenance を emit。成功なら /maintenance に留まる",
+      "ref": "src/pages/ManageMaintenance.vue:179"
+    },
+    {
+      "id": "app.socket.addMaintenance",
+      "lane": "app",
+      "label": "addMaintenance を送信",
+      "detail": "メンテナンス本体のフォーム内容を socket.io で送る薄いラッパ",
+      "ref": "src/mixins/socket.js:575"
+    },
+    {
+      "id": "app.socket.addMonitorMaintenance",
+      "lane": "app",
+      "label": "対象モニターを送信",
+      "detail": "addMonitorMaintenance でメンテナンスIDと対象モニター配列を送る薄いラッパ",
+      "ref": "src/mixins/socket.js:586"
+    },
+    {
+      "id": "app.socket.addMaintenanceStatusPage",
+      "lane": "app",
+      "label": "告知先ページを送信",
+      "detail": "addMaintenanceStatusPage でメンテナンスIDと対象ページ配列を送る薄いラッパ",
+      "ref": "src/mixins/socket.js:597"
+    },
+    {
+      "id": "app.socket.getMaintenanceList",
+      "lane": "app",
+      "label": "getMaintenanceList を送信",
+      "detail": "一覧の再取得を要求する。コールバック省略時は空関数を入れる",
+      "ref": "src/mixins/socket.js:540"
+    },
+    {
+      "id": "app.socket.deleteMaintenance",
+      "lane": "app",
+      "label": "deleteMaintenance を送信",
+      "detail": "メンテナンスIDを送る薄いラッパ",
+      "ref": "src/mixins/socket.js:638"
+    },
+    {
+      "id": "app.socket.maintenanceList",
+      "lane": "app",
+      "label": "一覧の受信",
+      "detail": "サーバからの maintenanceList を丸ごと差し替える。押していなくても他画面の操作で勝手に更新される",
+      "ref": "src/mixins/socket.js:169"
+    },
+    {
+      "id": "api.socket.connection",
+      "lane": "api",
+      "label": "socket.io 接続受付",
+      "detail": "socket.io 接続受付。UI起点の全操作がここを通る",
+      "ref": "server/server.js:389"
+    },
+    {
+      "id": "api.socket.addMaintenance",
+      "lane": "api",
+      "label": "addMaintenance 受信",
+      "detail": "ログイン確認→フォームをbean化→保存→メモリ上の一覧に載せて run(true)。失敗は ok:false とメッセージで返す",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:16"
+    },
+    {
+      "id": "api.socket.editMaintenance",
+      "lane": "api",
+      "label": "editMaintenance 受信",
+      "detail": "メモリ上の bean を取り、作成者以外なら Permission denied。上書き保存して run(true) で貼り直す",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:46"
+    },
+    {
+      "id": "api.socket.addMonitorMaintenance",
+      "lane": "api",
+      "label": "addMonitorMaintenance 受信",
+      "detail": "対象モニターの紐付けを全削除してから受け取った分を入れ直す。所有者チェックはなく、ログインのみ確認",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:77"
+    },
+    {
+      "id": "api.socket.addMaintenanceStatusPage",
+      "lane": "api",
+      "label": "addMaintenanceStatusPage 受信",
+      "detail": "ステータスページの紐付けを全削除してから入れ直し、公開ページのキャッシュを捨てる",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:109"
+    },
+    {
+      "id": "api.socket.getMaintenance",
+      "lane": "api",
+      "label": "getMaintenance 受信",
+      "detail": "id と user_id が一致する1件をDBから読む。他人のIDだと bean が null になり toJSON で例外→ok:false",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:140"
+    },
+    {
+      "id": "api.socket.getMaintenanceList",
+      "lane": "api",
+      "label": "getMaintenanceList 受信",
+      "detail": "一覧をそのユーザー向けに配信し直す。返り値は ok のみで中身は maintenanceList イベントで届く",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:160"
+    },
+    {
+      "id": "api.socket.getMonitorMaintenance",
+      "lane": "api",
+      "label": "getMonitorMaintenance 受信",
+      "detail": "紐付け表とモニター表を突き合わせて対象モニターのIDだけ返す。所有者での絞り込みはしていない",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:176"
+    },
+    {
+      "id": "api.socket.getMaintenanceStatusPage",
+      "lane": "api",
+      "label": "getMaintenanceStatusPage 受信",
+      "detail": "紐付け表とステータスページ表を突き合わせて id と題名を返す",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:200"
+    },
+    {
+      "id": "api.socket.deleteMaintenance",
+      "lane": "api",
+      "label": "deleteMaintenance 受信",
+      "detail": "メモリ上にあれば先に停止して外し、id と user_id 一致の行を削除。キャッシュも捨てる",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:224"
+    },
+    {
+      "id": "api.socket.pauseMaintenance",
+      "lane": "api",
+      "label": "pauseMaintenance 受信",
+      "detail": "メモリ上に無ければ Maintenance not found。active を偽にして保存し、cronを止める",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:254"
+    },
+    {
+      "id": "api.socket.resumeMaintenance",
+      "lane": "api",
+      "label": "resumeMaintenance 受信",
+      "detail": "active を真にして保存し run() を呼ぶ。run の失敗は握り潰され、成功トーストだけ返る",
+      "ref": "server/socket-handlers/maintenance-socket-handler.js:287"
+    },
+    {
+      "id": "api.http.status_page_slug",
+      "lane": "api",
+      "label": "ステータスページ取得",
+      "detail": "公開ページのJSONを返すGET。apicache で5分キャッシュされるため、告知の出入りが最大5分遅れる",
+      "ref": "server/routers/status-page-router.js:39"
+    },
+    {
+      "id": "svc.auth.checkLogin",
+      "lane": "svc",
+      "label": "ログイン確認",
+      "detail": "socket.userID が無ければ You are not logged in. を投げる。各ハンドラの try で捕まり ok:false になる",
+      "ref": "server/util-server.js:644"
+    },
+    {
+      "id": "svc.maintenance.jsonToBean",
+      "lane": "svc",
+      "label": "フォームをbeanに詰める",
+      "detail": "日付は妥当性と西暦9999以下を検査。cron方式は分数と式を、繰り返し方式は時刻・曜日・日付からcronを生成して検証",
+      "ref": "server/model/maintenance.js:146"
+    },
+    {
+      "id": "svc.maintenance.validateCron",
+      "lane": "svc",
+      "label": "cron式の検証",
+      "detail": "Cronを作ってすぐ止めるだけの検査。不正なら例外が上がり保存前に中断する",
+      "ref": "server/model/maintenance.js:202"
+    },
+    {
+      "id": "svc.maintenance.generateCron",
+      "lane": "svc",
+      "label": "cron式を組み立てる",
+      "detail": "繰り返し方式のとき開始時刻と曜日/日付からcron文字列を作り、所要時間も算出。月末は lastDay1 だけ L に対応",
+      "ref": "server/model/maintenance.js:455"
+    },
+    {
+      "id": "svc.maintenance.calcDuration",
+      "lane": "svc",
+      "label": "所要時間を計算",
+      "detail": "開始時刻と終了時刻の差を秒で出す。日をまたぐ指定は24時間を足して正の値にする",
+      "ref": "server/model/maintenance.js:131"
+    },
+    {
+      "id": "svc.maintenance.run",
+      "lane": "svc",
+      "label": "スケジュールを貼る",
+      "detail": "既存ジョブがあれば止めてから作り直す。cron未設定の古いデータはここで生成して保存。手動方式は何もしない",
+      "ref": "server/model/maintenance.js:212"
+    },
+    {
+      "id": "svc.maintenance.stop",
+      "lane": "svc",
+      "label": "スケジュールを止める",
+      "detail": "cronジョブを停止して参照を消す。実施中の終了タイマーは止めないので状態は次の配信まで残る",
+      "ref": "server/model/maintenance.js:383"
+    },
+    {
+      "id": "svc.maintenance.getRunningTimeslot",
+      "lane": "svc",
+      "label": "実施中の時間帯を出す",
+      "detail": "所要時間ぶん遡った次回実行時刻から窓を作り、現在時刻が中なら開始/終了を返す。外ならnull",
+      "ref": "server/model/maintenance.js:346"
+    },
+    {
+      "id": "svc.maintenance.inferDuration",
+      "lane": "svc",
+      "label": "今回の実施時間を決める",
+      "detail": "残り時間の指定があればそれ、無ければ所要時間。終了日が近いときは終了日までに切り詰める",
+      "ref": "server/model/maintenance.js:366"
+    },
+    {
+      "id": "svc.maintenance.getStatus",
+      "lane": "svc",
+      "label": "現在の状態を判定",
+      "detail": "停止中なら inactive、手動は常に実施中、開始前は scheduled、終了日超過は ended。それ以外はメモリ上の状態",
+      "ref": "server/model/maintenance.js:421"
+    },
+    {
+      "id": "svc.maintenance.isUnderMaintenance",
+      "lane": "svc",
+      "label": "実施中かどうか",
+      "detail": "状態が under-maintenance かだけを見る真偽値。監視側とステータスページ側の両方がこれを使う",
+      "ref": "server/model/maintenance.js:394"
+    },
+    {
+      "id": "svc.maintenance.getTimezone",
+      "lane": "svc",
+      "label": "タイムゾーンを解決",
+      "detail": "未設定またはサーバと同じ指定ならサーバのタイムゾーンを返す。cronの発火時刻はこれに従う",
+      "ref": "server/model/maintenance.js:402"
+    },
+    {
+      "id": "svc.maintenance.toPublicJSON",
+      "lane": "svc",
+      "label": "画面向けJSONに変換",
+      "detail": "状態・タイムゾーン・実施中と次回の時間帯を詰める。時間帯はDBではなくcronジョブから毎回計算する",
+      "ref": "server/model/maintenance.js:15"
+    },
+    {
+      "id": "svc.server.sendMaintenanceList",
+      "lane": "svc",
+      "label": "一覧を配信",
+      "detail": "操作したソケットのユーザーIDを取り出して配信処理に渡すだけの入口",
+      "ref": "server/uptime-kuma-server.js:287"
+    },
+    {
+      "id": "svc.server.sendMaintenanceListByUserID",
+      "lane": "svc",
+      "label": "ユーザー宛に一覧を配信",
+      "detail": "そのユーザーの部屋へ maintenanceList を送る。同じユーザーの全タブが同時に更新される",
+      "ref": "server/uptime-kuma-server.js:296"
+    },
+    {
+      "id": "svc.server.getMaintenanceJSONList",
+      "lane": "svc",
+      "label": "一覧をJSON化",
+      "detail": "メモリ上の全メンテナンスを変換する。引数のユーザーIDで絞っておらず、他ユーザー分も混ざる",
+      "ref": "server/uptime-kuma-server.js:307"
+    },
+    {
+      "id": "svc.server.loadMaintenanceList",
+      "lane": "svc",
+      "label": "起動時に全件読み込み",
+      "detail": "DBの全メンテナンスをメモリに載せて run を呼ぶ。await していないため起動直後は状態が未確定になりうる",
+      "ref": "server/uptime-kuma-server.js:320"
+    },
+    {
+      "id": "svc.server.getMaintenance",
+      "lane": "svc",
+      "label": "メモリ上の1件を取る",
+      "detail": "メモリ上の一覧から引く。DBには居てもメモリに無ければ null を返す",
+      "ref": "server/uptime-kuma-server.js:334"
+    },
+    {
+      "id": "svc.apicache.clear",
+      "lane": "svc",
+      "label": "公開ページのキャッシュ破棄",
+      "detail": "ステータスページ系のHTTPキャッシュを全部捨てる。捨てないと最大5分は古い告知が見え続ける",
+      "ref": "server/modules/apicache/apicache.js:394"
+    },
+    {
+      "id": "svc.monitor.isUnderMaintenance",
+      "lane": "svc",
+      "label": "モニターがメンテ中か",
+      "detail": "紐付いた全メンテナンスを見て1つでも実施中なら真。親グループが対象なら子も対象として再帰的に真になる",
+      "ref": "server/model/monitor.js:1596"
+    },
+    {
+      "id": "svc.monitor.isImportantForNotification",
+      "lane": "svc",
+      "label": "通知すべき変化か判定",
+      "detail": "メンテ中→ダウンだけが通知対象。稼働→メンテ、メンテ→稼働、ダウン→メンテはいずれも通知しない",
+      "ref": "server/model/monitor.js:1420"
+    },
+    {
+      "id": "svc.monitor.sendNotification",
+      "lane": "svc",
+      "label": "障害/復旧の通知組み立て",
+      "detail": "障害/復旧の通知組み立て",
+      "ref": "server/model/monitor.js:1452"
+    },
+    {
+      "id": "svc.notification.send",
+      "lane": "svc",
+      "label": "通知プロバイダへ送る",
+      "detail": "通知プロバイダへのディスパッチ",
+      "ref": "server/notification.js:250"
+    },
+    {
+      "id": "svc.uptime.update",
+      "lane": "svc",
+      "label": "稼働率の集計更新",
+      "detail": "稼働率の集計更新。メンテ中のビートは稼働にも障害にも数えず maintenance として別集計する",
+      "ref": "server/uptime-calculator.js:212"
+    },
+    {
+      "id": "svc.status_page.getStatusPageData",
+      "lane": "svc",
+      "label": "公開ページのデータ作成",
+      "detail": "設定・障害情報・グループ一覧と一緒にメンテナンス告知の配列を組み立てて返す",
+      "ref": "server/model/status_page.js:314"
+    },
+    {
+      "id": "svc.status_page.getMaintenanceList",
+      "lane": "svc",
+      "label": "告知するメンテを選ぶ",
+      "detail": "そのページに紐付いたメンテのうち実施中のものだけ公開JSONにする。途中で例外が出ると黙って空配列になる",
+      "ref": "server/model/status_page.js:563"
+    },
+    {
+      "id": "job.maintenance.singleJob",
+      "lane": "job",
+      "label": "単発の開始ジョブ",
+      "detail": "開始日時に一度だけ発火し、一覧の再配信と公開ページのキャッシュ破棄を行う。終了は終了日時の判定に任せる",
+      "ref": "server/model/maintenance.js:234"
+    },
+    {
+      "id": "job.maintenance.startEvent",
+      "lane": "job",
+      "label": "メンテ開始の処理",
+      "detail": "状態を実施中にし、前の終了タイマーを消して新しい終了タイマーを張り、最終開始日時をDBに書く",
+      "ref": "server/model/maintenance.js:246"
+    },
+    {
+      "id": "job.maintenance.durationTimeout",
+      "lane": "job",
+      "label": "終了タイマー",
+      "detail": "所要時間ぶん後に状態を予定に戻して一覧を配信する。プロセス内のタイマーなので再起動で消える",
+      "ref": "server/model/maintenance.js:256"
+    },
+    {
+      "id": "job.maintenance.intervalJob",
+      "lane": "job",
+      "label": "間隔繰り返しのジョブ",
+      "detail": "毎日開始時刻に発火し、前回開始からの日数が間隔以上のときだけ開始する。開始日時を起点に動く",
+      "ref": "server/model/maintenance.js:280"
+    },
+    {
+      "id": "job.maintenance.intervalSkip",
+      "lane": "job",
+      "label": "間隔不足でスキップ",
+      "detail": "前回開始から間隔日数に達していない日は何もせず終わる。時差ずれ対策で1.1時間ぶん余裕を見ている",
+      "ref": "server/model/maintenance.js:296"
+    },
+    {
+      "id": "job.maintenance.cronJob",
+      "lane": "job",
+      "label": "cron/曜日/日付のジョブ",
+      "detail": "生成または入力されたcron式で発火する。タイムゾーンはメンテナンスごとの設定に従う",
+      "ref": "server/model/maintenance.js:311"
+    },
+    {
+      "id": "job.monitor.beat",
+      "lane": "job",
+      "label": "1回分の監視ビート",
+      "detail": "1回分の監視ビート本体。最初にメンテ中か調べ、そうなら実測せず状態をメンテナンスにする",
+      "ref": "server/model/monitor.js:426"
+    },
+    {
+      "id": "job.monitor.safeBeat",
+      "lane": "job",
+      "label": "次回ビートの予約",
+      "detail": "次回ビートのスケジュール",
+      "ref": "server/model/monitor.js:1091"
+    },
+    {
+      "id": "db.maintenance",
+      "lane": "db",
+      "label": "maintenance",
+      "detail": "メンテナンス本体。題名・説明・作成者・有効フラグ・方式・開始終了日時・時刻・曜日・cron・所要時間を持つ",
+      "ref": "db/knex_init_db.js:164"
+    },
+    {
+      "id": "db.monitor_maintenance",
+      "lane": "db",
+      "label": "monitor_maintenance",
+      "detail": "メンテナンスと対象モニターの紐付け。メンテナンス削除で連鎖削除される",
+      "ref": "db/knex_init_db.js:272"
+    },
+    {
+      "id": "db.maintenance_status_page",
+      "lane": "db",
+      "label": "maintenance_status_page",
+      "detail": "メンテナンスと告知先ステータスページの紐付け。どちらの削除でも連鎖削除される",
+      "ref": "db/knex_init_db.js:205"
+    },
+    {
+      "id": "db.status_page",
+      "lane": "db",
+      "label": "status_page",
+      "detail": "公開ステータスページ。告知先の候補と表示名の取得元",
+      "ref": "db/knex_init_db.js:185"
+    },
+    {
+      "id": "db.monitor",
+      "lane": "db",
+      "label": "monitor",
+      "detail": "監視対象。対象モニターの選択候補と存在確認に使う",
+      "ref": "db/knex_init_db.js:66"
+    },
+    {
+      "id": "db.heartbeat",
+      "lane": "db",
+      "label": "heartbeat",
+      "detail": "監視結果の1行。メンテ中は状態3(メンテナンス)と Monitor under maintenance が記録される",
+      "ref": "db/knex_init_db.js:125"
+    }
+  ],
+  "edges": [],
+  "flows": [
+    {
+      "id": "maintenance-create",
+      "title": "メンテナンスを登録する",
+      "category": "メンテナンス",
+      "trigger": "メンテナンス画面の「メンテナンスを予定」→ 内容を入力して「保存」を押す",
+      "steps": [
+        { "from": "ui.managemaintenance.schedule_btn", "to": "app.editmaintenance.init", "label": "登録画面を開く", "kind": "call" },
+        { "from": "app.editmaintenance.init", "to": "ui.editmaintenance.strategy_select", "label": "既定は単発・現在時刻から1時間", "kind": "call" },
+        { "from": "ui.editmaintenance.strategy_select", "to": "ui.editmaintenance.quick_duration_btn", "label": "単発なら時間の早見ボタンを出す", "branch": "alt", "kind": "call" },
+        { "from": "ui.editmaintenance.quick_duration_btn", "to": "app.editmaintenance.setQuickDuration", "label": "終了時刻を自動で埋める", "kind": "call" },
+        { "from": "app.editmaintenance.setQuickDuration", "to": "ui.editmaintenance.toast", "label": "開始時刻が空なら中断", "branch": "error", "kind": "error" },
+        { "from": "ui.editmaintenance.save_btn", "to": "app.editmaintenance.submit", "label": "保存を押す", "kind": "call" },
+        { "from": "app.editmaintenance.submit", "to": "ui.editmaintenance.confirm_no_monitors", "label": "モニター0件なら確認を出す", "branch": "alt", "kind": "call" },
+        { "from": "ui.editmaintenance.confirm_no_monitors", "to": "app.editmaintenance.doSubmit", "label": "はいで続行", "branch": "alt", "kind": "call" },
+        { "from": "app.editmaintenance.submit", "to": "app.editmaintenance.doSubmit", "label": "そのまま送信へ", "kind": "call" },
+        { "from": "app.editmaintenance.doSubmit", "to": "ui.editmaintenance.toast", "label": "対象がどちらも空なら中断", "branch": "error", "kind": "error" },
+        { "from": "app.editmaintenance.doSubmit", "to": "app.socket.addMaintenance", "label": "追加として送る", "kind": "call" },
+        { "from": "app.socket.addMaintenance", "to": "api.socket.connection", "label": "addMaintenance を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.addMaintenance", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.addMaintenance", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "ui.editmaintenance.toast", "label": "未ログインは例外でok:false", "branch": "error", "kind": "error" },
+        { "from": "api.socket.addMaintenance", "to": "svc.maintenance.jsonToBean", "label": "入力をbeanに詰める", "kind": "call" },
+        { "from": "svc.maintenance.jsonToBean", "to": "ui.editmaintenance.toast", "label": "日付が不正なら例外", "branch": "error", "kind": "error" },
+        { "from": "svc.maintenance.jsonToBean", "to": "svc.maintenance.generateCron", "label": "繰り返しならcronを生成", "branch": "alt", "kind": "call" },
+        { "from": "svc.maintenance.generateCron", "to": "svc.maintenance.calcDuration", "label": "所要時間を算出", "kind": "call" },
+        { "from": "svc.maintenance.jsonToBean", "to": "svc.maintenance.validateCron", "label": "cron式を検証", "kind": "call" },
+        { "from": "svc.maintenance.validateCron", "to": "ui.editmaintenance.toast", "label": "式が不正なら保存前に中断", "branch": "error", "kind": "error" },
+        { "from": "api.socket.addMaintenance", "to": "db.maintenance", "label": "1行追加し作成者を記録", "kind": "db" },
+        { "from": "api.socket.addMaintenance", "to": "svc.maintenance.run", "label": "作った直後に予約を張る", "kind": "call" },
+        { "from": "svc.maintenance.run", "to": "job.maintenance.cronJob", "label": "cronジョブを作る", "kind": "timer" },
+        { "from": "api.socket.addMaintenance", "to": "svc.server.sendMaintenanceList", "label": "一覧を配信", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceList", "to": "svc.server.sendMaintenanceListByUserID", "label": "ユーザーIDで宛先を決める", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceListByUserID", "to": "svc.server.getMaintenanceJSONList", "label": "全件をJSON化", "kind": "call" },
+        { "from": "svc.server.getMaintenanceJSONList", "to": "svc.maintenance.toPublicJSON", "label": "1件ずつ変換", "kind": "call" },
+        { "from": "svc.maintenance.toPublicJSON", "to": "app.socket.maintenanceList", "label": "maintenanceList を送る", "kind": "realtime" },
+        { "from": "app.socket.maintenanceList", "to": "ui.managemaintenance.list", "label": "一覧を差し替える", "kind": "call" },
+        { "from": "api.socket.addMaintenance", "to": "app.editmaintenance.doSubmit", "label": "新しいIDを返す", "kind": "realtime" },
+        { "from": "app.editmaintenance.doSubmit", "to": "app.editmaintenance.addMonitorMaintenance", "label": "続けて対象を登録", "kind": "call" }
+      ],
+      "notes": [
+        "複製も同じ経路。読み込み後に id を消して題名に cloneOf を付けるだけなので、保存すると新規登録として動く",
+        "保存はメンテナンス本体・対象モニター・対象ステータスページの3往復に分かれている。本体だけ成功して対象登録が失敗しても、本体は残り成功トーストが出る",
+        "手動方式はcronを作らず、登録した時点から常に実施中として扱われる",
+        "追加直後の run は失敗を例外で返す設定で呼ばれるが、その例外は addMaintenance の try で捕まり ok:false になる"
+      ]
+    },
+    {
+      "id": "maintenance-assign-monitors",
+      "title": "対象モニターを割り当てる",
+      "category": "メンテナンス",
+      "trigger": "編集画面で対象モニターを選び「保存」を押す（本体保存の直後に自動で続く）",
+      "steps": [
+        { "from": "ui.editmaintenance.affected_monitors", "to": "app.editmaintenance.onMonitorSelect", "label": "すべて選択を切り替える", "branch": "alt", "kind": "call" },
+        { "from": "app.editmaintenance.doSubmit", "to": "app.editmaintenance.addMonitorMaintenance", "label": "本体保存の成功後に送る", "kind": "call" },
+        { "from": "app.editmaintenance.addMonitorMaintenance", "to": "app.socket.addMonitorMaintenance", "label": "選択中の配列を渡す", "kind": "call" },
+        { "from": "app.socket.addMonitorMaintenance", "to": "api.socket.connection", "label": "addMonitorMaintenance を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.addMonitorMaintenance", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.addMonitorMaintenance", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "ui.editmaintenance.toast", "label": "未ログインは例外でok:false", "branch": "error", "kind": "error" },
+        { "from": "api.socket.addMonitorMaintenance", "to": "db.monitor_maintenance", "label": "既存の紐付けを全削除", "kind": "db" },
+        { "from": "db.monitor_maintenance", "to": "db.monitor", "label": "モニターIDで紐付け直す", "kind": "db" },
+        { "from": "api.socket.addMonitorMaintenance", "to": "svc.apicache.clear", "label": "公開ページのキャッシュ破棄", "kind": "call" },
+        { "from": "api.socket.addMonitorMaintenance", "to": "app.editmaintenance.addMonitorMaintenance", "label": "成功を返す", "kind": "realtime" },
+        { "from": "app.editmaintenance.addMonitorMaintenance", "to": "ui.editmaintenance.toast", "label": "失敗してもトーストのみで続行", "branch": "error", "kind": "error" },
+        { "from": "app.editmaintenance.addMonitorMaintenance", "to": "app.editmaintenance.addMaintenanceStatusPage", "label": "続けて告知先を登録", "kind": "call" }
+      ],
+      "notes": [
+        "毎回「全削除してから入れ直す」方式なので、送信内容が空だと全解除になる。競合する同時保存があると後勝ちで消える",
+        "ログイン確認はあるがメンテナンスの所有者確認がないため、IDさえ分かれば他ユーザーのメンテナンスの対象を書き換えられる",
+        "対象モニターに親グループを選ぶと、その配下のモニターも監視側の判定で自動的にメンテ中扱いになる",
+        "この処理は一覧の再配信を行わない。画面の表示は後続のステータスページ登録側の再取得で追いつく"
+      ]
+    },
+    {
+      "id": "maintenance-assign-status-pages",
+      "title": "対象ステータスページを割り当てる",
+      "category": "メンテナンス",
+      "trigger": "編集画面で告知先ページを選ぶ（または全ページに表示をチェック）して「保存」",
+      "steps": [
+        { "from": "ui.editmaintenance.show_all_pages", "to": "app.editmaintenance.addMaintenanceStatusPage", "label": "全ページ指定なら候補全件", "branch": "alt", "kind": "call" },
+        { "from": "ui.editmaintenance.status_pages", "to": "app.editmaintenance.addMaintenanceStatusPage", "label": "選んだページだけ送る", "kind": "call" },
+        { "from": "app.editmaintenance.addMaintenanceStatusPage", "to": "app.socket.addMaintenanceStatusPage", "label": "配列を渡す", "kind": "call" },
+        { "from": "app.socket.addMaintenanceStatusPage", "to": "api.socket.connection", "label": "addMaintenanceStatusPage を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.addMaintenanceStatusPage", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.addMaintenanceStatusPage", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "ui.editmaintenance.toast", "label": "未ログインは例外でok:false", "branch": "error", "kind": "error" },
+        { "from": "api.socket.addMaintenanceStatusPage", "to": "db.maintenance_status_page", "label": "既存の紐付けを全削除", "kind": "db" },
+        { "from": "db.maintenance_status_page", "to": "db.status_page", "label": "ページIDで紐付け直す", "kind": "db" },
+        { "from": "api.socket.addMaintenanceStatusPage", "to": "svc.apicache.clear", "label": "公開ページのキャッシュ破棄", "kind": "call" },
+        { "from": "api.socket.addMaintenanceStatusPage", "to": "app.editmaintenance.addMaintenanceStatusPage", "label": "成功を返す", "kind": "realtime" },
+        { "from": "app.editmaintenance.addMaintenanceStatusPage", "to": "app.socket.getMaintenanceList", "label": "一覧を取り直す", "kind": "call" },
+        { "from": "app.socket.getMaintenanceList", "to": "api.socket.connection", "label": "getMaintenanceList を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.getMaintenanceList", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.getMaintenanceList", "to": "svc.server.sendMaintenanceList", "label": "一覧を配信", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceList", "to": "svc.server.sendMaintenanceListByUserID", "label": "ユーザーIDで宛先を決める", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceListByUserID", "to": "app.socket.maintenanceList", "label": "maintenanceList を送る", "kind": "realtime" },
+        { "from": "app.socket.maintenanceList", "to": "ui.managemaintenance.list", "label": "一覧画面へ戻って反映", "kind": "call" }
+      ],
+      "notes": [
+        "「全ステータスページに表示」は保存時点の候補を展開して保存するだけ。後から作ったページには自動で告知されない",
+        "編集画面を開き直したとき、紐付け件数と候補件数が一致していれば全ページ指定として復元される",
+        "こちらも全削除してから入れ直す方式で、所有者確認はログインのみ"
+      ]
+    },
+    {
+      "id": "maintenance-load-edit-form",
+      "title": "登録済みの内容を編集画面に読み込む",
+      "category": "メンテナンス",
+      "trigger": "一覧の「編集」または「複製」を押す",
+      "steps": [
+        { "from": "ui.managemaintenance.edit_btn", "to": "app.editmaintenance.init", "label": "編集画面へ遷移", "kind": "call" },
+        { "from": "ui.managemaintenance.clone_btn", "to": "app.editmaintenance.init", "label": "複製画面へ遷移", "branch": "alt", "kind": "call" },
+        { "from": "app.editmaintenance.init", "to": "api.socket.connection", "label": "getMaintenance を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.getMaintenance", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.getMaintenance", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.getMaintenance", "to": "db.maintenance", "label": "自分のIDの1件を読む", "kind": "db" },
+        { "from": "api.socket.getMaintenance", "to": "ui.editmaintenance.toast", "label": "他人のIDは例外でok:false", "branch": "error", "kind": "error" },
+        { "from": "api.socket.getMaintenance", "to": "svc.maintenance.toPublicJSON", "label": "画面向けに変換", "kind": "call" },
+        { "from": "svc.maintenance.toPublicJSON", "to": "app.editmaintenance.init", "label": "内容を受け取る", "kind": "realtime" },
+        { "from": "app.editmaintenance.init", "to": "ui.editmaintenance.strategy_select", "label": "方式に応じた入力欄を出す", "kind": "call" },
+        { "from": "app.editmaintenance.init", "to": "api.socket.connection", "label": "getMonitorMaintenance を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.getMonitorMaintenance", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.getMonitorMaintenance", "to": "db.monitor_maintenance", "label": "対象モニターIDを引く", "kind": "db" },
+        { "from": "api.socket.getMonitorMaintenance", "to": "ui.editmaintenance.affected_monitors", "label": "選択済みとして復元", "kind": "realtime" },
+        { "from": "app.editmaintenance.init", "to": "api.socket.connection", "label": "getMaintenanceStatusPage を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.getMaintenanceStatusPage", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.getMaintenanceStatusPage", "to": "db.maintenance_status_page", "label": "告知先のIDと題名を引く", "kind": "db" },
+        { "from": "api.socket.getMaintenanceStatusPage", "to": "ui.editmaintenance.show_all_pages", "label": "全件一致なら全ページ指定に", "kind": "realtime" },
+        { "from": "api.socket.getMaintenanceStatusPage", "to": "ui.editmaintenance.status_pages", "label": "選択済みとして復元", "kind": "realtime" }
+      ],
+      "notes": [
+        "対象モニターの復元はモニター一覧の取得完了を前提にしている。一覧に無いID(削除済みなど)は選択欄に undefined が混じる",
+        "複製のときも同じ読み込みを行い、その後にIDを消して題名を書き換える",
+        "socket.js には getMonitorMaintenance / getMaintenanceStatusPage のラッパがあるが、編集画面はそれを使わず直接 emit している"
+      ]
+    },
+    {
+      "id": "maintenance-edit",
+      "title": "登録済みメンテナンスを編集する",
+      "category": "メンテナンス",
+      "trigger": "編集画面で内容を直して「保存」を押す",
+      "steps": [
+        { "from": "ui.editmaintenance.save_btn", "to": "app.editmaintenance.submit", "label": "保存を押す", "kind": "call" },
+        { "from": "app.editmaintenance.submit", "to": "app.editmaintenance.doSubmit", "label": "確認を通れば送信", "kind": "call" },
+        { "from": "app.editmaintenance.doSubmit", "to": "api.socket.connection", "label": "editMaintenance を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.editMaintenance", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.editMaintenance", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.editMaintenance", "to": "svc.server.getMaintenance", "label": "メモリ上の1件を取る", "kind": "call" },
+        { "from": "svc.server.getMaintenance", "to": "ui.editmaintenance.toast", "label": "作成者以外は権限エラー", "branch": "error", "kind": "error" },
+        { "from": "api.socket.editMaintenance", "to": "svc.maintenance.jsonToBean", "label": "入力で上書きする", "kind": "call" },
+        { "from": "svc.maintenance.jsonToBean", "to": "svc.maintenance.generateCron", "label": "繰り返しならcron再生成", "branch": "alt", "kind": "call" },
+        { "from": "svc.maintenance.jsonToBean", "to": "svc.maintenance.validateCron", "label": "cron式を検証", "kind": "call" },
+        { "from": "svc.maintenance.validateCron", "to": "ui.editmaintenance.toast", "label": "式が不正なら中断", "branch": "error", "kind": "error" },
+        { "from": "api.socket.editMaintenance", "to": "db.maintenance", "label": "行を上書き保存", "kind": "db" },
+        { "from": "api.socket.editMaintenance", "to": "svc.maintenance.run", "label": "予約を張り直す", "kind": "call" },
+        { "from": "svc.maintenance.run", "to": "svc.maintenance.stop", "label": "先に古いジョブを止める", "kind": "call" },
+        { "from": "svc.maintenance.run", "to": "job.maintenance.cronJob", "label": "新しいcronジョブを作る", "kind": "timer" },
+        { "from": "svc.maintenance.run", "to": "svc.maintenance.getRunningTimeslot", "label": "今が窓の中か確認", "kind": "call" },
+        { "from": "svc.maintenance.getRunningTimeslot", "to": "job.maintenance.startEvent", "label": "窓の中なら残り時間で開始", "branch": "alt", "kind": "timer" },
+        { "from": "api.socket.editMaintenance", "to": "svc.server.sendMaintenanceList", "label": "一覧を配信", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceList", "to": "app.socket.maintenanceList", "label": "maintenanceList を送る", "kind": "realtime" },
+        { "from": "api.socket.editMaintenance", "to": "app.editmaintenance.addMonitorMaintenance", "label": "対象を登録し直す", "kind": "realtime" }
+      ],
+      "notes": [
+        "編集はメモリ上の一覧から対象を引くため、そこに載っていないIDだと bean が null になり「プロパティを読めない」系の例外メッセージが出る",
+        "保存のたびにcronジョブを止めて作り直すので、実施中に保存すると窓の中判定でその場から再開扱いになる",
+        "古いジョブは止まるが、直前に張られた終了タイマーは止まらない。保存直後の状態表示が一瞬ずれることがある",
+        "編集は本体保存の後に対象モニターと告知先をどちらも入れ直す。画面で外した対象はここで消える"
+      ]
+    },
+    {
+      "id": "maintenance-window-start",
+      "title": "スケジュールが開始する",
+      "category": "メンテナンス",
+      "trigger": "設定した時刻にcronが発火する（または保存・再開・再起動で窓の中と判定される）",
+      "steps": [
+        { "from": "job.maintenance.cronJob", "to": "svc.maintenance.getTimezone", "label": "設定のタイムゾーンで発火", "kind": "timer" },
+        { "from": "job.maintenance.cronJob", "to": "job.maintenance.startEvent", "label": "開始処理を呼ぶ", "kind": "timer" },
+        { "from": "job.maintenance.intervalJob", "to": "job.maintenance.startEvent", "label": "間隔を満たせば開始", "branch": "alt", "kind": "timer" },
+        { "from": "job.maintenance.intervalJob", "to": "job.maintenance.intervalSkip", "label": "間隔不足の日は何もしない", "branch": "alt", "kind": "timer" },
+        { "from": "job.maintenance.singleJob", "to": "svc.apicache.clear", "label": "単発は開始時にキャッシュ破棄", "branch": "alt", "kind": "timer" },
+        { "from": "svc.maintenance.run", "to": "svc.maintenance.getRunningTimeslot", "label": "貼り直し時に窓の中か確認", "kind": "call" },
+        { "from": "svc.maintenance.getRunningTimeslot", "to": "job.maintenance.startEvent", "label": "窓の中なら残り時間で開始", "branch": "alt", "kind": "timer" },
+        { "from": "job.maintenance.startEvent", "to": "svc.maintenance.inferDuration", "label": "今回の実施時間を決める", "kind": "call" },
+        { "from": "job.maintenance.startEvent", "to": "job.maintenance.durationTimeout", "label": "終了タイマーを張り直す", "kind": "timer" },
+        { "from": "job.maintenance.startEvent", "to": "db.maintenance", "label": "最終開始日時を保存", "kind": "db" },
+        { "from": "job.maintenance.startEvent", "to": "svc.server.sendMaintenanceListByUserID", "label": "作成者へ一覧を配信", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceListByUserID", "to": "svc.server.getMaintenanceJSONList", "label": "全件をJSON化", "kind": "call" },
+        { "from": "svc.server.getMaintenanceJSONList", "to": "svc.maintenance.toPublicJSON", "label": "1件ずつ変換", "kind": "call" },
+        { "from": "svc.maintenance.toPublicJSON", "to": "svc.maintenance.getStatus", "label": "実施中と判定される", "kind": "call" },
+        { "from": "svc.maintenance.toPublicJSON", "to": "app.socket.maintenanceList", "label": "maintenanceList を送る", "kind": "realtime" },
+        { "from": "app.socket.maintenanceList", "to": "ui.managemaintenance.list", "label": "行が実施中の色になる", "kind": "call" },
+        { "from": "ui.managemaintenance.list", "to": "ui.maintenancetime.timeslot", "label": "実施中の時間帯を表示", "kind": "call" },
+        { "from": "job.maintenance.startEvent", "to": "job.monitor.beat", "label": "次のビートからメンテ中扱い", "kind": "timer" }
+      ],
+      "notes": [
+        "開始は「状態をメモリ上で実施中にする」だけで、実施中フラグはDBに残らない。プロセスを再起動すると窓の中判定からやり直す",
+        "cronで自動開始したときは公開ページのキャッシュを捨てない(単発方式のジョブだけが捨てる)。告知の表示は最大5分遅れることがある",
+        "開始日より前、終了日より後は状態判定が優先され、cronが発火しても予定/終了のまま表示される",
+        "間隔繰り返しは毎日発火して日数を数える方式。前回開始からの差を1.1時間ぶん割り引いて時差ずれを吸収している",
+        "手動方式はジョブを作らず、有効な間ずっと実施中として扱われる"
+      ]
+    },
+    {
+      "id": "maintenance-window-end",
+      "title": "スケジュールが終了する",
+      "category": "メンテナンス",
+      "trigger": "所要時間ぶんの終了タイマーが切れる（または終了日時を過ぎる）",
+      "steps": [
+        { "from": "job.maintenance.durationTimeout", "to": "svc.maintenance.getStatus", "label": "状態を予定に戻す", "kind": "timer" },
+        { "from": "job.maintenance.durationTimeout", "to": "svc.server.sendMaintenanceListByUserID", "label": "一覧を配信", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceListByUserID", "to": "svc.server.getMaintenanceJSONList", "label": "全件をJSON化", "kind": "call" },
+        { "from": "svc.server.getMaintenanceJSONList", "to": "svc.maintenance.toPublicJSON", "label": "1件ずつ変換", "kind": "call" },
+        { "from": "svc.maintenance.toPublicJSON", "to": "svc.maintenance.getRunningTimeslot", "label": "次回の時間帯を出し直す", "kind": "call" },
+        { "from": "svc.maintenance.toPublicJSON", "to": "svc.maintenance.getStatus", "label": "終了日超過なら終了と判定", "branch": "alt", "kind": "call" },
+        { "from": "svc.maintenance.toPublicJSON", "to": "app.socket.maintenanceList", "label": "maintenanceList を送る", "kind": "realtime" },
+        { "from": "app.socket.maintenanceList", "to": "app.managemaintenance.sortedMaintenanceList", "label": "並び順を計算し直す", "kind": "call" },
+        { "from": "app.managemaintenance.sortedMaintenanceList", "to": "ui.managemaintenance.list", "label": "予定/終了の見た目に戻る", "kind": "call" },
+        { "from": "ui.managemaintenance.list", "to": "ui.maintenancetime.timeslot", "label": "次回の時間帯を表示", "kind": "call" },
+        { "from": "job.maintenance.durationTimeout", "to": "job.monitor.beat", "label": "次のビートで通常監視へ", "kind": "timer" }
+      ],
+      "notes": [
+        "終了はプロセス内のタイマー頼み。再起動をまたぐと発火せず、代わりに予約の貼り直し時の窓判定で辻褄を合わせる",
+        "終了日が近い実施は終了日までに切り詰められる。所要時間より短く終わることがある",
+        "終了しても公開ページのキャッシュは捨てられないため、告知の消え方が最大5分遅れる",
+        "監視側はタイマーではなく毎ビートで紐付けを見に行くので、終了は次のビートで即座に反映される"
+      ]
+    },
+    {
+      "id": "maintenance-pause",
+      "title": "メンテナンスを一時停止する",
+      "category": "メンテナンス",
+      "trigger": "一覧の「一時停止」を押して確認ダイアログで「はい」",
+      "steps": [
+        { "from": "ui.managemaintenance.pause_btn", "to": "ui.managemaintenance.confirm_pause", "label": "確認ダイアログを出す", "kind": "call" },
+        { "from": "ui.managemaintenance.confirm_pause", "to": "app.managemaintenance.pauseMaintenance", "label": "はいで実行", "kind": "call" },
+        { "from": "app.managemaintenance.pauseMaintenance", "to": "api.socket.connection", "label": "pauseMaintenance を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.pauseMaintenance", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.pauseMaintenance", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.pauseMaintenance", "to": "svc.server.getMaintenance", "label": "メモリ上の1件を取る", "kind": "call" },
+        { "from": "svc.server.getMaintenance", "to": "ui.managemaintenance.list", "label": "無ければ not found を返す", "branch": "error", "kind": "error" },
+        { "from": "api.socket.pauseMaintenance", "to": "db.maintenance", "label": "有効フラグを偽で保存", "kind": "db" },
+        { "from": "api.socket.pauseMaintenance", "to": "svc.maintenance.stop", "label": "cronジョブを止める", "kind": "call" },
+        { "from": "api.socket.pauseMaintenance", "to": "svc.apicache.clear", "label": "公開ページのキャッシュ破棄", "kind": "call" },
+        { "from": "api.socket.pauseMaintenance", "to": "svc.server.sendMaintenanceList", "label": "一覧を配信", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceList", "to": "svc.maintenance.getStatus", "label": "停止中と判定される", "kind": "call" },
+        { "from": "svc.maintenance.getStatus", "to": "app.socket.maintenanceList", "label": "maintenanceList を送る", "kind": "realtime" },
+        { "from": "app.socket.maintenanceList", "to": "ui.managemaintenance.list", "label": "再開ボタンに切り替わる", "kind": "call" },
+        { "from": "svc.maintenance.stop", "to": "job.monitor.beat", "label": "次のビートで通常監視へ", "kind": "timer" }
+      ],
+      "notes": [
+        "停止中は状態判定が最優先で停止中を返すため、実施中だったものも即座にメンテ扱いから外れる",
+        "cronジョブは止まるが、実施中に張られていた終了タイマーは止まらない。停止後にそのタイマーが発火して余計な一覧配信が1回入る",
+        "所有者確認は無く、ログインさえしていれば他ユーザーのメンテナンスも止められる",
+        "確認ダイアログを挟むのは一時停止と削除だけで、再開は即実行される"
+      ]
+    },
+    {
+      "id": "maintenance-resume",
+      "title": "メンテナンスを再開する",
+      "category": "メンテナンス",
+      "trigger": "一覧の「再開」を押す（確認なしで即実行）",
+      "steps": [
+        { "from": "ui.managemaintenance.resume_btn", "to": "app.managemaintenance.resumeMaintenance", "label": "確認なしで実行", "kind": "call" },
+        { "from": "app.managemaintenance.resumeMaintenance", "to": "api.socket.connection", "label": "resumeMaintenance を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.resumeMaintenance", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.resumeMaintenance", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.resumeMaintenance", "to": "svc.server.getMaintenance", "label": "メモリ上の1件を取る", "kind": "call" },
+        { "from": "svc.server.getMaintenance", "to": "ui.managemaintenance.list", "label": "無ければ not found を返す", "branch": "error", "kind": "error" },
+        { "from": "api.socket.resumeMaintenance", "to": "db.maintenance", "label": "有効フラグを真で保存", "kind": "db" },
+        { "from": "api.socket.resumeMaintenance", "to": "svc.maintenance.run", "label": "予約を張り直す", "kind": "call" },
+        { "from": "svc.maintenance.run", "to": "svc.maintenance.generateCron", "label": "cron未設定なら生成", "branch": "alt", "kind": "call" },
+        { "from": "svc.maintenance.run", "to": "job.maintenance.cronJob", "label": "cronジョブを作る", "kind": "timer" },
+        { "from": "svc.maintenance.run", "to": "svc.maintenance.getRunningTimeslot", "label": "今が窓の中か確認", "kind": "call" },
+        { "from": "svc.maintenance.getRunningTimeslot", "to": "job.maintenance.startEvent", "label": "窓の中なら即実施中に", "branch": "alt", "kind": "timer" },
+        { "from": "api.socket.resumeMaintenance", "to": "svc.apicache.clear", "label": "公開ページのキャッシュ破棄", "kind": "call" },
+        { "from": "api.socket.resumeMaintenance", "to": "svc.server.sendMaintenanceList", "label": "一覧を配信", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceList", "to": "app.socket.maintenanceList", "label": "maintenanceList を送る", "kind": "realtime" },
+        { "from": "app.socket.maintenanceList", "to": "ui.managemaintenance.list", "label": "一時停止ボタンに戻る", "kind": "call" }
+      ],
+      "notes": [
+        "再開時の予約張り直しは失敗しても例外を投げない設定で呼ばれるため、cronが壊れていても成功トーストが出て状態は不明のままになる",
+        "再開した瞬間が実施時間帯の中なら、次の発火を待たずその場から実施中になる",
+        "手動方式は再開しただけで即実施中に戻る"
+      ]
+    },
+    {
+      "id": "maintenance-delete",
+      "title": "メンテナンスを削除する",
+      "category": "メンテナンス",
+      "trigger": "一覧の「削除」を押して確認ダイアログで「はい」",
+      "steps": [
+        { "from": "ui.managemaintenance.delete_btn", "to": "ui.managemaintenance.confirm_delete", "label": "確認ダイアログを出す", "kind": "call" },
+        { "from": "ui.managemaintenance.confirm_delete", "to": "app.managemaintenance.deleteMaintenance", "label": "はいで実行", "kind": "call" },
+        { "from": "app.managemaintenance.deleteMaintenance", "to": "app.socket.deleteMaintenance", "label": "対象IDを渡す", "kind": "call" },
+        { "from": "app.socket.deleteMaintenance", "to": "api.socket.connection", "label": "deleteMaintenance を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.deleteMaintenance", "label": "ハンドラへ振り分け", "kind": "call" },
+        { "from": "api.socket.deleteMaintenance", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.deleteMaintenance", "to": "svc.maintenance.stop", "label": "先にcronジョブを止める", "kind": "call" },
+        { "from": "api.socket.deleteMaintenance", "to": "db.maintenance", "label": "自分のIDの行だけ削除", "kind": "db" },
+        { "from": "db.maintenance", "to": "db.monitor_maintenance", "label": "対象モニターの紐付けも消える", "kind": "db" },
+        { "from": "db.maintenance", "to": "db.maintenance_status_page", "label": "告知先の紐付けも消える", "kind": "db" },
+        { "from": "api.socket.deleteMaintenance", "to": "svc.apicache.clear", "label": "公開ページのキャッシュ破棄", "kind": "call" },
+        { "from": "api.socket.deleteMaintenance", "to": "svc.server.sendMaintenanceList", "label": "一覧を配信", "kind": "call" },
+        { "from": "svc.server.sendMaintenanceList", "to": "app.socket.maintenanceList", "label": "maintenanceList を送る", "kind": "realtime" },
+        { "from": "app.socket.maintenanceList", "to": "ui.managemaintenance.list", "label": "行が消える", "kind": "call" },
+        { "from": "svc.maintenance.stop", "to": "job.monitor.beat", "label": "次のビートで通常監視へ", "kind": "timer" }
+      ],
+      "notes": [
+        "紐付けはデータベース側の連鎖削除に任せている。専用の削除処理は無い",
+        "メモリからの取り外しは作成者を問わず行われるが、DBの削除は作成者一致の行だけ。他人のIDを送ると予約だけ止まって行は残り、再起動で復活する",
+        "存在しないIDでも成功として返る",
+        "実施中に削除すると、対象だったモニターは次のビートから通常判定に戻る"
+      ]
+    },
+    {
+      "id": "maintenance-suppress-monitoring",
+      "title": "メンテ中は障害にせず通知も出さない",
+      "category": "メンテナンス",
+      "trigger": "監視ビートが回るたびに判定される",
+      "steps": [
+        { "from": "job.monitor.safeBeat", "to": "job.monitor.beat", "label": "次のビートを実行", "kind": "timer" },
+        { "from": "job.monitor.beat", "to": "svc.monitor.isUnderMaintenance", "label": "実測の前にメンテ中か確認", "kind": "call" },
+        { "from": "svc.monitor.isUnderMaintenance", "to": "db.monitor_maintenance", "label": "紐付くメンテナンスを引く", "kind": "db" },
+        { "from": "svc.monitor.isUnderMaintenance", "to": "svc.server.getMaintenance", "label": "メモリ上の1件を取る", "kind": "call" },
+        { "from": "svc.server.getMaintenance", "to": "svc.maintenance.isUnderMaintenance", "label": "実施中か聞く", "kind": "call" },
+        { "from": "svc.maintenance.isUnderMaintenance", "to": "svc.maintenance.getStatus", "label": "状態を判定", "kind": "call" },
+        { "from": "job.monitor.beat", "to": "db.heartbeat", "label": "メンテ中として記録", "kind": "db" },
+        { "from": "job.monitor.beat", "to": "svc.uptime.update", "label": "稼働率に数えず別集計", "kind": "call" },
+        { "from": "job.monitor.beat", "to": "svc.monitor.isImportantForNotification", "label": "通知すべき変化か判定", "kind": "call" },
+        { "from": "svc.monitor.isImportantForNotification", "to": "job.monitor.safeBeat", "label": "出入りは通知せず次へ", "kind": "timer" },
+        { "from": "svc.monitor.isImportantForNotification", "to": "svc.monitor.sendNotification", "label": "メンテ中→ダウンだけ通知", "branch": "alt", "kind": "call" },
+        { "from": "svc.monitor.sendNotification", "to": "svc.notification.send", "label": "通知先へ送る", "kind": "call" }
+      ],
+      "notes": [
+        "メンテ中は実際の通信をせず、状態をメンテナンスに固定して Monitor under maintenance と記録する。応答時間も測らない",
+        "親グループがメンテ対象なら子モニターも自動的にメンテ扱いになる(親をたどる再帰判定)",
+        "稼働→メンテ、メンテ→稼働では通知が出ない。メンテ中にダウンへ変わったときだけ通知が出る",
+        "判定は毎ビートDBを引くため、開始・終了・停止・削除のいずれも次のビートで反映される",
+        "プッシュ型の監視も受信時に同じ判定を通り、メンテ中は状態がメンテナンスに上書きされる"
+      ]
+    },
+    {
+      "id": "maintenance-status-page-banner",
+      "title": "ステータスページに告知を出す",
+      "category": "メンテナンス",
+      "trigger": "訪問者が公開ステータスページを開く",
+      "steps": [
+        { "from": "api.http.status_page_slug", "to": "db.status_page", "label": "スラッグでページを引く", "kind": "db" },
+        { "from": "api.http.status_page_slug", "to": "svc.status_page.getStatusPageData", "label": "公開データを組み立てる", "kind": "http" },
+        { "from": "svc.status_page.getStatusPageData", "to": "svc.status_page.getMaintenanceList", "label": "告知するメンテを集める", "kind": "call" },
+        { "from": "svc.status_page.getMaintenanceList", "to": "db.maintenance_status_page", "label": "紐付くメンテIDを引く", "kind": "db" },
+        { "from": "svc.status_page.getMaintenanceList", "to": "svc.server.getMaintenance", "label": "メモリ上の1件を取る", "kind": "call" },
+        { "from": "svc.server.getMaintenance", "to": "svc.maintenance.isUnderMaintenance", "label": "実施中か聞く", "kind": "call" },
+        { "from": "svc.maintenance.isUnderMaintenance", "to": "svc.maintenance.getStatus", "label": "状態を判定", "kind": "call" },
+        { "from": "svc.maintenance.isUnderMaintenance", "to": "svc.maintenance.toPublicJSON", "label": "実施中だけ公開用に変換", "kind": "call" },
+        { "from": "svc.maintenance.toPublicJSON", "to": "api.http.status_page_slug", "label": "告知としてJSONに載せる", "kind": "http" },
+        { "from": "svc.status_page.getMaintenanceList", "to": "api.http.status_page_slug", "label": "例外時は黙って告知なし", "branch": "error", "kind": "error" }
+      ],
+      "notes": [
+        "告知に出るのは実施中のものだけ。予定は公開ページに出ない",
+        "この応答は5分キャッシュされる。設定変更時はキャッシュを捨てるが、cronでの自動開始・自動終了では捨てないため出入りが最大5分遅れる",
+        "対象モニターの表示は別の仕組み。モニターがメンテ中ならページ上の状態がメンテナンス表示になる",
+        "メンテ一覧の取得中に例外が起きても空配列を返すだけで、ページ自体はエラーにならない(告知だけが消える)"
+      ]
+    },
+    {
+      "id": "maintenance-boot-restore",
+      "title": "再起動でスケジュールを復元する",
+      "category": "メンテナンス",
+      "trigger": "サーバ起動時（データベース準備完了の直後）",
+      "steps": [
+        { "from": "svc.server.loadMaintenanceList", "to": "db.maintenance", "label": "全件を読み込む", "kind": "db" },
+        { "from": "svc.server.loadMaintenanceList", "to": "svc.maintenance.run", "label": "1件ずつ予約を張る", "kind": "call" },
+        { "from": "svc.maintenance.run", "to": "svc.maintenance.generateCron", "label": "旧データはcronを生成", "branch": "alt", "kind": "call" },
+        { "from": "svc.maintenance.generateCron", "to": "db.maintenance", "label": "生成したcronを保存", "branch": "alt", "kind": "db" },
+        { "from": "svc.maintenance.run", "to": "svc.maintenance.getTimezone", "label": "タイムゾーンを解決", "kind": "call" },
+        { "from": "svc.maintenance.run", "to": "job.maintenance.cronJob", "label": "cronジョブを作る", "kind": "timer" },
+        { "from": "svc.maintenance.run", "to": "job.maintenance.intervalJob", "label": "間隔方式は開始日起点で作る", "branch": "alt", "kind": "timer" },
+        { "from": "svc.maintenance.run", "to": "job.maintenance.singleJob", "label": "単発は開始日時に1回だけ", "branch": "alt", "kind": "timer" },
+        { "from": "svc.maintenance.run", "to": "svc.maintenance.getRunningTimeslot", "label": "今が窓の中か確認", "kind": "call" },
+        { "from": "svc.maintenance.getRunningTimeslot", "to": "job.maintenance.startEvent", "label": "窓の中なら残り時間で再開", "branch": "alt", "kind": "timer" },
+        { "from": "job.maintenance.startEvent", "to": "job.maintenance.durationTimeout", "label": "終了タイマーを張り直す", "kind": "timer" },
+        { "from": "svc.maintenance.run", "to": "svc.server.getMaintenanceJSONList", "label": "以後の配信対象になる", "kind": "call" },
+        { "from": "svc.server.getMaintenanceJSONList", "to": "svc.maintenance.getStatus", "label": "状態を組み立てる", "kind": "call" },
+        { "from": "svc.maintenance.getStatus", "to": "ui.managemaintenance.list", "label": "起動直後は不明表示になりうる", "branch": "alt", "kind": "realtime" }
+      ],
+      "notes": [
+        "実施中かどうかはDBに保存されていない。再起動後は窓の中判定だけで復元されるため、単発や手動以外は時間帯の外だと予定に戻る",
+        "起動時の読み込みは各件の予約張りを待たない。予約が張られる前に一覧を開くと状態が不明のまま表示されることがある",
+        "起動時の呼び出しは引数の渡し方が他と異なり、失敗時に例外を投げる側の動きになる。壊れたcronが1件あると読み込み全体が途中で止まりうる",
+        "cronが空の古いデータはここで生成され、そのままDBに書き戻される"
+      ]
+    }
+  ]
+}

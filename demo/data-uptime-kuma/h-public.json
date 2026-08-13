@@ -1,0 +1,512 @@
+{
+  "nodes": [
+    {
+      "id": "ui.badge_link_generator",
+      "lane": "ui",
+      "label": "バッジURL生成",
+      "detail": "モニター詳細のバッジ生成ダイアログ。種類/色/期間を選びURLを組立て<img>でプレビュー、コピー欄で外部貼付用に提供する",
+      "ref": "src/components/BadgeLinkGeneratorDialog.vue:287"
+    },
+    {
+      "id": "ui.entry.mounted",
+      "lane": "ui",
+      "label": "エントリー判定起動",
+      "detail": "SPA起動直後にマウントされ/api/entry-pageを呼び、ダッシュボードかステータスページかを振り分ける",
+      "ref": "src/pages/Entry.vue:20"
+    },
+    {
+      "id": "ui.tags_manager.open",
+      "lane": "ui",
+      "label": "モニターのタグ追加UI",
+      "detail": "モニター編集画面(EditMonitor.vue)に埋め込むタグ管理コンポーネント。既存タグ取得と新規タグ入力欄を開く",
+      "ref": "src/components/TagsManager.vue:385"
+    },
+    {
+      "id": "ui.tags_manager.submit",
+      "lane": "ui",
+      "label": "タグ変更を保存",
+      "detail": "ステージ済みタグをモニターに反映。新規はaddTag後にaddMonitorTag、削除分はdeleteMonitorTagを送る",
+      "ref": "src/components/TagsManager.vue:493"
+    },
+    {
+      "id": "ui.settings_tags.add",
+      "lane": "ui",
+      "label": "設定のタグ追加ボタン",
+      "detail": "設定>タグ画面の「Add New Tag」ボタン。空のTagEditDialogを開き新規タグ単体の作成を始める",
+      "ref": "src/components/settings/Tags.vue:123"
+    },
+    {
+      "id": "ui.tag_edit_dialog.submit",
+      "lane": "ui",
+      "label": "タグ編集ダイアログ保存",
+      "detail": "名前重複を検証しaddTagで作成、追加/削除対象モニターへのaddMonitorTag等も合わせて送信する",
+      "ref": "src/components/TagEditDialog.vue:320"
+    },
+    {
+      "id": "ext.badge_consumer",
+      "lane": "ext",
+      "label": "外部のバッジ表示先",
+      "detail": "READMEやステータスページ等、コピーしたバッジURLを<img src>で埋め込み表示する外部の閲覧先",
+      "ref": "src/components/BadgeLinkGeneratorDialog.vue:201"
+    },
+    {
+      "id": "ext.prometheus_server",
+      "lane": "ext",
+      "label": "Prometheusサーバ",
+      "detail": "prom-client形式のメトリクスを集めるため、Basic認証付きで/metricsを定期的にスクレイピングする外部監視基盤",
+      "ref": "server/server.js:353"
+    },
+    {
+      "id": "api.http.badge_status",
+      "lane": "api",
+      "label": "GET badge/status",
+      "detail": "モニター状態をSVGバッジ化するAPI。5分キャッシュ、非公開/存在しない場合はN/Aを返す",
+      "ref": "server/routers/api-router.js:148"
+    },
+    {
+      "id": "api.http.badge_uptime",
+      "lane": "api",
+      "label": "GET badge/uptime",
+      "detail": "指定期間の稼働率をSVGバッジ化するAPI。既定24h、5分キャッシュ、非公開はN/A",
+      "ref": "server/routers/api-router.js:221"
+    },
+    {
+      "id": "api.http.badge_response",
+      "lane": "api",
+      "label": "GET badge/response",
+      "detail": "直近ハートビートの応答時間(ping)をSVGバッジ化するAPI。5分キャッシュ、非公開/ping無しはN/A",
+      "ref": "server/routers/api-router.js:507"
+    },
+    {
+      "id": "api.http.badge_cert_exp",
+      "lane": "api",
+      "label": "GET badge/cert-exp",
+      "detail": "TLS証明書の残日数(または失効日)をSVGバッジ化するAPI。5分キャッシュ、状態に応じ3段階で判定",
+      "ref": "server/routers/api-router.js:424"
+    },
+    {
+      "id": "api.http.entry_page",
+      "lane": "api",
+      "label": "GET entry-page",
+      "detail": "アクセスホスト名がステータスページの独自ドメインに一致するか判定し、振り分け先をJSONで返す",
+      "ref": "server/routers/api-router.js:28"
+    },
+    {
+      "id": "api.http.metrics",
+      "lane": "api",
+      "label": "GET metrics",
+      "detail": "Basic認証(APIキーまたはユーザー)を経てprom-client形式のメトリクスをテキストで返すエンドポイント",
+      "ref": "server/server.js:355"
+    },
+    {
+      "id": "api.socket.getTags",
+      "lane": "api",
+      "label": "socket getTags",
+      "detail": "ログイン中ユーザー向けに全タグ一覧を返すSocket.ioイベント",
+      "ref": "server/server.js:1217"
+    },
+    {
+      "id": "api.socket.addTag",
+      "lane": "api",
+      "label": "socket addTag",
+      "detail": "新規タグ(名前/色)をtagテーブルへ登録するSocket.ioイベント",
+      "ref": "server/server.js:1235"
+    },
+    {
+      "id": "api.socket.editTag",
+      "lane": "api",
+      "label": "socket editTag",
+      "detail": "指定tag.idのタグの名前/色を更新するSocket.ioイベント",
+      "ref": "server/server.js:1256"
+    },
+    {
+      "id": "api.socket.addMonitorTag",
+      "lane": "api",
+      "label": "socket addMonitorTag",
+      "detail": "既存タグ(と任意の値)を指定モニターに関連付けるSocket.ioイベント",
+      "ref": "server/server.js:1306"
+    },
+    {
+      "id": "svc.auth.checkLogin",
+      "lane": "svc",
+      "label": "ログイン確認",
+      "detail": "socket.userIDが無ければ例外を投げる、ログイン必須socketイベント共通のガード",
+      "ref": "server/util-server.js:644"
+    },
+    {
+      "id": "svc.auth.apiAuth",
+      "lane": "svc",
+      "label": "API用Basic認証",
+      "detail": "disableAuth/apiKeysEnabled設定に応じ、APIキー認証または通常ユーザー認証でBasic認証を行う",
+      "ref": "server/auth.js:155"
+    },
+    {
+      "id": "svc.api-router.isMonitorPublic",
+      "lane": "svc",
+      "label": "公開モニター判定",
+      "detail": "monitor_groupとgroupを結合し、該当モニターの属するグループにpublic=1のものがあるか判定する",
+      "ref": "server/routers/api-router.js:626"
+    },
+    {
+      "id": "svc.api-router.makeBadge",
+      "lane": "svc",
+      "label": "SVGバッジ生成",
+      "detail": "badge-makerライブラリでラベル/値/色/スタイルからバッジSVG文字列を生成する",
+      "ref": "server/routers/api-router.js:16"
+    },
+    {
+      "id": "svc.monitor.getPreviousHeartbeat",
+      "lane": "svc",
+      "label": "直近ハートビート取得",
+      "detail": "monitor_idについてMAX(id)で最新1件のハートビートを検索する",
+      "ref": "server/model/monitor.js:1587"
+    },
+    {
+      "id": "svc.monitor.preparePreloadData",
+      "lane": "svc",
+      "label": "プリロードデータ準備",
+      "detail": "複数モニター分の通知/タグ/メンテ状態などをまとめて先読みし整形する",
+      "ref": "server/model/monitor.js:1820"
+    },
+    {
+      "id": "svc.monitor.getMonitorTag",
+      "lane": "svc",
+      "label": "モニタータグ一括取得",
+      "detail": "monitor_tagとtagを結合し、対象モニターID群のタグ(名前/色込み)を一括取得する",
+      "ref": "server/model/monitor.js:1803"
+    },
+    {
+      "id": "svc.uptime-calculator.getUptimeCalculator",
+      "lane": "svc",
+      "label": "稼働率計算機を取得",
+      "detail": "モニターごとにメモリキャッシュされたUptimeCalculatorを返す(未初期化なら生成)",
+      "ref": "server/uptime-calculator.js:72"
+    },
+    {
+      "id": "svc.uptime-calculator.getDataByDuration",
+      "lane": "svc",
+      "label": "期間別データを算出",
+      "detail": "メモリ上の集計データから指定期間(24h等)の稼働率/平均pingを計算する純粋計算",
+      "ref": "server/uptime-calculator.js:775"
+    },
+    {
+      "id": "svc.prometheus.init",
+      "lane": "svc",
+      "label": "Prometheus初期化",
+      "detail": "全タグ名をサニタイズしラベル候補にしつつ、monitor_status等のGaugeを起動時に1回だけ生成する",
+      "ref": "server/prometheus.js:38"
+    },
+    {
+      "id": "svc.status_page.loadDomainMappingList",
+      "lane": "svc",
+      "label": "独自ドメイン対応表読込",
+      "detail": "status_pageとstatus_page_cnameを結合し、ドメイン→スラッグの対応表をメモリにロードする",
+      "ref": "server/model/status_page.js:352"
+    },
+    {
+      "id": "svc.uptime-kuma-server.sendUpdateMonitorIntoList",
+      "lane": "svc",
+      "label": "モニター情報を再送信",
+      "detail": "対象モニターの最新情報を組み立て、同ユーザーのソケットへupdateMonitorIntoListを送る",
+      "ref": "server/uptime-kuma-server.js:234"
+    },
+    {
+      "id": "svc.uptime-kuma-server.getMonitorJSONList",
+      "lane": "svc",
+      "label": "モニター一覧を再構築",
+      "detail": "user_id一致のモニターを検索し、toJSONでタグ等の先読みデータを含めて整形する",
+      "ref": "server/uptime-kuma-server.js:259"
+    },
+    {
+      "id": "svc.apicache.middleware",
+      "lane": "svc",
+      "label": "5分間キャッシュ",
+      "detail": "apicacheミドルウェア。同一URLへのGETを5分間キャッシュし、ヒット時はハンドラ本体を実行しない",
+      "ref": "server/modules/apicache/apicache.js:544"
+    },
+    {
+      "id": "job.server.bootstrap",
+      "lane": "job",
+      "label": "サーバー起動処理",
+      "detail": "DB接続後にentryPage読込・ドメイン対応表ロード・Prometheus初期化などを順に行う起動時IIFE",
+      "ref": "server/server.js:230"
+    },
+    {
+      "id": "db.monitor",
+      "lane": "db",
+      "label": "モニター",
+      "detail": "監視対象モニターの定義テーブル",
+      "ref": "db/knex_init_db.js:66"
+    },
+    {
+      "id": "db.heartbeat",
+      "lane": "db",
+      "label": "ハートビート",
+      "detail": "各モニターの監視結果(状態/ping/時刻等)を記録するテーブル",
+      "ref": "db/knex_init_db.js:125"
+    },
+    {
+      "id": "db.tag",
+      "lane": "db",
+      "label": "タグ",
+      "detail": "タグの名前/色を保持するマスタテーブル",
+      "ref": "db/knex_init_db.js:329"
+    },
+    {
+      "id": "db.monitor_tag",
+      "lane": "db",
+      "label": "モニタータグ紐付",
+      "detail": "モニターとタグの多対多の関連(値付き)を保持するテーブル",
+      "ref": "db/knex_init_db.js:337"
+    },
+    {
+      "id": "db.monitor_tls_info",
+      "lane": "db",
+      "label": "TLS証明書情報",
+      "detail": "モニターごとの直近TLS証明書情報(JSON)を保持するテーブル",
+      "ref": "db/knex_init_db.js:359"
+    },
+    {
+      "id": "db.status_page",
+      "lane": "db",
+      "label": "ステータスページ",
+      "detail": "公開ステータスページの定義テーブル",
+      "ref": "db/knex_init_db.js:185"
+    },
+    {
+      "id": "db.status_page_cname",
+      "lane": "db",
+      "label": "独自ドメイン",
+      "detail": "ステータスページに紐づく独自ドメイン(CNAME)を保持するテーブル",
+      "ref": "db/knex_init_db.js:391"
+    },
+    {
+      "id": "db.group",
+      "lane": "db",
+      "label": "グループ(公開設定)",
+      "detail": "モニターのグループ化とpublicフラグ(バッジ/ステータスページ公開可否)を保持するテーブル",
+      "ref": "db/knex_init_db.js:26"
+    },
+    {
+      "id": "db.monitor_group",
+      "lane": "db",
+      "label": "モニター所属グループ",
+      "detail": "モニターとグループの関連付けを保持するテーブル",
+      "ref": "db/knex_init_db.js:248"
+    }
+  ],
+  "edges": [],
+  "flows": [
+    {
+      "id": "badge_status",
+      "title": "ステータスバッジを画像として取得する",
+      "category": "公開API・タグ",
+      "trigger": "バッジ生成ダイアログのライブプレビュー、または外部サイトに貼られたバッジ画像が/api/badge/:id/statusを読み込む",
+      "steps": [
+        { "from": "ui.badge_link_generator", "to": "api.http.badge_status", "label": "ダイアログ内<img>でライブプレビュー", "kind": "http", "evidence": "direct" },
+        { "from": "ui.badge_link_generator", "to": "ext.badge_consumer", "label": "URLをコピーし外部サイトに貼付", "kind": "copy", "evidence": "direct" },
+        { "from": "ext.badge_consumer", "to": "api.http.badge_status", "label": "<img src>でGETリクエスト", "kind": "http", "evidence": "framework" },
+        { "from": "api.http.badge_status", "to": "svc.apicache.middleware", "label": "cache(\"5 minutes\")を適用", "kind": "middleware", "evidence": "framework" },
+        { "from": "svc.apicache.middleware", "to": "ext.badge_consumer", "label": "キャッシュ済SVGを即返却", "branch": "キャッシュヒット", "kind": "return", "evidence": "framework" },
+        { "from": "svc.apicache.middleware", "to": "api.http.badge_status", "label": "ハンドラ本体を実行", "branch": "キャッシュミス", "kind": "middleware", "evidence": "framework" },
+        { "from": "api.http.badge_status", "to": "svc.api-router.isMonitorPublic", "label": "公開判定を呼ぶ", "kind": "call", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "db.monitor_group", "label": "monitor_group⋈groupを検索", "kind": "query", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "db.group", "label": "public=1かを判定", "kind": "query", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "api.http.badge_status", "label": "true/falseを返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_status", "to": "svc.api-router.makeBadge", "label": "N/A(灰色)バッジを構成", "branch": "非公開/モニター無し", "kind": "call", "evidence": "direct" },
+        { "from": "api.http.badge_status", "to": "svc.monitor.getPreviousHeartbeat", "label": "直近ハートビートを取得", "branch": "公開", "kind": "call", "evidence": "direct" },
+        { "from": "svc.monitor.getPreviousHeartbeat", "to": "db.heartbeat", "label": "MAX(id)で最新1件を検索", "kind": "query", "evidence": "direct" },
+        { "from": "svc.monitor.getPreviousHeartbeat", "to": "api.http.badge_status", "label": "ハートビートを返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_status", "to": "svc.api-router.makeBadge", "label": "状態に応じ色/文言を決定", "kind": "call", "evidence": "direct" },
+        { "from": "svc.api-router.makeBadge", "to": "api.http.badge_status", "label": "SVG文字列を返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_status", "to": "ext.badge_consumer", "label": "image/svg+xmlで応答", "kind": "http", "evidence": "direct" }
+      ],
+      "notes": [
+        "キャッシュヒット時はisMonitorPublic等を再実行しないため、モニターを非公開化してもキャッシュ期間中(5分)は反映されない",
+        "ライブプレビューも外部埋込と同一URL・同一経路(api.http.badge_status)を通る"
+      ]
+    },
+    {
+      "id": "badge_uptime",
+      "title": "稼働率バッジを取得する",
+      "category": "公開API・タグ",
+      "trigger": "バッジ生成ダイアログのライブプレビュー、または外部サイトに貼られたバッジ画像が/api/badge/:id/uptime/:duration?を読み込む",
+      "steps": [
+        { "from": "ui.badge_link_generator", "to": "api.http.badge_uptime", "label": "ダイアログ内<img>でライブプレビュー", "kind": "http", "evidence": "direct" },
+        { "from": "ui.badge_link_generator", "to": "ext.badge_consumer", "label": "URLをコピーし外部サイトに貼付", "kind": "copy", "evidence": "direct" },
+        { "from": "ext.badge_consumer", "to": "api.http.badge_uptime", "label": "<img src>でGETリクエスト", "kind": "http", "evidence": "framework" },
+        { "from": "api.http.badge_uptime", "to": "svc.apicache.middleware", "label": "cache(\"5 minutes\")を適用", "kind": "middleware", "evidence": "framework" },
+        { "from": "svc.apicache.middleware", "to": "ext.badge_consumer", "label": "キャッシュ済SVGを即返却", "branch": "キャッシュヒット", "kind": "return", "evidence": "framework" },
+        { "from": "svc.apicache.middleware", "to": "api.http.badge_uptime", "label": "ハンドラ本体を実行", "branch": "キャッシュミス", "kind": "middleware", "evidence": "framework" },
+        { "from": "api.http.badge_uptime", "to": "svc.api-router.isMonitorPublic", "label": "公開判定を呼ぶ", "kind": "call", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "db.monitor_group", "label": "monitor_group⋈groupを検索", "kind": "query", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "db.group", "label": "public=1かを判定", "kind": "query", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "api.http.badge_uptime", "label": "true/falseを返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_uptime", "to": "svc.api-router.makeBadge", "label": "N/Aバッジを構成", "branch": "非公開/モニター無し", "kind": "call", "evidence": "direct" },
+        { "from": "api.http.badge_uptime", "to": "svc.uptime-calculator.getUptimeCalculator", "label": "稼働率計算機を取得", "branch": "公開", "kind": "call", "evidence": "direct" },
+        { "from": "svc.uptime-calculator.getUptimeCalculator", "to": "api.http.badge_uptime", "label": "計算機インスタンスを返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_uptime", "to": "svc.uptime-calculator.getDataByDuration", "label": "指定期間の値を算出", "kind": "call", "evidence": "direct" },
+        { "from": "svc.uptime-calculator.getDataByDuration", "to": "api.http.badge_uptime", "label": "稼働率/平均pingを返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_uptime", "to": "svc.api-router.makeBadge", "label": "稼働率を色/表示文字列に変換", "kind": "call", "evidence": "direct" },
+        { "from": "svc.api-router.makeBadge", "to": "api.http.badge_uptime", "label": "SVG文字列を返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_uptime", "to": "ext.badge_consumer", "label": "image/svg+xmlで応答", "kind": "http", "evidence": "direct" }
+      ],
+      "notes": [
+        "色はcolorクエリで上書き可能。既定は稼働率からpercentageToColor(server/util-server.js:692)で算出される(本フローでは未詳細化)",
+        "UptimeCalculatorは初回アクセス時にstat系テーブルから読込みメモリに保持する。その内部詳細は本調査範囲外"
+      ]
+    },
+    {
+      "id": "badge_response",
+      "title": "応答時間バッジを取得する",
+      "category": "公開API・タグ",
+      "trigger": "バッジ生成ダイアログのライブプレビュー、または外部サイトに貼られたバッジ画像が/api/badge/:id/responseを読み込む",
+      "steps": [
+        { "from": "ui.badge_link_generator", "to": "api.http.badge_response", "label": "ダイアログ内<img>でライブプレビュー", "kind": "http", "evidence": "direct" },
+        { "from": "ui.badge_link_generator", "to": "ext.badge_consumer", "label": "URLをコピーし外部サイトに貼付", "kind": "copy", "evidence": "direct" },
+        { "from": "ext.badge_consumer", "to": "api.http.badge_response", "label": "<img src>でGETリクエスト", "kind": "http", "evidence": "framework" },
+        { "from": "api.http.badge_response", "to": "svc.apicache.middleware", "label": "cache(\"5 minutes\")を適用", "kind": "middleware", "evidence": "framework" },
+        { "from": "svc.apicache.middleware", "to": "ext.badge_consumer", "label": "キャッシュ済SVGを即返却", "branch": "キャッシュヒット", "kind": "return", "evidence": "framework" },
+        { "from": "svc.apicache.middleware", "to": "api.http.badge_response", "label": "ハンドラ本体を実行", "branch": "キャッシュミス", "kind": "middleware", "evidence": "framework" },
+        { "from": "api.http.badge_response", "to": "svc.api-router.isMonitorPublic", "label": "公開判定を呼ぶ", "kind": "call", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "db.monitor_group", "label": "monitor_group⋈groupを検索", "kind": "query", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "db.group", "label": "public=1かを判定", "kind": "query", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "api.http.badge_response", "label": "true/falseを返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_response", "to": "svc.api-router.makeBadge", "label": "N/Aバッジを構成", "branch": "非公開/モニター無し", "kind": "call", "evidence": "direct" },
+        { "from": "api.http.badge_response", "to": "svc.monitor.getPreviousHeartbeat", "label": "直近ハートビートを取得", "branch": "公開", "kind": "call", "evidence": "direct" },
+        { "from": "svc.monitor.getPreviousHeartbeat", "to": "db.heartbeat", "label": "MAX(id)で最新1件を検索", "kind": "query", "evidence": "direct" },
+        { "from": "svc.monitor.getPreviousHeartbeat", "to": "api.http.badge_response", "label": "ハートビートを返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_response", "to": "svc.api-router.makeBadge", "label": "N/A(ping無し)を構成", "branch": "pingが未記録", "kind": "call", "evidence": "direct" },
+        { "from": "api.http.badge_response", "to": "svc.api-router.makeBadge", "label": "ping値を色/表示文字列に変換", "branch": "pingあり", "kind": "call", "evidence": "direct" },
+        { "from": "svc.api-router.makeBadge", "to": "api.http.badge_response", "label": "SVG文字列を返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_response", "to": "ext.badge_consumer", "label": "image/svg+xmlで応答", "kind": "http", "evidence": "direct" }
+      ],
+      "notes": [
+        "応答時間系バッジにはavg-response(期間平均、独自SQLでpublic=1を直接判定)とping(UptimeCalculator経由)も別途存在するが、本フローは最新1件のみを表示するresponseルートを対象とした(判断根拠は確信が持てなかった点を参照)",
+        "avg-responseルートはisMonitorPublicを使わない特殊な経路のため未詳細化"
+      ]
+    },
+    {
+      "id": "badge_cert_exp",
+      "title": "証明書期限バッジを取得する",
+      "category": "公開API・タグ",
+      "trigger": "バッジ生成ダイアログのライブプレビュー、または外部サイトに貼られたバッジ画像が/api/badge/:id/cert-expを読み込む",
+      "steps": [
+        { "from": "ui.badge_link_generator", "to": "api.http.badge_cert_exp", "label": "ダイアログ内<img>でライブプレビュー", "kind": "http", "evidence": "direct" },
+        { "from": "ui.badge_link_generator", "to": "ext.badge_consumer", "label": "URLをコピーし外部サイトに貼付", "kind": "copy", "evidence": "direct" },
+        { "from": "ext.badge_consumer", "to": "api.http.badge_cert_exp", "label": "<img src>でGETリクエスト", "kind": "http", "evidence": "framework" },
+        { "from": "api.http.badge_cert_exp", "to": "svc.apicache.middleware", "label": "cache(\"5 minutes\")を適用", "kind": "middleware", "evidence": "framework" },
+        { "from": "svc.apicache.middleware", "to": "ext.badge_consumer", "label": "キャッシュ済SVGを即返却", "branch": "キャッシュヒット", "kind": "return", "evidence": "framework" },
+        { "from": "svc.apicache.middleware", "to": "api.http.badge_cert_exp", "label": "ハンドラ本体を実行", "branch": "キャッシュミス", "kind": "middleware", "evidence": "framework" },
+        { "from": "api.http.badge_cert_exp", "to": "svc.api-router.isMonitorPublic", "label": "公開判定を呼ぶ", "kind": "call", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "db.monitor_group", "label": "monitor_group⋈groupを検索", "kind": "query", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "db.group", "label": "public=1かを判定", "kind": "query", "evidence": "direct" },
+        { "from": "svc.api-router.isMonitorPublic", "to": "api.http.badge_cert_exp", "label": "true/falseを返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_cert_exp", "to": "svc.api-router.makeBadge", "label": "N/Aバッジを構成", "branch": "非公開/モニター無し", "kind": "call", "evidence": "direct" },
+        { "from": "api.http.badge_cert_exp", "to": "db.monitor_tls_info", "label": "monitor_idでTLS情報を検索", "branch": "公開", "kind": "query", "evidence": "direct" },
+        { "from": "db.monitor_tls_info", "to": "api.http.badge_cert_exp", "label": "レコード有無/内容を返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_cert_exp", "to": "svc.api-router.makeBadge", "label": "No/Bad Certバッジを構成", "branch": "証明書レコード無し", "kind": "call", "evidence": "direct" },
+        { "from": "api.http.badge_cert_exp", "to": "svc.api-router.makeBadge", "label": "Bad Certバッジ(赤)を構成", "branch": "証明書が無効", "kind": "call", "evidence": "direct" },
+        { "from": "api.http.badge_cert_exp", "to": "svc.api-router.makeBadge", "label": "残日数に応じ3段階の色を構成", "branch": "証明書が有効", "kind": "call", "evidence": "direct" },
+        { "from": "svc.api-router.makeBadge", "to": "api.http.badge_cert_exp", "label": "SVG文字列を返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.badge_cert_exp", "to": "ext.badge_consumer", "label": "image/svg+xmlで応答", "kind": "http", "evidence": "direct" }
+      ],
+      "notes": [
+        "3段階判定はdaysRemaining>warnDaysでupColor、>downDaysでwarnColor、それ以下でdownColorとなる(既定値はbadgeConstants)",
+        "dateクエリ指定時は残日数の代わりに失効日(validTo)を表示する(色判定ロジック自体は変わらない)"
+      ]
+    },
+    {
+      "id": "entry_page_routing",
+      "title": "エントリページに振り分ける",
+      "category": "公開API・タグ",
+      "trigger": "ブラウザでSPAを開くとEntry.vueがマウントされ/api/entry-pageを呼ぶ",
+      "steps": [
+        { "from": "job.server.bootstrap", "to": "svc.status_page.loadDomainMappingList", "label": "起動時にドメイン対応表を読込", "kind": "call", "evidence": "direct" },
+        { "from": "svc.status_page.loadDomainMappingList", "to": "db.status_page", "label": "status_pageと結合検索", "kind": "query", "evidence": "direct" },
+        { "from": "svc.status_page.loadDomainMappingList", "to": "db.status_page_cname", "label": "カスタムドメイン一覧を取得", "kind": "query", "evidence": "direct" },
+        { "from": "ui.entry.mounted", "to": "api.http.entry_page", "label": "axios.get(\"/api/entry-page\")", "kind": "http", "evidence": "direct" },
+        { "from": "api.http.entry_page", "to": "ui.entry.mounted", "label": "type:statusPageMatchedDomainを返す", "branch": "hostnameがdomainMappingListに存在", "kind": "return", "evidence": "direct" },
+        { "from": "api.http.entry_page", "to": "ui.entry.mounted", "label": "type:entryPage(設定値)を返す", "branch": "hostnameが未一致", "kind": "return", "evidence": "direct" }
+      ],
+      "notes": [
+        "ドメイン対応表はStatusPage.domainMappingListとしてメモリにキャッシュされ、リクエスト毎にDBへは問い合わせない。更新はloadDomainMappingListの再実行(起動時/ステータスページ保存時)で反映される",
+        "Entry.vue側のコードコメントには『本番では振り分けロジックがサーバー側にもある』旨の記載があるが、その実体は本調査範囲(読解対象ファイル)では確認していない"
+      ]
+    },
+    {
+      "id": "prometheus_scrape",
+      "title": "Prometheusがメトリクスを収集する",
+      "category": "公開API・タグ",
+      "trigger": "外部のPrometheusサーバーがBasic認証付きで定期的にGET /metricsをスクレイピングする",
+      "steps": [
+        { "from": "job.server.bootstrap", "to": "svc.prometheus.init", "label": "起動時に一度だけゲージを初期化", "kind": "call", "evidence": "direct" },
+        { "from": "svc.prometheus.init", "to": "db.tag", "label": "全タグ名をラベル候補として読込", "kind": "query", "evidence": "direct" },
+        { "from": "ext.prometheus_server", "to": "api.http.metrics", "label": "GET /metricsでスクレイピング", "kind": "http", "evidence": "inferred" },
+        { "from": "api.http.metrics", "to": "svc.auth.apiAuth", "label": "Basic認証を要求", "kind": "middleware", "evidence": "framework" },
+        { "from": "svc.auth.apiAuth", "to": "ext.prometheus_server", "label": "401 Unauthorizedを返す", "branch": "認証失敗", "kind": "return", "evidence": "framework" },
+        { "from": "svc.auth.apiAuth", "to": "api.http.metrics", "label": "次のミドルウェアへ進む", "branch": "認証成功", "kind": "middleware", "evidence": "framework" },
+        { "from": "api.http.metrics", "to": "ext.prometheus_server", "label": "prom-client形式のメトリクス本文を返す", "kind": "http", "evidence": "framework" }
+      ],
+      "notes": [
+        "個々のGauge値(monitor_status等)はハートビート処理側の更新で反映される。例: pushルート内のnew Prometheus(monitor, tags).update(bean, undefined)呼び出し(server/routers/api-router.js:132)",
+        "通常監視(ping等)のビートループ側からのPrometheus.update()呼び出し箇所は、本調査の読解対象ファイル(api-router.js/prometheus.js/server.js該当行/tag.js/対象Vue)には含まれておらず未確認"
+      ]
+    },
+    {
+      "id": "tag_create",
+      "title": "タグを作る",
+      "category": "公開API・タグ",
+      "trigger": "設定>タグ画面で「Add New Tag」を押し、名前と色を入力して保存する",
+      "steps": [
+        { "from": "ui.settings_tags.add", "to": "ui.tag_edit_dialog.submit", "label": "reset()+show()で新規ダイアログを開く", "kind": "call", "evidence": "direct" },
+        { "from": "ui.tag_edit_dialog.submit", "to": "api.socket.addTag", "label": "emit(\"addTag\", {name, color})", "kind": "socket", "evidence": "direct" },
+        { "from": "api.socket.addTag", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call", "evidence": "direct" },
+        { "from": "api.socket.addTag", "to": "db.tag", "label": "新規タグをINSERT", "kind": "query", "evidence": "direct" },
+        { "from": "db.tag", "to": "api.socket.addTag", "label": "生成idを含むタグを返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.addTag", "to": "ui.tag_edit_dialog.submit", "label": "callback({ok:true, tag})", "kind": "socket", "evidence": "direct" },
+        { "from": "ui.tag_edit_dialog.submit", "to": "api.socket.editTag", "label": "作成直後に同一内容でeditTagも送信", "kind": "socket", "evidence": "direct" },
+        { "from": "api.socket.editTag", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call", "evidence": "direct" },
+        { "from": "api.socket.editTag", "to": "db.tag", "label": "id一致のタグを検索し名前/色を更新", "kind": "query", "evidence": "direct" },
+        { "from": "api.socket.editTag", "to": "ui.tag_edit_dialog.submit", "label": "callback({ok:true, tag})", "kind": "socket", "evidence": "direct" },
+        { "from": "ui.tag_edit_dialog.submit", "to": "ui.settings_tags.add", "label": "updated()で一覧を再取得しモーダルを閉じる", "kind": "call", "evidence": "direct" }
+      ],
+      "notes": [
+        "新規タグ作成時もaddTagに続けて同一内容のeditTagが無条件に送信される(TagEditDialog.vue:320-375の実装上の挙動。冗長だが実コードの通り)",
+        "この画面で同時にモニターを追加/削除すればaddMonitorTag/deleteMonitorTagも呼ばれるが、その経路は『タグをモニターに付ける』フロー側に記載"
+      ]
+    },
+    {
+      "id": "tag_attach_to_monitor",
+      "title": "タグをモニターに付ける",
+      "category": "公開API・タグ",
+      "trigger": "モニター編集画面のタグ管理UIで既存タグ(または新規タグ)を選び保存する",
+      "steps": [
+        { "from": "ui.tags_manager.open", "to": "api.socket.getTags", "label": "emit(\"getTags\")でタグ候補を取得", "kind": "socket", "evidence": "direct" },
+        { "from": "api.socket.getTags", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call", "evidence": "direct" },
+        { "from": "api.socket.getTags", "to": "db.tag", "label": "全タグをSELECT", "kind": "query", "evidence": "direct" },
+        { "from": "db.tag", "to": "api.socket.getTags", "label": "タグ一覧を返す", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.getTags", "to": "ui.tags_manager.open", "label": "callback({ok:true, tags})", "kind": "socket", "evidence": "direct" },
+        { "from": "ui.tags_manager.open", "to": "ui.tags_manager.submit", "label": "タグを選択/入力し保存を押す", "kind": "call", "evidence": "direct" },
+        { "from": "ui.tags_manager.submit", "to": "api.socket.addTag", "label": "新規タグ名/色をemit(\"addTag\")", "branch": "新規タグを含む場合", "kind": "socket", "evidence": "direct" },
+        { "from": "api.socket.addTag", "to": "db.tag", "label": "新規タグをINSERT", "branch": "新規タグを含む場合", "kind": "query", "evidence": "direct" },
+        { "from": "ui.tags_manager.submit", "to": "api.socket.addMonitorTag", "label": "emit(\"addMonitorTag\", tagId, monitorId, value)", "kind": "socket", "evidence": "direct" },
+        { "from": "api.socket.addMonitorTag", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call", "evidence": "direct" },
+        { "from": "api.socket.addMonitorTag", "to": "db.monitor_tag", "label": "(tag_id, monitor_id, value)をINSERT", "kind": "query", "evidence": "direct" },
+        { "from": "api.socket.addMonitorTag", "to": "svc.uptime-kuma-server.sendUpdateMonitorIntoList", "label": "更新後のモニター情報を再送信", "kind": "call", "evidence": "direct" },
+        { "from": "svc.uptime-kuma-server.sendUpdateMonitorIntoList", "to": "svc.uptime-kuma-server.getMonitorJSONList", "label": "対象モニターを再取得", "kind": "call", "evidence": "direct" },
+        { "from": "svc.uptime-kuma-server.getMonitorJSONList", "to": "db.monitor", "label": "user_id一致のモニターをSELECT", "kind": "query", "evidence": "direct" },
+        { "from": "svc.uptime-kuma-server.getMonitorJSONList", "to": "svc.monitor.preparePreloadData", "label": "タグ等の先読みデータを準備", "kind": "call", "evidence": "direct" },
+        { "from": "svc.monitor.preparePreloadData", "to": "svc.monitor.getMonitorTag", "label": "対象モニター群のタグを一括取得", "kind": "call", "evidence": "direct" },
+        { "from": "svc.monitor.getMonitorTag", "to": "db.monitor_tag", "label": "monitor_tag⋈tagで一括検索", "kind": "query", "evidence": "direct" },
+        { "from": "svc.monitor.getMonitorTag", "to": "db.tag", "label": "タグ名/色を結合取得", "kind": "query", "evidence": "direct" },
+        { "from": "svc.uptime-kuma-server.sendUpdateMonitorIntoList", "to": "ui.tags_manager.submit", "label": "socket.emit(\"updateMonitorIntoList\")で反映", "kind": "event", "evidence": "direct" },
+        { "from": "api.socket.addMonitorTag", "to": "ui.tags_manager.submit", "label": "callback({ok:true})", "kind": "socket", "evidence": "direct" }
+      ],
+      "notes": [
+        "削除(deleteMonitorTag)や値変更(editMonitorTag)も同型の経路で、DB操作がDELETE/UPDATEに変わるだけ(server/server.js:1331,1356)",
+        "既存タグのみを付ける場合はaddTagの分岐(新規タグを含む場合)を経ずaddMonitorTagのみが呼ばれる"
+      ]
+    }
+  ]
+}

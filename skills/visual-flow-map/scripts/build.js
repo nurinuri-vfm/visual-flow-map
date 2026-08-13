@@ -163,6 +163,17 @@ for (const e of P.addEdges || []) {
     if (at >= 0) f.steps.splice(at + 1, 0, step); else f.steps.push(step);
   }
 }
+// 検証で根拠が確定した経路の evidence / label / kind を上書きする。
+// キーは 'from -> to'。edges と、その経路を含む全 flow の steps の両方に効く
+for (const [key, patch] of Object.entries(P.edgePatch || {})) {
+  const m = String(key).split('->');
+  if (m.length !== 2) { patchMiss.push(`edgePatch キーの書式が 'from -> to' でない: ${key}`); continue; }
+  const a = canon(m[0].trim()), b = canon(m[1].trim());
+  const e = edges.get(ekey(a, b));
+  if (!e) { patchMiss.push(`edgePatch 未知の経路 ${key}`); continue; }
+  Object.assign(e, patch);
+  for (const f of flows) for (const s of f.steps) if (s.from === a && s.to === b) Object.assign(s, patch);
+}
 for (const [id, patch] of Object.entries(P.nodePatch || {})) {
   const n = nodes.get(canon(id));
   if (!n) { patchMiss.push(`nodePatch 未知ノード ${id}`); continue; }

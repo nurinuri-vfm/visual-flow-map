@@ -56,13 +56,26 @@ if (FLOW) {
     if (to && to.ref) console.log(`      ${to.ref}`);
   });
   if (f.notes && f.notes.length) { console.log('\n注意点:'); f.notes.forEach(n => console.log(`  - ${n}`)); }
-  // 手順が一本に繋がっているか（前の手順の to が次の from になっているか）を機械的に見る
-  let breaks = 0;
+  // 手順が一本に繋がっているかを機械的に見る。
+  // ただし alt / error の枝は「別の入口」であることが多い（同じ操作に編集ボタンと複製ボタンがある等）。
+  // それを断線として数えると偽の警告だらけになるので、種類を分けて報告する。
+  let breaks = 0, entries = 0;
   for (let i = 1; i < f.steps.length; i++) {
     const reach = new Set(f.steps.slice(0, i).flatMap(s => [s.from, s.to]));
-    if (!reach.has(f.steps[i].from)) { breaks++; if (breaks <= 5) console.log(`\n[断線] ${i + 1}番目の起点 ${show(f.steps[i].from)} は、それ以前の手順に一度も出てこない`); }
+    if (reach.has(f.steps[i].from)) continue;
+    // ui レーンから始まる手順は「ユーザーが画面を触る」行為であって、前の処理から呼ばれるものではない。
+    // 多段の操作（ダイアログを開く → 入力する → 保存を押す）は必ずこの形になるので断線に数えない
+    const fromLane = (N.get(f.steps[i].from) || {}).lane;
+    if ((f.steps[i].branch || 'main') !== 'main' || fromLane === 'ui') {
+      entries++;
+      if (entries <= 5) console.log(`\n[別入口] ${i + 1}番目 ${show(f.steps[i].from)} から始まる枝（${f.steps[i].branch}）`);
+    } else {
+      breaks++;
+      if (breaks <= 5) console.log(`\n[断線] ${i + 1}番目の起点 ${show(f.steps[i].from)} は、それ以前の手順に一度も出てこない`);
+    }
   }
   if (breaks) console.log(`\n断線 ${breaks} 件。入口のエッジが書かれていない可能性が高い。`);
+  if (entries) console.log(`別入口 ${entries} 件（同じ操作の別ボタン・別経路なら正常。main の枝に混ざっているなら branch の付け忘れ）。`);
 }
 
 if (NODE) {

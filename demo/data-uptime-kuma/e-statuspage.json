@@ -1,0 +1,1203 @@
+{
+  "nodes": [
+    {
+      "id": "api.socket.connection",
+      "lane": "api",
+      "label": "socket.io 接続受付",
+      "detail": "UI起点の全操作がここを通る。接続直後に sendInfo を返し、未セットアップなら setup を emit する。",
+      "ref": "server/server.js:389"
+    },
+    {
+      "id": "svc.auth.checkLogin",
+      "lane": "svc",
+      "label": "ログイン必須ガード",
+      "detail": "socket.userID が無ければ「You are not logged in.」を throw。呼び出し側の catch が callback に ok:false で返す。",
+      "ref": "server/util-server.js:644"
+    },
+    {
+      "id": "svc.server.sendMonitorList",
+      "lane": "svc",
+      "label": "モニター一覧を配信",
+      "detail": "ログイン後にモニター一覧を monitorList で送る。編集モードの「監視項目を追加」選択肢はこの一覧が元。",
+      "ref": "server/uptime-kuma-server.js:222"
+    },
+    {
+      "id": "ui.managestatuspage.new_btn",
+      "lane": "ui",
+      "label": "新規ページ作成ボタン",
+      "detail": "ステータスページ一覧画面のボタン。/add-status-page へルーター遷移するだけでサーバ通信はしない。",
+      "ref": "src/pages/ManageStatusPage.vue:9"
+    },
+    {
+      "id": "ui.addstatuspage.submit_btn",
+      "lane": "ui",
+      "label": "次へボタン",
+      "detail": "名前とスラッグを入力して送信。両方 required。processing 中は disabled になり二重送信を防ぐ。",
+      "ref": "src/pages/AddStatusPage.vue:56"
+    },
+    {
+      "id": "app.statuspage.submit",
+      "lane": "app",
+      "label": "作成をサーバへ送る",
+      "detail": "addStatusPage を emit。成功なら /status/<slug>?edit へ location 遷移。UNIQUE constraint は専用文言に置換。",
+      "ref": "src/pages/AddStatusPage.vue:87"
+    },
+    {
+      "id": "api.socket.addStatusPage",
+      "lane": "api",
+      "label": "ステータスページ追加",
+      "detail": "title/slug を trim。空なら「Please input all fields」。slug は小文字化し checkSlug 通過後に登録。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:436"
+    },
+    {
+      "id": "svc.status_page_socket_handler.checkSlug",
+      "lane": "svc",
+      "label": "スラッグ形式検査",
+      "detail": "英数字とハイフンのみ、連続ハイフン不可の正規表現。文字列でない・空・不一致は Invalid Slug で throw。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:533"
+    },
+    {
+      "id": "ui.managestatuspage.delete_btn",
+      "lane": "ui",
+      "label": "一覧の削除ボタン",
+      "detail": "行のホバーで現れる。click.stop.prevent でリンク遷移を止め、確認ダイアログだけを開く。",
+      "ref": "src/pages/ManageStatusPage.vue:37"
+    },
+    {
+      "id": "ui.managestatuspage.confirm_delete",
+      "lane": "ui",
+      "label": "削除の確認ダイアログ",
+      "detail": "はい/いいえの Confirm。はいで deleteStatusPage を実行。いいえなら何も起きない。",
+      "ref": "src/pages/ManageStatusPage.vue:53"
+    },
+    {
+      "id": "app.managestatuspage.deleteStatusPage",
+      "lane": "app",
+      "label": "一覧から削除送信",
+      "detail": "deleteStatusPage を emit。成功トーストの後 window.location.reload() で一覧を再取得する。",
+      "ref": "src/pages/ManageStatusPage.vue:96"
+    },
+    {
+      "id": "app.socket.statusPageList",
+      "lane": "app",
+      "label": "一覧受信ハンドラ",
+      "detail": "statusPageList イベントで一覧を受け取り statusPageListLoaded を true に。受信前はスピナー表示。",
+      "ref": "src/mixins/socket.js:181"
+    },
+    {
+      "id": "svc.status_page.sendStatusPageList",
+      "lane": "svc",
+      "label": "一覧をクライアントへ",
+      "detail": "status_page を title 順に全件取得し toJSON 化して statusPageList を emit。ログイン直後に一度だけ呼ばれる。",
+      "ref": "server/model/status_page.js:366"
+    },
+    {
+      "id": "ui.statuspage.public_view",
+      "lane": "ui",
+      "label": "公開ステータス画面",
+      "detail": "訪問者が見る本体。loadedTheme が立つまで何も描画しない。編集用サイドバーは enableEditMode 時のみ。",
+      "ref": "src/pages/StatusPage.vue:2"
+    },
+    {
+      "id": "ext.visitor_browser.open",
+      "lane": "ext",
+      "label": "訪問者のブラウザ",
+      "detail": "/status/<slug> を GET。ログイン不要で誰でも閲覧できる。5分の apicache が効く。",
+      "ref": "server/routers/status-page-router.js:16"
+    },
+    {
+      "id": "api.http.status_slug",
+      "lane": "api",
+      "label": "GET /status/:slug",
+      "detail": "slug を小文字化して SSR。apicache 5分。/status と /status-page は slug=default にフォールバックする。",
+      "ref": "server/routers/status-page-router.js:16"
+    },
+    {
+      "id": "api.http.entry_root",
+      "lane": "api",
+      "label": "GET / 入口の振り分け",
+      "detail": "ホスト名が独自ドメイン表にあればそのページをSSR。entryPage が statusPage- なら /status/… へ、他は /dashboard。",
+      "ref": "server/server.js:263"
+    },
+    {
+      "id": "svc.status_page.handleStatusPageResponse",
+      "lane": "svc",
+      "label": "公開ページを返す",
+      "detail": "slug が index.html なら default に読替。該当なしは 404 で素の indexHTML を返す（Vue側で page-not-found へ）。",
+      "ref": "server/model/status_page.js:57"
+    },
+    {
+      "id": "svc.status_page.renderHTML",
+      "lane": "svc",
+      "label": "HTMLを組み立てる",
+      "detail": "cheerio で title/description/OGタグ/favicon を差し替え、preloadData を script に埋め込む。",
+      "ref": "server/model/status_page.js:160"
+    },
+    {
+      "id": "svc.status_page.getStatusPageData",
+      "lane": "svc",
+      "label": "ページ全データ取得",
+      "detail": "公開用config・掲示中インシデント(pin=1 AND active=1)・公開グループ・実施中メンテを1回で集める。",
+      "ref": "server/model/status_page.js:314"
+    },
+    {
+      "id": "svc.status_page.toPublicJSON",
+      "lane": "svc",
+      "label": "公開用設定に絞る",
+      "detail": "slug/title/説明/テーマ/CSS等のみ返す。domainNameList は含めず、管理用の toJSON とは別物。",
+      "ref": "server/model/status_page.js:467"
+    },
+    {
+      "id": "svc.group.toPublicJSON",
+      "lane": "svc",
+      "label": "グループを公開形に",
+      "detail": "グループ配下のモニターを weight 順で整形。showTags と証明書期限表示のフラグで返す項目が変わる。",
+      "ref": "server/model/group.js:13"
+    },
+    {
+      "id": "svc.status_page.getMaintenanceList",
+      "lane": "svc",
+      "label": "実施中メンテ取得",
+      "detail": "紐づくメンテのうち isUnderMaintenance が真のものだけ返す。例外時は握り潰して空配列を返す。",
+      "ref": "server/model/status_page.js:563"
+    },
+    {
+      "id": "app.statuspage.mounted",
+      "lane": "app",
+      "label": "画面初期化",
+      "detail": "slug 決定→getData→自動更新タイマー設定→updateHeartbeatList と loadIncidentHistory を実行。?edit で編集開始。",
+      "ref": "src/pages/StatusPage.vue:981"
+    },
+    {
+      "id": "app.statuspage.getData",
+      "lane": "app",
+      "label": "設定データ取得",
+      "detail": "window.preloadData があれば通信せず即解決。無ければ /api/status-page/<slug> を GET。404 は /page-not-found へ。",
+      "ref": "src/pages/StatusPage.vue:1050"
+    },
+    {
+      "id": "api.http.api_status_page_slug",
+      "lane": "api",
+      "label": "GET 設定API",
+      "detail": "/api/status-page/:slug。該当なしは sendHttpError。apicache 5分のため保存直後は古い値が返り得る。",
+      "ref": "server/routers/status-page-router.js:39"
+    },
+    {
+      "id": "api.http.api_status_page_manifest",
+      "lane": "api",
+      "label": "GET manifest.json",
+      "detail": "PWA用。名前とアイコンだけ返す。apicache 1440分＝24時間なのでロゴ変更が長く反映されない。",
+      "ref": "server/routers/status-page-router.js:113"
+    },
+    {
+      "id": "api.http.api_status_page_badge",
+      "lane": "api",
+      "label": "GET 状態バッジSVG",
+      "detail": "公開モニターの最新ビートから Up/Degraded/Down/Maintenance を判定しSVGを返す。0件なら N/A（灰）。",
+      "ref": "server/routers/status-page-router.js:170"
+    },
+    {
+      "id": "ext.analytics.script",
+      "lane": "ext",
+      "label": "外部アナリティクス",
+      "detail": "google/umami/plausible/matomo/rybbit のみ許可。設定が妥当な時だけ head にスクリプトを埋め込む。",
+      "ref": "server/analytics/analytics.js:13"
+    },
+    {
+      "id": "app.statuspage.updateHeartbeatList",
+      "lane": "app",
+      "label": "死活データ自動更新",
+      "detail": "編集モード中は実行しない（websocket側を使う）。取得後に favicon のダウン数バッジと次回カウントダウンを更新。",
+      "ref": "src/pages/StatusPage.vue:1075"
+    },
+    {
+      "id": "api.http.api_status_page_heartbeat",
+      "lane": "api",
+      "label": "GET 死活データAPI",
+      "detail": "公開グループ配下の各モニターの直近100件と24時間稼働率を返す。apicache 1分。",
+      "ref": "server/routers/status-page-router.js:64"
+    },
+    {
+      "id": "svc.status_page.slugToID",
+      "lane": "svc",
+      "label": "スラッグをIDに変換",
+      "detail": "SELECT id FROM status_page WHERE slug=?。見つからなければ undefined で、呼び出し側が slug is not found を返す。",
+      "ref": "server/model/status_page.js:494"
+    },
+    {
+      "id": "ui.statuspage.edit_btn",
+      "lane": "ui",
+      "label": "ページ編集ボタン",
+      "detail": "ログイン済み(hasToken)のときだけ表示。押すとサイドバーが開き、閲覧用の描画が編集用に切り替わる。",
+      "ref": "src/pages/StatusPage.vue:278"
+    },
+    {
+      "id": "app.statuspage.edit",
+      "lane": "app",
+      "label": "編集モードに入る",
+      "detail": "initSocketIO(true) で認証付き接続を張り enableEditMode を true に。socket 未接続だと editMode は false のまま。",
+      "ref": "src/pages/StatusPage.vue:1134"
+    },
+    {
+      "id": "api.socket.getStatusPage",
+      "lane": "api",
+      "label": "管理用設定を取得",
+      "detail": "ログイン必須。slug で1件引き toJSON を返す。無ければ「No slug?」。ドメイン一覧を含むのはこちらだけ。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:268"
+    },
+    {
+      "id": "svc.status_page.toJSON",
+      "lane": "svc",
+      "label": "管理用設定に整形",
+      "detail": "公開用に加え id・published・domainNameList を含む。domainNameList はメモリ上のドメイン表から逆引きする。",
+      "ref": "server/model/status_page.js:438"
+    },
+    {
+      "id": "svc.status_page.getDomainNameList",
+      "lane": "svc",
+      "label": "独自ドメイン一覧",
+      "detail": "DBではなく静的な domainMappingList を走査して自分の slug に一致する分だけ返す。起動時に読み込み済み。",
+      "ref": "server/model/status_page.js:422"
+    },
+    {
+      "id": "ui.statuspage.add_group_btn",
+      "lane": "ui",
+      "label": "グループ追加ボタン",
+      "detail": "編集モードのみ表示。押した時点ではローカル配列に足すだけで、保存するまでDBには入らない。",
+      "ref": "src/pages/StatusPage.vue:449"
+    },
+    {
+      "id": "app.statuspage.addGroup",
+      "lane": "app",
+      "label": "グループを先頭に追加",
+      "detail": "1つ目は「Services」、2つ目以降は「Untitled Group」。unshift なので新しいグループが一番上に来る。",
+      "ref": "src/pages/StatusPage.vue:1216"
+    },
+    {
+      "id": "ui.statuspage.monitor_select",
+      "lane": "ui",
+      "label": "監視項目の追加選択",
+      "detail": "公開済みでないモニターだけが候補。選ぶとグループが無ければ自動生成し先頭グループに追加される。",
+      "ref": "src/pages/StatusPage.vue:458"
+    },
+    {
+      "id": "ui.statuspage.logo_upload",
+      "lane": "ui",
+      "label": "ロゴ画像の差し替え",
+      "detail": "ロゴをクリックで切り抜きダイアログ。編集モード以外では開かない。×で /icon.svg に戻せる。",
+      "ref": "src/pages/StatusPage.vue:244"
+    },
+    {
+      "id": "app.statuspage.cropSuccess",
+      "lane": "app",
+      "label": "切り抜き結果を保持",
+      "detail": "data:image/png 形式の文字列を imgDataUrl に入れるだけ。実ファイル化は保存時にサーバ側で行う。",
+      "ref": "src/pages/StatusPage.vue:1250"
+    },
+    {
+      "id": "ui.statuspage.add_domain_btn",
+      "lane": "ui",
+      "label": "ドメイン追加ボタン",
+      "detail": "サイドバーの＋。空文字の入力欄を1行足すだけ。空のまま保存すると保存側でスキップされる。",
+      "ref": "src/pages/StatusPage.vue:121"
+    },
+    {
+      "id": "ui.statuspage.remove_domain_btn",
+      "lane": "ui",
+      "label": "ドメイン削除ボタン",
+      "detail": "×で該当行を配列から splice。DBへの反映は保存時の全削除＋再登録で行われる。",
+      "ref": "src/pages/StatusPage.vue:138"
+    },
+    {
+      "id": "ui.statuspage.save_btn",
+      "lane": "ui",
+      "label": "保存ボタン",
+      "detail": "サイドバー下部。loading 中は disabled。保存成功で新しい slug のURLへ遷移し編集モードが閉じる。",
+      "ref": "src/pages/StatusPage.vue:227"
+    },
+    {
+      "id": "ui.statuspage.discard_btn",
+      "lane": "ui",
+      "label": "破棄ボタン",
+      "detail": "確認なしで /status/<元のslug> へ再読み込み。未保存の変更はすべて失われる。",
+      "ref": "src/pages/StatusPage.vue:232"
+    },
+    {
+      "id": "app.statuspage.save",
+      "lane": "app",
+      "label": "保存内容を送る",
+      "detail": "slug を trim＋小文字化して saveStatusPage を emit。成功時は最大100ms待ってから新URLへ location 遷移。",
+      "ref": "src/pages/StatusPage.vue:1149"
+    },
+    {
+      "id": "api.socket.saveStatusPage",
+      "lane": "api",
+      "label": "ステータスページ保存",
+      "detail": "ログイン必須。設定・ロゴ・ドメイン・公開グループを一括保存。published と password は書き換えない。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:292"
+    },
+    {
+      "id": "svc.image_data_uri.outputFile",
+      "lane": "svc",
+      "label": "ロゴをPNG保存",
+      "detail": "data: 始まりかつ image/png のみ許可、他は「Only allowed PNG logo.」。logo<id>.png として upload に書き出す。",
+      "ref": "server/image-data-uri.js:57"
+    },
+    {
+      "id": "svc.status_page.updateDomainNameList",
+      "lane": "svc",
+      "label": "独自ドメインを更新",
+      "detail": "トランザクションで自分の分を全削除→再登録。同じドメインが他ページにあれば奪う。配列でなければ throw。",
+      "ref": "server/model/status_page.js:384"
+    },
+    {
+      "id": "svc.status_page.loadDomainMappingList",
+      "lane": "svc",
+      "label": "ドメイン表を再読込",
+      "detail": "DBから domain→slug の対応表をメモリへ。保存直後と起動時に呼ばれ、入口URLの振り分けに使われる。",
+      "ref": "server/model/status_page.js:352"
+    },
+    {
+      "id": "svc.apicache.clear",
+      "lane": "svc",
+      "label": "HTTPキャッシュ破棄",
+      "detail": "保存・削除の直後に全キャッシュを消す。これが無いと5分間は古い公開ページが返る。",
+      "ref": "server/modules/apicache/apicache.js:394"
+    },
+    {
+      "id": "svc.settings.set",
+      "lane": "svc",
+      "label": "入口ページ設定を更新",
+      "detail": "entryPage が対象ページを指している場合のみ、slug変更に追随、削除時は dashboard に戻す。",
+      "ref": "server/settings.js:71"
+    },
+    {
+      "id": "ui.statuspage.delete_btn",
+      "lane": "ui",
+      "label": "危険ゾーンの削除",
+      "detail": "編集サイドバー最下部。押すと確認ダイアログが出る。ここでは即削除されない。",
+      "ref": "src/pages/StatusPage.vue:218"
+    },
+    {
+      "id": "ui.statuspage.confirm_delete",
+      "lane": "ui",
+      "label": "削除の確認ダイアログ",
+      "detail": "はいで deleteStatusPage を実行。成功すると /manage-status-page へ戻る。",
+      "ref": "src/pages/StatusPage.vue:588"
+    },
+    {
+      "id": "app.statuspage.deleteStatusPage",
+      "lane": "app",
+      "label": "削除をサーバへ送る",
+      "detail": "deleteStatusPage を emit。成功で編集モードを解除して一覧へ。失敗はエラートーストのみで画面は残る。",
+      "ref": "src/pages/StatusPage.vue:1192"
+    },
+    {
+      "id": "api.socket.deleteStatusPage",
+      "lane": "api",
+      "label": "ステータスページ削除",
+      "detail": "ログイン必須。インシデント→グループ→本体の順に手動DELETE。cname は外部キーのカスケードで消える。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:482"
+    },
+    {
+      "id": "ui.statuspage.create_incident_btn",
+      "lane": "ui",
+      "label": "障害情報の作成",
+      "detail": "編集モードでのみ表示。押すと空の掲示フォームが本文上部に開く。既存の下書きは退避される。",
+      "ref": "src/pages/StatusPage.vue:290"
+    },
+    {
+      "id": "app.statuspage.createIncident",
+      "lane": "app",
+      "label": "掲示フォームを開く",
+      "detail": "style は primary 初期値で空のインシデントを作る。編集中だったものは previousIncident に退避。",
+      "ref": "src/pages/StatusPage.vue:1282"
+    },
+    {
+      "id": "ui.incidenteditform.style_dropdown",
+      "lane": "ui",
+      "label": "見た目スタイル選択",
+      "detail": "info/warning/danger/primary/light/dark の6択。選ぶと枠の背景色クラスが即座に変わる。",
+      "ref": "src/components/IncidentEditForm.vue:43"
+    },
+    {
+      "id": "ui.incidenteditform.post_btn",
+      "lane": "ui",
+      "label": "掲示ボタン",
+      "detail": "タイトルと本文は contenteditable。押すと親へ post を emit する。Markdown が使える。",
+      "ref": "src/components/IncidentEditForm.vue:33"
+    },
+    {
+      "id": "ui.incidenteditform.cancel_btn",
+      "lane": "ui",
+      "label": "キャンセルボタン",
+      "detail": "フォームを閉じ、退避していた前の下書きがあれば復元する。サーバ通信はしない。",
+      "ref": "src/components/IncidentEditForm.vue:38"
+    },
+    {
+      "id": "app.statuspage.postIncident",
+      "lane": "app",
+      "label": "掲示内容を送る",
+      "detail": "タイトルか本文が空ならトーストで止める。成功後はフォームを閉じ履歴を読み直す。",
+      "ref": "src/pages/StatusPage.vue:1300"
+    },
+    {
+      "id": "app.statuspage.cancelIncident",
+      "lane": "app",
+      "label": "掲示編集を取り消す",
+      "detail": "enableEditIncidentMode を false に戻し、previousIncident があれば元の内容へ差し戻す。",
+      "ref": "src/pages/StatusPage.vue:1332"
+    },
+    {
+      "id": "api.socket.postIncident",
+      "lane": "api",
+      "label": "障害情報の掲示",
+      "detail": "ログイン必須。pin=1 active=1 で保存。id 付きなら更新し更新日時、無ければ新規で作成日時を入れる。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:34"
+    },
+    {
+      "id": "ui.statuspage.resolve_btn",
+      "lane": "ui",
+      "label": "解決ボタン",
+      "detail": "掲示中カードに編集モードで出る。押すと即サーバへ送られ、確認ダイアログは無い。",
+      "ref": "src/pages/StatusPage.vue:360"
+    },
+    {
+      "id": "app.statuspage.resolveIncident",
+      "lane": "app",
+      "label": "解決をサーバへ送る",
+      "detail": "resolveIncident を emit し結果をトースト表示。成功なら履歴を再読込して掲示欄から消える。",
+      "ref": "src/pages/StatusPage.vue:1484"
+    },
+    {
+      "id": "api.socket.resolveIncident",
+      "lane": "api",
+      "label": "障害情報を解決",
+      "detail": "ログイン必須。slug と id の両方で1件特定。無ければ「Incident not found or access denied」を返す。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:227"
+    },
+    {
+      "id": "svc.incident.resolve",
+      "lane": "svc",
+      "label": "解決済みにする",
+      "detail": "active=false かつ pin=false にして更新日時を入れる。削除ではなく過去のインシデント欄に残る。",
+      "ref": "server/model/incident.js:10"
+    },
+    {
+      "id": "api.socket.unpinIncident",
+      "lane": "api",
+      "label": "掲示を一括で降ろす",
+      "detail": "ログイン必須。そのページの pin=1 を全て 0 に。active は変えない。現在UIから呼ぶ導線が無い。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:84"
+    },
+    {
+      "id": "app.statuspage.unpinIncident",
+      "lane": "app",
+      "label": "掲示解除メソッド",
+      "detail": "unpinIncident を emit するメソッドだが、テンプレート内にこれを呼ぶボタンが存在しない未使用コード。",
+      "ref": "src/pages/StatusPage.vue:1345"
+    },
+    {
+      "id": "ui.statuspage.edit_incident_btn",
+      "lane": "ui",
+      "label": "掲示中の編集ボタン",
+      "detail": "掲示中カードの編集。モーダルではなくその場のインライン編集フォームに切り替わる。",
+      "ref": "src/pages/StatusPage.vue:364"
+    },
+    {
+      "id": "app.statuspage.editIncident",
+      "lane": "app",
+      "label": "インライン編集開始",
+      "detail": "対象をコピーして編集対象に。保存は postIncident 経由なので pin と active が真に戻る。",
+      "ref": "src/pages/StatusPage.vue:1322"
+    },
+    {
+      "id": "ui.incidenthistory.edit_btn",
+      "lane": "ui",
+      "label": "過去分の編集ボタン",
+      "detail": "過去のインシデント一覧の鉛筆。編集モードのみ表示。IncidentManageModal を開く。",
+      "ref": "src/components/IncidentHistory.vue:33"
+    },
+    {
+      "id": "ui.incidentmanagemodal.save_btn",
+      "lane": "ui",
+      "label": "モーダルの保存",
+      "detail": "タイトル・本文・スタイル・ピン留めを編集。processing 中はスピナー表示で押せない。",
+      "ref": "src/components/IncidentManageModal.vue:70"
+    },
+    {
+      "id": "app.incidentmanagemodal.submit",
+      "lane": "app",
+      "label": "編集内容を送る",
+      "detail": "空欄はクライアントでも弾く。成功でモーダルを閉じ incident-updated を親へ通知し履歴を再読込。",
+      "ref": "src/components/IncidentManageModal.vue:154"
+    },
+    {
+      "id": "api.socket.editIncident",
+      "lane": "api",
+      "label": "障害情報を編集",
+      "detail": "ログイン必須。validateIncident で空欄を拒否。不正なスタイルは warning に強制置換して保存する。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:124"
+    },
+    {
+      "id": "svc.status_page_socket_handler.validateIncident",
+      "lane": "svc",
+      "label": "掲示内容の検査",
+      "detail": "タイトルか本文が空白のみなら throw。editIncident だけが使い、postIncident は通っていない。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:18"
+    },
+    {
+      "id": "ui.statuspage.delete_incident_btn",
+      "lane": "ui",
+      "label": "掲示中の削除ボタン",
+      "detail": "掲示中カードの削除。押すとモーダル内の確認ダイアログが開く。即削除ではない。",
+      "ref": "src/pages/StatusPage.vue:368"
+    },
+    {
+      "id": "ui.incidenthistory.delete_btn",
+      "lane": "ui",
+      "label": "過去分の削除ボタン",
+      "detail": "過去のインシデント一覧のゴミ箱。編集モードのみ表示。確認ダイアログへ繋がる。",
+      "ref": "src/components/IncidentHistory.vue:40"
+    },
+    {
+      "id": "ui.incidentmanagemodal.confirm_delete",
+      "lane": "ui",
+      "label": "削除の確認ダイアログ",
+      "detail": "はい/いいえの Confirm。はいで deleteIncident を送る。いいえなら対象を破棄して何もしない。",
+      "ref": "src/components/IncidentManageModal.vue:79"
+    },
+    {
+      "id": "app.incidentmanagemodal.confirmDeleteIncident",
+      "lane": "app",
+      "label": "削除をサーバへ送る",
+      "detail": "保留中の対象が無ければ何もしない。結果をトースト表示し、成功なら親へ通知して履歴を再読込。",
+      "ref": "src/components/IncidentManageModal.vue:181"
+    },
+    {
+      "id": "api.socket.deleteIncident",
+      "lane": "api",
+      "label": "障害情報を削除",
+      "detail": "ログイン必須。slug と id の両方一致で1件だけ物理削除。該当なしは not found を返す。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:187"
+    },
+    {
+      "id": "ui.incidenthistory.resolve_btn",
+      "lane": "ui",
+      "label": "過去分の解決ボタン",
+      "detail": "未解決(active)のときだけ表示。押すと即 resolveIncident が走る。確認は無い。",
+      "ref": "src/components/IncidentHistory.vue:25"
+    },
+    {
+      "id": "ui.statuspage.load_more_btn",
+      "lane": "ui",
+      "label": "もっと読むボタン",
+      "detail": "hasMore が真のときだけ表示。読み込み中は disabled でスピナー。1回につき10件追加される。",
+      "ref": "src/pages/StatusPage.vue:526"
+    },
+    {
+      "id": "app.statuspage.loadMoreIncidentHistory",
+      "lane": "app",
+      "label": "続きを読み込む",
+      "detail": "hasMore かつ nextCursor がある時のみ実行。カーソル付きで取得し既存リストに追記する。",
+      "ref": "src/pages/StatusPage.vue:1456"
+    },
+    {
+      "id": "app.statuspage.loadIncidentHistoryWithCursor",
+      "lane": "app",
+      "label": "履歴を取得する",
+      "detail": "編集モードなら socket、閲覧時は HTTP と経路が分かれる。HTTP 側は失敗してもトーストが出ない。",
+      "ref": "src/pages/StatusPage.vue:1408"
+    },
+    {
+      "id": "api.socket.getIncidentHistory",
+      "lane": "api",
+      "label": "履歴取得(socket)",
+      "detail": "ログイン不要。userID の有無で isPublic を決めて渡すが、取得側はこの値を使い分けていない。",
+      "ref": "server/socket-handlers/status-page-socket-handler.js:103"
+    },
+    {
+      "id": "api.http.api_status_page_incident_history",
+      "lane": "api",
+      "label": "GET 履歴API",
+      "detail": "cursor クエリで続きを取得。apicache 5分。ページが無ければ Status Page Not Found を返す。",
+      "ref": "server/routers/status-page-router.js:145"
+    },
+    {
+      "id": "svc.status_page.getIncidentHistory",
+      "lane": "svc",
+      "label": "履歴をページング取得",
+      "detail": "created_date 降順で10件ずつ。カーソルは最後の作成日時。解決済みも未解決も区別せず全部返す。",
+      "ref": "server/model/status_page.js:517"
+    },
+    {
+      "id": "svc.incident.toPublicJSON",
+      "lane": "svc",
+      "label": "掲示を公開形に整形",
+      "detail": "id・style・題名・本文・pin・active・作成/更新日時を返す。本文は画面側で Markdown 描画され消毒される。",
+      "ref": "server/model/incident.js:21"
+    },
+    {
+      "id": "ext.rss_reader.subscribe",
+      "lane": "ext",
+      "label": "RSSリーダー",
+      "detail": "/status/<slug>/rss を定期取得する外部購読者。認証不要で誰でも購読できる。",
+      "ref": "server/routers/status-page-router.js:22"
+    },
+    {
+      "id": "api.http.status_slug_rss",
+      "lane": "api",
+      "label": "GET RSSフィード",
+      "detail": "apicache 5分。該当ページが無ければ 404 で素の indexHTML を返す（RSSではない点に注意）。",
+      "ref": "server/routers/status-page-router.js:22"
+    },
+    {
+      "id": "svc.status_page.handleStatusPageRSSResponse",
+      "lane": "svc",
+      "label": "RSS応答を作る",
+      "detail": "slug でページを引き、フィードURLを組み立てて application/rss+xml で返す。",
+      "ref": "server/model/status_page.js:38"
+    },
+    {
+      "id": "svc.status_page.buildRSSUrl",
+      "lane": "svc",
+      "label": "フィードURLを決める",
+      "detail": "trustProxy が有効な時だけ x-forwarded-proto/host を採用。リクエストが無ければ config から組む。",
+      "ref": "server/model/status_page.js:128"
+    },
+    {
+      "id": "svc.status_page.renderRSS",
+      "lane": "svc",
+      "label": "RSS XMLを組み立て",
+      "detail": "題名は rss_title→ページ題名の順。掲示中インシデントとダウン中モニターを項目として並べる。",
+      "ref": "server/model/status_page.js:79"
+    },
+    {
+      "id": "svc.status_page.getRSSPageData",
+      "lane": "svc",
+      "label": "RSS用データ収集",
+      "detail": "モニターごとに最新ビートを1件ずつ引き、全体状態を算出。フィードにはDOWNのものだけ残す。",
+      "ref": "server/model/status_page.js:277"
+    },
+    {
+      "id": "svc.status_page.overallStatus",
+      "lane": "svc",
+      "label": "全体状態を判定",
+      "detail": "1つでもメンテならメンテ。UPが1つも無ければ全ダウン、混在なら一部劣化。0件は -1。",
+      "ref": "server/model/status_page.js:218"
+    },
+    {
+      "id": "ext.dns.cname",
+      "lane": "ext",
+      "label": "独自ドメインのDNS",
+      "detail": "利用者側で CNAME を Uptime Kuma に向ける必要がある。アプリはHost名の一致だけを見る。",
+      "ref": "server/server.js:275"
+    },
+    {
+      "id": "db.status_page",
+      "lane": "db",
+      "label": "status_page",
+      "detail": "slug は UNIQUE。published/search_engine_index/password 列はあるが保存処理が書き換えないため既定のまま。",
+      "ref": "db/knex_init_db.js:185"
+    },
+    {
+      "id": "db.status_page_cname",
+      "lane": "db",
+      "label": "status_page_cname",
+      "detail": "独自ドメインとページの対応。domain は UNIQUE。status_page 削除時にカスケードで消える。",
+      "ref": "db/knex_init_db.js:391"
+    },
+    {
+      "id": "db.incident",
+      "lane": "db",
+      "label": "incident",
+      "detail": "pin と active は既定 true。status_page_id に外部キー制約が無いためページ削除時は手動DELETEが必要。",
+      "ref": "db/knex_init_db.js:151"
+    },
+    {
+      "id": "db.group",
+      "lane": "db",
+      "label": "group",
+      "detail": "公開グループ。public=1 かつ status_page_id で絞る。保存時に一覧に無いものはまとめて削除される。",
+      "ref": "db/knex_init_db.js:26"
+    },
+    {
+      "id": "db.monitor_group",
+      "lane": "db",
+      "label": "monitor_group",
+      "detail": "グループとモニターの対応。保存のたびグループ単位で全削除→再作成され weight が振り直される。",
+      "ref": "db/knex_init_db.js:248"
+    },
+    {
+      "id": "db.monitor",
+      "lane": "db",
+      "label": "monitor",
+      "detail": "公開ページに載せる監視対象の本体。名前やタグはここから取得される。",
+      "ref": "db/knex_init_db.js:66"
+    },
+    {
+      "id": "db.heartbeat",
+      "lane": "db",
+      "label": "heartbeat",
+      "detail": "監視結果。公開ページは直近100件、バッジとRSSは最新1件だけを time 降順で読む。",
+      "ref": "db/knex_init_db.js:125"
+    },
+    {
+      "id": "db.setting",
+      "lane": "db",
+      "label": "setting",
+      "detail": "entryPage や trustProxy を保持。ステータスページを入口にしている場合ここも更新される。",
+      "ref": "db/knex_init_db.js:383"
+    },
+    {
+      "id": "db.maintenance",
+      "lane": "db",
+      "label": "maintenance",
+      "detail": "メンテナンス予定。公開ページには実施中のものだけ表示される。",
+      "ref": "db/knex_init_db.js:164"
+    },
+    {
+      "id": "db.maintenance_status_page",
+      "lane": "db",
+      "label": "maintenance_status_page",
+      "detail": "メンテとステータスページの対応表。ここで紐づいたメンテだけが公開ページに出る。",
+      "ref": "db/knex_init_db.js:205"
+    }
+  ],
+  "edges": [],
+  "flows": [
+    {
+      "id": "create-status-page",
+      "title": "ステータスページを作る",
+      "category": "ステータスページ",
+      "trigger": "ステータスページ一覧で「新しいステータスページ」→名前とスラッグを入れて「次へ」",
+      "steps": [
+        { "from": "ui.managestatuspage.new_btn", "to": "ui.addstatuspage.submit_btn", "label": "作成画面へ移動", "kind": "call" },
+        { "from": "ui.addstatuspage.submit_btn", "to": "app.statuspage.submit", "label": "フォーム送信", "kind": "call" },
+        { "from": "app.statuspage.submit", "to": "api.socket.connection", "label": "addStatusPage を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.addStatusPage", "label": "イベント受信", "kind": "call" },
+        { "from": "api.socket.addStatusPage", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "app.statuspage.submit", "label": "未ログインで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.addStatusPage", "to": "app.statuspage.submit", "label": "名前かスラッグが空", "branch": "error", "kind": "error" },
+        { "from": "api.socket.addStatusPage", "to": "svc.status_page_socket_handler.checkSlug", "label": "スラッグを検査", "kind": "call" },
+        { "from": "svc.status_page_socket_handler.checkSlug", "to": "app.statuspage.submit", "label": "形式不正で拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.addStatusPage", "to": "db.status_page", "label": "テーマautoで新規登録", "kind": "db" },
+        { "from": "db.status_page", "to": "app.statuspage.submit", "label": "スラッグ重複エラー", "branch": "error", "kind": "error" },
+        { "from": "api.socket.addStatusPage", "to": "app.statuspage.submit", "label": "slug を返す", "kind": "realtime" },
+        { "from": "app.statuspage.submit", "to": "ui.statuspage.public_view", "label": "?edit 付きURLへ遷移", "kind": "http" }
+      ],
+      "notes": [
+        "作成直後は自動で編集モードに入る（URL末尾の ?edit を mounted が見て edit() を呼ぶ）",
+        "スラッグ重複は「UNIQUE constraint」を含むDBエラー文字列で判定しているだけなので、DB種別が変わると専用メッセージが出なくなる",
+        "作成時点ではグループもモニターも空。保存するまで公開ページは「何もありません」表示になる"
+      ]
+    },
+    {
+      "id": "enter-edit-mode",
+      "title": "ステータスページを編集モードで開く",
+      "category": "ステータスページ",
+      "trigger": "公開ページ上部の「ステータスページを編集」ボタン（ログイン済みのときだけ表示）",
+      "steps": [
+        { "from": "ui.statuspage.edit_btn", "to": "app.statuspage.edit", "label": "編集モード開始", "kind": "call" },
+        { "from": "app.statuspage.edit", "to": "api.socket.connection", "label": "認証付きで再接続", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "svc.server.sendMonitorList", "label": "モニター一覧を配信", "kind": "realtime" },
+        { "from": "svc.server.sendMonitorList", "to": "ui.statuspage.monitor_select", "label": "追加候補を埋める", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "svc.status_page.sendStatusPageList", "label": "ページ一覧を配信", "kind": "realtime" },
+        { "from": "svc.status_page.sendStatusPageList", "to": "app.socket.statusPageList", "label": "statusPageList 受信", "kind": "realtime" },
+        { "from": "app.statuspage.edit", "to": "api.socket.getStatusPage", "label": "getStatusPage を送信", "kind": "realtime" },
+        { "from": "api.socket.getStatusPage", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "ui.statuspage.edit_btn", "label": "未ログインで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.getStatusPage", "to": "db.status_page", "label": "slug で1件取得", "kind": "db" },
+        { "from": "api.socket.getStatusPage", "to": "ui.statuspage.edit_btn", "label": "該当なしでエラー", "branch": "error", "kind": "error" },
+        { "from": "db.status_page", "to": "svc.status_page.toJSON", "label": "管理用に整形", "kind": "call" },
+        { "from": "svc.status_page.toJSON", "to": "svc.status_page.getDomainNameList", "label": "ドメイン一覧を付加", "kind": "call" },
+        { "from": "svc.status_page.toJSON", "to": "ui.statuspage.public_view", "label": "サイドバーに反映", "kind": "realtime" },
+        { "from": "ui.statuspage.public_view", "to": "ui.statuspage.add_group_btn", "label": "編集UIを表示", "kind": "call" },
+        { "from": "ui.statuspage.add_group_btn", "to": "app.statuspage.addGroup", "label": "グループを足す", "branch": "alt", "kind": "call" },
+        { "from": "ui.statuspage.monitor_select", "to": "app.statuspage.addGroup", "label": "群が無ければ自動生成", "branch": "alt", "kind": "call" },
+        { "from": "ui.statuspage.logo_upload", "to": "app.statuspage.cropSuccess", "label": "ロゴを切り抜く", "branch": "alt", "kind": "call" },
+        { "from": "ui.statuspage.discard_btn", "to": "ui.statuspage.public_view", "label": "破棄して再読込", "branch": "alt", "kind": "http" }
+      ],
+      "notes": [
+        "editMode は enableEditMode と socket 接続の両方が真のときだけ true。切断中はボタンを押しても編集用の描画にならない",
+        "編集モード中は自動更新（HTTPポーリング）が止まり、死活データは websocket 側の値に切り替わる",
+        "グループ追加・モニター追加・ドメイン追加はすべてローカル配列の操作。保存を押すまでDBは一切変わらない",
+        "破棄ボタンは確認なしで再読み込みするため未保存の変更が消える"
+      ]
+    },
+    {
+      "id": "save-status-page",
+      "title": "編集した内容を保存する",
+      "category": "ステータスページ",
+      "trigger": "編集サイドバー下部の「保存」ボタン",
+      "steps": [
+        { "from": "ui.statuspage.save_btn", "to": "app.statuspage.save", "label": "保存を実行", "kind": "call" },
+        { "from": "app.statuspage.save", "to": "api.socket.connection", "label": "saveStatusPage を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.saveStatusPage", "label": "イベント受信", "kind": "call" },
+        { "from": "api.socket.saveStatusPage", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "app.statuspage.save", "label": "未ログインで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.saveStatusPage", "to": "db.status_page", "label": "元のslugで1件取得", "kind": "db" },
+        { "from": "api.socket.saveStatusPage", "to": "svc.status_page_socket_handler.checkSlug", "label": "新スラッグを検査", "kind": "call" },
+        { "from": "svc.status_page_socket_handler.checkSlug", "to": "app.statuspage.save", "label": "形式不正で中断", "branch": "error", "kind": "error" },
+        { "from": "api.socket.saveStatusPage", "to": "svc.image_data_uri.outputFile", "label": "ロゴをPNG保存", "branch": "alt", "kind": "call" },
+        { "from": "svc.image_data_uri.outputFile", "to": "app.statuspage.save", "label": "PNG以外で中断", "branch": "error", "kind": "error" },
+        { "from": "api.socket.saveStatusPage", "to": "app.statuspage.save", "label": "不正な解析種別で中断", "branch": "error", "kind": "error" },
+        { "from": "api.socket.saveStatusPage", "to": "db.status_page", "label": "設定を更新", "kind": "db" },
+        { "from": "api.socket.saveStatusPage", "to": "svc.status_page.updateDomainNameList", "label": "独自ドメインを更新", "kind": "call" },
+        { "from": "svc.status_page.updateDomainNameList", "to": "db.status_page_cname", "label": "全削除→再登録", "kind": "db" },
+        { "from": "svc.status_page.updateDomainNameList", "to": "app.statuspage.save", "label": "不正値でロールバック", "branch": "error", "kind": "error" },
+        { "from": "svc.status_page.updateDomainNameList", "to": "svc.status_page.loadDomainMappingList", "label": "ドメイン表を再読込", "kind": "call" },
+        { "from": "svc.status_page.loadDomainMappingList", "to": "db.status_page_cname", "label": "対応表を読み出す", "kind": "db" },
+        { "from": "api.socket.saveStatusPage", "to": "db.group", "label": "公開グループを保存", "kind": "db" },
+        { "from": "api.socket.saveStatusPage", "to": "db.monitor_group", "label": "所属を全削除→再作成", "kind": "db" },
+        { "from": "api.socket.saveStatusPage", "to": "db.group", "label": "一覧に無い群を削除", "kind": "db" },
+        { "from": "api.socket.saveStatusPage", "to": "svc.settings.set", "label": "入口slugを追随", "branch": "alt", "kind": "call" },
+        { "from": "svc.settings.set", "to": "db.setting", "label": "entryPage を更新", "kind": "db" },
+        { "from": "api.socket.saveStatusPage", "to": "svc.apicache.clear", "label": "HTTPキャッシュ破棄", "kind": "call" },
+        { "from": "api.socket.saveStatusPage", "to": "app.statuspage.save", "label": "保存結果を返す", "kind": "realtime" },
+        { "from": "app.statuspage.save", "to": "ui.statuspage.public_view", "label": "新slugのURLへ遷移", "kind": "http" }
+      ],
+      "notes": [
+        "published・search_engine_index・password は列こそあるが保存処理でコメントアウトされており、UIから公開/非公開を切り替えられない",
+        "モニター所属は毎回グループ単位で DELETE→INSERT。並び順(weight)は保存時の画面の並びで振り直される",
+        "ロゴは data:image/png のみ受け付ける。それ以外の data: URL は「Only allowed PNG logo.」で保存全体が失敗する",
+        "同じドメインを他のページが使っていると、警告なくそちらから奪って自分に付け替える",
+        "保存に成功すると必ず新しい slug の URL へ遷移するため、スラッグを変えた直後は元URLが404になる",
+        "apicache.clear は全キャッシュを消すので、他のステータスページやAPIのキャッシュも巻き添えで破棄される"
+      ]
+    },
+    {
+      "id": "delete-status-page",
+      "title": "ステータスページを削除する",
+      "category": "ステータスページ",
+      "trigger": "一覧の削除ボタン、または編集サイドバー最下部の危険ゾーンの削除ボタン",
+      "steps": [
+        { "from": "ui.managestatuspage.delete_btn", "to": "ui.managestatuspage.confirm_delete", "label": "確認を出す", "kind": "call" },
+        { "from": "ui.statuspage.delete_btn", "to": "ui.statuspage.confirm_delete", "label": "確認を出す", "branch": "alt", "kind": "call" },
+        { "from": "ui.managestatuspage.confirm_delete", "to": "app.managestatuspage.deleteStatusPage", "label": "「はい」で確定", "kind": "call" },
+        { "from": "ui.statuspage.confirm_delete", "to": "app.statuspage.deleteStatusPage", "label": "「はい」で確定", "branch": "alt", "kind": "call" },
+        { "from": "app.managestatuspage.deleteStatusPage", "to": "api.socket.connection", "label": "deleteStatusPage 送信", "kind": "realtime" },
+        { "from": "app.statuspage.deleteStatusPage", "to": "api.socket.connection", "label": "deleteStatusPage 送信", "branch": "alt", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.deleteStatusPage", "label": "イベント受信", "kind": "call" },
+        { "from": "api.socket.deleteStatusPage", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "app.statuspage.deleteStatusPage", "label": "未ログインで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.deleteStatusPage", "to": "svc.status_page.slugToID", "label": "slugをIDに変換", "kind": "call" },
+        { "from": "svc.status_page.slugToID", "to": "db.status_page", "label": "IDを引く", "kind": "db" },
+        { "from": "svc.status_page.slugToID", "to": "app.statuspage.deleteStatusPage", "label": "該当なしでエラー", "branch": "error", "kind": "error" },
+        { "from": "api.socket.deleteStatusPage", "to": "svc.settings.set", "label": "入口をdashboardに戻す", "branch": "alt", "kind": "call" },
+        { "from": "svc.settings.set", "to": "db.setting", "label": "entryPage を更新", "kind": "db" },
+        { "from": "api.socket.deleteStatusPage", "to": "db.incident", "label": "掲示を全削除", "kind": "db" },
+        { "from": "api.socket.deleteStatusPage", "to": "db.group", "label": "グループを全削除", "kind": "db" },
+        { "from": "api.socket.deleteStatusPage", "to": "db.status_page", "label": "本体を削除", "kind": "db" },
+        { "from": "db.status_page", "to": "db.status_page_cname", "label": "ドメインもカスケード削除", "kind": "db" },
+        { "from": "api.socket.deleteStatusPage", "to": "svc.apicache.clear", "label": "HTTPキャッシュ破棄", "kind": "call" },
+        { "from": "api.socket.deleteStatusPage", "to": "app.managestatuspage.deleteStatusPage", "label": "完了を返す", "kind": "realtime" },
+        { "from": "app.managestatuspage.deleteStatusPage", "to": "ui.managestatuspage.new_btn", "label": "一覧を再読込", "kind": "http" }
+      ],
+      "notes": [
+        "incident と group には外部キーのカスケードが無いため手動DELETEしている。順序を誤ると孤児レコードが残る設計",
+        "monitor_group は明示的に消していない（group 削除に追随する保証はコード上に無い）",
+        "削除は取り消せない。掲示していた過去の障害情報もまとめて消える",
+        "一覧画面からの削除は完了後に window.location.reload() する。編集画面からの削除は /manage-status-page へ遷移する"
+      ]
+    },
+    {
+      "id": "visit-public-status-page",
+      "title": "公開ページを訪問者が見る",
+      "category": "ステータスページ",
+      "trigger": "訪問者が /status/<スラッグ> を開く（または独自ドメインのトップを開く）",
+      "steps": [
+        { "from": "ext.visitor_browser.open", "to": "api.http.status_slug", "label": "ページを要求", "kind": "http" },
+        { "from": "ext.dns.cname", "to": "api.http.entry_root", "label": "独自ドメインで来訪", "branch": "alt", "kind": "http" },
+        { "from": "api.http.entry_root", "to": "svc.status_page.handleStatusPageResponse", "label": "ホスト名で振り分け", "branch": "alt", "kind": "call" },
+        { "from": "api.http.status_slug", "to": "svc.status_page.handleStatusPageResponse", "label": "SSRを依頼", "kind": "call" },
+        { "from": "svc.status_page.handleStatusPageResponse", "to": "db.status_page", "label": "slug で1件取得", "kind": "db" },
+        { "from": "svc.status_page.handleStatusPageResponse", "to": "ext.visitor_browser.open", "label": "該当なしで404", "branch": "error", "kind": "error" },
+        { "from": "svc.status_page.handleStatusPageResponse", "to": "svc.status_page.renderHTML", "label": "HTMLを作る", "kind": "call" },
+        { "from": "svc.status_page.renderHTML", "to": "svc.status_page.getStatusPageData", "label": "埋め込むデータ収集", "kind": "call" },
+        { "from": "svc.status_page.getStatusPageData", "to": "svc.status_page.toPublicJSON", "label": "公開用設定に絞る", "kind": "call" },
+        { "from": "svc.status_page.getStatusPageData", "to": "db.incident", "label": "掲示中のみ取得", "kind": "db" },
+        { "from": "svc.status_page.getStatusPageData", "to": "svc.status_page.getMaintenanceList", "label": "メンテを取得", "kind": "call" },
+        { "from": "svc.status_page.getMaintenanceList", "to": "db.maintenance_status_page", "label": "紐づくメンテID取得", "kind": "db" },
+        { "from": "svc.status_page.getMaintenanceList", "to": "db.maintenance", "label": "実施中だけ残す", "kind": "db" },
+        { "from": "svc.status_page.getStatusPageData", "to": "db.group", "label": "公開グループ取得", "kind": "db" },
+        { "from": "db.group", "to": "svc.group.toPublicJSON", "label": "モニターを整形", "kind": "call" },
+        { "from": "svc.group.toPublicJSON", "to": "db.monitor_group", "label": "所属を読む", "kind": "db" },
+        { "from": "svc.group.toPublicJSON", "to": "db.monitor", "label": "モニター情報を読む", "kind": "db" },
+        { "from": "svc.status_page.renderHTML", "to": "ext.analytics.script", "label": "解析タグを埋込", "branch": "alt", "kind": "call" },
+        { "from": "svc.status_page.renderHTML", "to": "ui.statuspage.public_view", "label": "HTMLを返す", "kind": "http" },
+        { "from": "ui.statuspage.public_view", "to": "app.statuspage.mounted", "label": "画面を初期化", "kind": "call" },
+        { "from": "app.statuspage.mounted", "to": "app.statuspage.getData", "label": "設定を取り出す", "kind": "call" },
+        { "from": "app.statuspage.getData", "to": "api.http.api_status_page_slug", "label": "preload無ければAPI", "branch": "alt", "kind": "http" },
+        { "from": "api.http.api_status_page_slug", "to": "svc.status_page.getStatusPageData", "label": "同じデータを返す", "branch": "alt", "kind": "call" },
+        { "from": "app.statuspage.getData", "to": "ext.visitor_browser.open", "label": "404で not-found へ", "branch": "error", "kind": "error" },
+        { "from": "ext.visitor_browser.open", "to": "api.http.api_status_page_manifest", "label": "PWA情報を取得", "branch": "alt", "kind": "http" },
+        { "from": "ext.visitor_browser.open", "to": "api.http.api_status_page_badge", "label": "状態バッジを取得", "branch": "alt", "kind": "http" },
+        { "from": "api.http.api_status_page_badge", "to": "db.heartbeat", "label": "最新1件で判定", "branch": "alt", "kind": "db" },
+        { "from": "app.statuspage.mounted", "to": "app.statuspage.loadIncidentHistoryWithCursor", "label": "過去の障害を取得", "kind": "call" }
+      ],
+      "notes": [
+        "ログイン不要。published 列は判定に使われておらず、非公開にする手段が実質存在しない",
+        "SSR時に window.preloadData を埋め込むので初回はAPIを叩かない。CSRで直接来た場合だけ /api/status-page/<slug> を叩く",
+        "apicache が /status/:slug に5分、manifest.json に24時間効く。保存直後は古い内容が見えることがある",
+        "存在しない slug は 404 とともに素の indexHTML を返し、フロントが /page-not-found へ飛ばす二段構え",
+        "getMaintenanceList は例外を握り潰して空配列を返すため、メンテ表示が黙って消えても気付けない"
+      ]
+    },
+    {
+      "id": "auto-refresh-status",
+      "title": "公開ページが自動で最新状態に更新される",
+      "category": "ステータスページ",
+      "trigger": "ページ表示中の自動更新タイマー（既定300秒、設定で変更可・最短5秒）",
+      "steps": [
+        { "from": "app.statuspage.mounted", "to": "app.statuspage.updateHeartbeatList", "label": "更新タイマー起動", "kind": "timer" },
+        { "from": "app.statuspage.updateHeartbeatList", "to": "api.http.api_status_page_heartbeat", "label": "死活データを要求", "kind": "http" },
+        { "from": "api.http.api_status_page_heartbeat", "to": "svc.status_page.slugToID", "label": "slugをIDに変換", "kind": "call" },
+        { "from": "svc.status_page.slugToID", "to": "db.status_page", "label": "IDを引く", "kind": "db" },
+        { "from": "api.http.api_status_page_heartbeat", "to": "db.monitor_group", "label": "公開モニターを列挙", "kind": "db" },
+        { "from": "api.http.api_status_page_heartbeat", "to": "db.heartbeat", "label": "直近100件を取得", "kind": "db" },
+        { "from": "api.http.api_status_page_heartbeat", "to": "app.statuspage.updateHeartbeatList", "label": "履歴と稼働率を返す", "kind": "http" },
+        { "from": "api.http.api_status_page_heartbeat", "to": "app.statuspage.updateHeartbeatList", "label": "失敗時は無反応", "branch": "error", "kind": "error" },
+        { "from": "app.statuspage.updateHeartbeatList", "to": "ui.statuspage.public_view", "label": "全体状態を再描画", "kind": "call" },
+        { "from": "app.statuspage.updateHeartbeatList", "to": "ext.visitor_browser.open", "label": "faviconにダウン数", "kind": "call" }
+      ],
+      "notes": [
+        "編集モード中はこのポーリングを実行しない（websocket 側のデータを使うため）",
+        "更新間隔は max(5, autoRefreshInterval) 秒。5秒未満を設定しても5秒に丸められる",
+        "サーバ側 apicache が1分効くため、設定を5秒にしても実データは最短1分でしか変わらない",
+        "mounted 内で setInterval を2回設定している箇所があり、タイマーが二重に走る（前のIDが上書きされ解除されない）",
+        "取得失敗時に catch が無く、エラーは画面にも出ないまま lastUpdateTime が更新されない"
+      ]
+    },
+    {
+      "id": "post-incident",
+      "title": "障害情報（インシデント）を掲示する",
+      "category": "ステータスページ",
+      "trigger": "編集モードの「インシデントを作成」→本文を書いて「投稿」",
+      "steps": [
+        { "from": "ui.statuspage.create_incident_btn", "to": "app.statuspage.createIncident", "label": "掲示フォームを開く", "kind": "call" },
+        { "from": "app.statuspage.createIncident", "to": "ui.incidenteditform.post_btn", "label": "入力欄を表示", "kind": "call" },
+        { "from": "ui.incidenteditform.style_dropdown", "to": "ui.incidenteditform.post_btn", "label": "見た目を選ぶ", "branch": "alt", "kind": "call" },
+        { "from": "ui.incidenteditform.cancel_btn", "to": "app.statuspage.cancelIncident", "label": "取り消す", "branch": "alt", "kind": "call" },
+        { "from": "ui.incidenteditform.post_btn", "to": "app.statuspage.postIncident", "label": "投稿を実行", "kind": "call" },
+        { "from": "app.statuspage.postIncident", "to": "ui.incidenteditform.post_btn", "label": "空欄なら送らない", "branch": "error", "kind": "error" },
+        { "from": "app.statuspage.postIncident", "to": "api.socket.connection", "label": "postIncident を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.postIncident", "label": "イベント受信", "kind": "call" },
+        { "from": "api.socket.postIncident", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "app.statuspage.postIncident", "label": "未ログインで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.postIncident", "to": "svc.status_page.slugToID", "label": "slugをIDに変換", "kind": "call" },
+        { "from": "svc.status_page.slugToID", "to": "db.status_page", "label": "IDを引く", "kind": "db" },
+        { "from": "svc.status_page.slugToID", "to": "app.statuspage.postIncident", "label": "slug 不明で拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.postIncident", "to": "db.incident", "label": "掲示中として保存", "kind": "db" },
+        { "from": "db.incident", "to": "svc.incident.toPublicJSON", "label": "保存結果を整形", "kind": "call" },
+        { "from": "svc.incident.toPublicJSON", "to": "app.statuspage.postIncident", "label": "掲示内容を返す", "kind": "realtime" },
+        { "from": "app.statuspage.postIncident", "to": "app.statuspage.loadIncidentHistoryWithCursor", "label": "履歴を読み直す", "kind": "call" },
+        { "from": "app.statuspage.loadIncidentHistoryWithCursor", "to": "ui.statuspage.public_view", "label": "上部に掲示表示", "kind": "call" }
+      ],
+      "notes": [
+        "postIncident はサーバ側で title/content を検証していない（validateIncident を通るのは editIncident だけ）。空白のみでも保存できる",
+        "style もサーバで検証されないため、既定外の文字列がそのまま class 名として使われる",
+        "掲示は常に pin=1 active=1 で保存される。既存インシデントを editIncident 経由で編集し直すと解決済みでも再び掲示状態に戻る",
+        "本文は Markdown。表示時に DOMPurify で消毒してから v-html で描画される",
+        "投稿後は履歴APIを叩き直して画面を作り直す。掲示中は上部、それ以外は「過去のインシデント」欄に分かれる"
+      ]
+    },
+    {
+      "id": "resolve-incident",
+      "title": "障害情報を解決済みにする",
+      "category": "ステータスページ",
+      "trigger": "掲示中カードの「解決」ボタン、または過去のインシデント一覧のチェックボタン",
+      "steps": [
+        { "from": "ui.statuspage.resolve_btn", "to": "app.statuspage.resolveIncident", "label": "解決を実行", "kind": "call" },
+        { "from": "ui.incidenthistory.resolve_btn", "to": "app.statuspage.resolveIncident", "label": "解決を実行", "branch": "alt", "kind": "call" },
+        { "from": "app.statuspage.resolveIncident", "to": "api.socket.connection", "label": "resolveIncident 送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.resolveIncident", "label": "イベント受信", "kind": "call" },
+        { "from": "api.socket.resolveIncident", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "app.statuspage.resolveIncident", "label": "未ログインで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.resolveIncident", "to": "svc.status_page.slugToID", "label": "slugをIDに変換", "kind": "call" },
+        { "from": "svc.status_page.slugToID", "to": "db.status_page", "label": "IDを引く", "kind": "db" },
+        { "from": "svc.status_page.slugToID", "to": "app.statuspage.resolveIncident", "label": "slug 不明で拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.resolveIncident", "to": "db.incident", "label": "slugとidで1件特定", "kind": "db" },
+        { "from": "db.incident", "to": "app.statuspage.resolveIncident", "label": "他ページのidは拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.resolveIncident", "to": "svc.incident.resolve", "label": "解決処理", "kind": "call" },
+        { "from": "svc.incident.resolve", "to": "db.incident", "label": "active/pinを0に更新", "kind": "db" },
+        { "from": "api.socket.resolveIncident", "to": "app.statuspage.resolveIncident", "label": "結果を返す", "kind": "realtime" },
+        { "from": "app.statuspage.resolveIncident", "to": "app.statuspage.loadIncidentHistoryWithCursor", "label": "履歴を読み直す", "kind": "call" },
+        { "from": "app.statuspage.loadIncidentHistoryWithCursor", "to": "ui.statuspage.public_view", "label": "過去欄へ移動", "kind": "call" },
+        { "from": "app.statuspage.unpinIncident", "to": "api.socket.unpinIncident", "label": "一括で掲示解除", "branch": "alt", "kind": "realtime" },
+        { "from": "api.socket.unpinIncident", "to": "db.incident", "label": "pin=1 を全て0に", "branch": "alt", "kind": "db" }
+      ],
+      "notes": [
+        "解決は削除ではない。active=0 pin=0 になり「過去のインシデント」欄に残り続ける",
+        "解決ボタンに確認ダイアログは無く、押した瞬間にサーバへ送られる",
+        "slug と id の両方で照合しているため、他のステータスページのインシデントIDを指定しても拒否される",
+        "unpinIncident（掲示だけ一括で降ろす）はサーバもフロントのメソッドも存在するが、それを押せるボタンがテンプレートに無く到達できない",
+        "解決後に公開ページの apicache は明示的に破棄されないため、訪問者には最大5分古い掲示が見えることがある"
+      ]
+    },
+    {
+      "id": "edit-incident",
+      "title": "掲示済みの障害情報を書き直す",
+      "category": "ステータスページ",
+      "trigger": "掲示中カードの「編集」ボタン（その場編集）、または過去のインシデントの鉛筆ボタン（モーダル編集）",
+      "steps": [
+        { "from": "ui.statuspage.edit_incident_btn", "to": "app.statuspage.editIncident", "label": "その場編集を開く", "kind": "call" },
+        { "from": "app.statuspage.editIncident", "to": "ui.incidenteditform.post_btn", "label": "同じ投稿経路を使う", "kind": "call" },
+        { "from": "ui.incidenteditform.post_btn", "to": "app.statuspage.postIncident", "label": "postIncidentで更新", "kind": "call" },
+        { "from": "ui.incidenthistory.edit_btn", "to": "ui.incidentmanagemodal.save_btn", "label": "モーダルを開く", "branch": "alt", "kind": "call" },
+        { "from": "ui.incidentmanagemodal.save_btn", "to": "app.incidentmanagemodal.submit", "label": "保存を実行", "kind": "call" },
+        { "from": "app.incidentmanagemodal.submit", "to": "ui.incidentmanagemodal.save_btn", "label": "空欄なら送らない", "branch": "error", "kind": "error" },
+        { "from": "app.incidentmanagemodal.submit", "to": "api.socket.connection", "label": "editIncident を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.editIncident", "label": "イベント受信", "kind": "call" },
+        { "from": "api.socket.editIncident", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "app.incidentmanagemodal.submit", "label": "未ログインで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.editIncident", "to": "svc.status_page.slugToID", "label": "slugをIDに変換", "kind": "call" },
+        { "from": "svc.status_page.slugToID", "to": "db.status_page", "label": "IDを引く", "kind": "db" },
+        { "from": "svc.status_page.slugToID", "to": "app.incidentmanagemodal.submit", "label": "slug 不明で拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.editIncident", "to": "db.incident", "label": "slugとidで1件特定", "kind": "db" },
+        { "from": "db.incident", "to": "app.incidentmanagemodal.submit", "label": "該当なしで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.editIncident", "to": "svc.status_page_socket_handler.validateIncident", "label": "空欄を検査", "kind": "call" },
+        { "from": "svc.status_page_socket_handler.validateIncident", "to": "app.incidentmanagemodal.submit", "label": "空欄で拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.editIncident", "to": "db.incident", "label": "内容と更新日時を保存", "kind": "db" },
+        { "from": "db.incident", "to": "svc.incident.toPublicJSON", "label": "結果を整形", "kind": "call" },
+        { "from": "svc.incident.toPublicJSON", "to": "app.incidentmanagemodal.submit", "label": "保存内容を返す", "kind": "realtime" },
+        { "from": "app.incidentmanagemodal.submit", "to": "app.statuspage.loadIncidentHistoryWithCursor", "label": "履歴を読み直す", "kind": "call" }
+      ],
+      "notes": [
+        "編集の入口が2つあり挙動が違う。掲示中カードの「編集」は postIncident を使うので pin と active が真に戻る。モーダル編集は editIncident でピン留めの有無を明示指定できる",
+        "モーダル側だけがスタイルのホワイトリスト検証を受け、範囲外なら黙って warning に置き換わる",
+        "モーダル編集は作成日時を変えず更新日時だけを入れるため、過去のインシデント欄での並び順は変わらない",
+        "editIncident のエラー応答は msgi18n:true 付きだが、error.message には翻訳キーでない生の文言が入ることがある"
+      ]
+    },
+    {
+      "id": "delete-incident",
+      "title": "障害情報を削除する",
+      "category": "ステータスページ",
+      "trigger": "掲示中カードの「削除」ボタン、または過去のインシデントのゴミ箱ボタン",
+      "steps": [
+        { "from": "ui.statuspage.delete_incident_btn", "to": "ui.incidentmanagemodal.confirm_delete", "label": "確認を出す", "kind": "call" },
+        { "from": "ui.incidenthistory.delete_btn", "to": "ui.incidentmanagemodal.confirm_delete", "label": "確認を出す", "branch": "alt", "kind": "call" },
+        { "from": "ui.incidentmanagemodal.confirm_delete", "to": "app.incidentmanagemodal.confirmDeleteIncident", "label": "「はい」で確定", "kind": "call" },
+        { "from": "app.incidentmanagemodal.confirmDeleteIncident", "to": "api.socket.connection", "label": "deleteIncident 送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.deleteIncident", "label": "イベント受信", "kind": "call" },
+        { "from": "api.socket.deleteIncident", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "app.incidentmanagemodal.confirmDeleteIncident", "label": "未ログインで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.deleteIncident", "to": "svc.status_page.slugToID", "label": "slugをIDに変換", "kind": "call" },
+        { "from": "svc.status_page.slugToID", "to": "db.status_page", "label": "IDを引く", "kind": "db" },
+        { "from": "svc.status_page.slugToID", "to": "app.incidentmanagemodal.confirmDeleteIncident", "label": "slug 不明で拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.deleteIncident", "to": "db.incident", "label": "slugとidで1件特定", "kind": "db" },
+        { "from": "db.incident", "to": "app.incidentmanagemodal.confirmDeleteIncident", "label": "該当なしで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.deleteIncident", "to": "db.incident", "label": "1件を物理削除", "kind": "db" },
+        { "from": "api.socket.deleteIncident", "to": "app.incidentmanagemodal.confirmDeleteIncident", "label": "完了を返す", "kind": "realtime" },
+        { "from": "app.incidentmanagemodal.confirmDeleteIncident", "to": "app.statuspage.loadIncidentHistoryWithCursor", "label": "履歴を読み直す", "kind": "call" },
+        { "from": "app.statuspage.loadIncidentHistoryWithCursor", "to": "ui.statuspage.public_view", "label": "一覧から消える", "kind": "call" }
+      ],
+      "notes": [
+        "削除は物理削除で復元できない。解決（resolve）と違い履歴にも残らない",
+        "確認ダイアログは IncidentManageModal 内の Confirm を共用しており、掲示中カードからの削除も同じダイアログが出る",
+        "IncidentManageModal は enableEditMode のときだけ描画されるため、編集モードを抜けると削除・編集の導線は消える"
+      ]
+    },
+    {
+      "id": "browse-incident-history",
+      "title": "過去のインシデントを読む・もっと読む",
+      "category": "ステータスページ",
+      "trigger": "公開ページの「過去のインシデント」欄の表示、および「もっと読む」ボタン",
+      "steps": [
+        { "from": "ui.statuspage.public_view", "to": "app.statuspage.loadIncidentHistoryWithCursor", "label": "初回の履歴取得", "kind": "call" },
+        { "from": "ui.statuspage.load_more_btn", "to": "app.statuspage.loadMoreIncidentHistory", "label": "続きを要求", "branch": "alt", "kind": "call" },
+        { "from": "app.statuspage.loadMoreIncidentHistory", "to": "app.statuspage.loadIncidentHistoryWithCursor", "label": "カーソル付きで取得", "kind": "call" },
+        { "from": "app.statuspage.loadIncidentHistoryWithCursor", "to": "api.http.api_status_page_incident_history", "label": "閲覧時はHTTP", "kind": "http" },
+        { "from": "app.statuspage.loadIncidentHistoryWithCursor", "to": "api.socket.connection", "label": "編集時はsocket", "branch": "alt", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.getIncidentHistory", "label": "イベント受信", "branch": "alt", "kind": "call" },
+        { "from": "api.http.api_status_page_incident_history", "to": "svc.status_page.slugToID", "label": "slugをIDに変換", "kind": "call" },
+        { "from": "api.socket.getIncidentHistory", "to": "svc.status_page.slugToID", "label": "slugをIDに変換", "branch": "alt", "kind": "call" },
+        { "from": "svc.status_page.slugToID", "to": "db.status_page", "label": "IDを引く", "kind": "db" },
+        { "from": "svc.status_page.slugToID", "to": "app.statuspage.loadIncidentHistoryWithCursor", "label": "該当なしでエラー", "branch": "error", "kind": "error" },
+        { "from": "api.http.api_status_page_incident_history", "to": "svc.status_page.getIncidentHistory", "label": "10件分を取得", "kind": "call" },
+        { "from": "api.socket.getIncidentHistory", "to": "svc.status_page.getIncidentHistory", "label": "10件分を取得", "branch": "alt", "kind": "call" },
+        { "from": "svc.status_page.getIncidentHistory", "to": "db.incident", "label": "作成日時の降順で取得", "kind": "db" },
+        { "from": "svc.status_page.getIncidentHistory", "to": "db.incident", "label": "残件数を数える", "kind": "db" },
+        { "from": "db.incident", "to": "svc.incident.toPublicJSON", "label": "公開形に整形", "kind": "call" },
+        { "from": "svc.incident.toPublicJSON", "to": "app.statuspage.loadIncidentHistoryWithCursor", "label": "件数とカーソルを返す", "kind": "http" },
+        { "from": "app.statuspage.loadIncidentHistoryWithCursor", "to": "ui.statuspage.load_more_btn", "label": "hasMoreで続きボタン", "kind": "call" },
+        { "from": "app.statuspage.loadIncidentHistoryWithCursor", "to": "ui.statuspage.public_view", "label": "取得失敗を握り潰す", "branch": "error", "kind": "error" }
+      ],
+      "notes": [
+        "1ページ10件固定（INCIDENT_PAGE_SIZE）。カーソルは最後の1件の created_date で、同時刻の同着があると取りこぼす可能性がある",
+        "socket 版は isPublic を計算して渡しているが、getIncidentHistory はその引数を一切使っていないため、未ログインでも管理者と同じ内容が返る",
+        "解決済みかどうかで絞り込んでいないので、公開ページの訪問者も全ての過去インシデントを読める",
+        "HTTP 経路の失敗は console にしか出ずトーストが出ない。socket 経路だけエラーが画面に表示される",
+        "履歴APIにも apicache が5分効くため、投稿・解決の直後に「もっと読む」を押すと古い内容が混ざり得る"
+      ]
+    },
+    {
+      "id": "rss-subscribe",
+      "title": "RSSでステータスを購読する",
+      "category": "ステータスページ",
+      "trigger": "RSSリーダーが /status/<スラッグ>/rss を取得する",
+      "steps": [
+        { "from": "ext.rss_reader.subscribe", "to": "api.http.status_slug_rss", "label": "フィードを要求", "kind": "http" },
+        { "from": "api.http.status_slug_rss", "to": "svc.status_page.handleStatusPageRSSResponse", "label": "RSS応答へ", "kind": "call" },
+        { "from": "svc.status_page.handleStatusPageRSSResponse", "to": "db.status_page", "label": "slug で1件取得", "kind": "db" },
+        { "from": "svc.status_page.handleStatusPageRSSResponse", "to": "ext.rss_reader.subscribe", "label": "該当なしで404", "branch": "error", "kind": "error" },
+        { "from": "svc.status_page.handleStatusPageRSSResponse", "to": "svc.status_page.buildRSSUrl", "label": "フィードURLを決める", "kind": "call" },
+        { "from": "svc.status_page.buildRSSUrl", "to": "db.setting", "label": "trustProxyを読む", "kind": "db" },
+        { "from": "svc.status_page.handleStatusPageRSSResponse", "to": "svc.status_page.renderRSS", "label": "XMLを組み立て", "kind": "call" },
+        { "from": "svc.status_page.renderRSS", "to": "svc.status_page.getRSSPageData", "label": "掲載データ収集", "kind": "call" },
+        { "from": "svc.status_page.getRSSPageData", "to": "svc.status_page.getStatusPageData", "label": "掲示と公開群を取得", "kind": "call" },
+        { "from": "svc.status_page.getStatusPageData", "to": "db.incident", "label": "掲示中のみ取得", "kind": "db" },
+        { "from": "svc.status_page.getRSSPageData", "to": "db.heartbeat", "label": "各監視の最新1件", "kind": "db" },
+        { "from": "svc.status_page.getRSSPageData", "to": "svc.status_page.overallStatus", "label": "全体状態を判定", "kind": "call" },
+        { "from": "svc.status_page.overallStatus", "to": "svc.status_page.getStatusDescription", "label": "説明文に変換", "kind": "call" },
+        { "from": "svc.status_page.renderRSS", "to": "ext.rss_reader.subscribe", "label": "RSS2.0を返す", "kind": "http" }
+      ],
+      "notes": [
+        "フィードに載るのは「掲示中(pin=1 active=1)のインシデント」と「現在DOWNのモニター」だけ。解決済みは載らない",
+        "項目IDに更新日時を含めるため、既存インシデントを編集すると購読者側で新着として再通知されやすい",
+        "RSSのタイトルは rss_title → ページ題名 → 既定文言の順。言語は en 固定",
+        "存在しない slug のときは 404 で RSS ではなく HTML（indexHTML）を返すため、リーダー側ではパースエラーになる",
+        "apicache が5分効くので、掲示直後にフィードへ出るまで最大5分遅れる",
+        "モニター1件ずつ最新ビートを個別クエリで引くため、公開モニターが多いと取得が重くなる"
+      ]
+    },
+    {
+      "id": "custom-domain",
+      "title": "独自ドメインを割り当てる",
+      "category": "ステータスページ",
+      "trigger": "編集サイドバーの「ドメイン名」欄に追加して保存し、DNSのCNAMEを向ける",
+      "steps": [
+        { "from": "ui.statuspage.add_domain_btn", "to": "ui.statuspage.save_btn", "label": "入力欄を1行追加", "kind": "call" },
+        { "from": "ui.statuspage.remove_domain_btn", "to": "ui.statuspage.save_btn", "label": "行を消す", "branch": "alt", "kind": "call" },
+        { "from": "ui.statuspage.save_btn", "to": "app.statuspage.save", "label": "保存を実行", "kind": "call" },
+        { "from": "app.statuspage.save", "to": "api.socket.connection", "label": "saveStatusPage を送信", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.saveStatusPage", "label": "イベント受信", "kind": "call" },
+        { "from": "api.socket.saveStatusPage", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "app.statuspage.save", "label": "未ログインで拒否", "branch": "error", "kind": "error" },
+        { "from": "api.socket.saveStatusPage", "to": "svc.status_page.updateDomainNameList", "label": "ドメインを登録", "kind": "call" },
+        { "from": "svc.status_page.updateDomainNameList", "to": "app.statuspage.save", "label": "配列でなければ中断", "branch": "error", "kind": "error" },
+        { "from": "svc.status_page.updateDomainNameList", "to": "db.status_page_cname", "label": "自分の分を全削除", "kind": "db" },
+        { "from": "svc.status_page.updateDomainNameList", "to": "db.status_page_cname", "label": "他ページの同名も削除", "kind": "db" },
+        { "from": "svc.status_page.updateDomainNameList", "to": "db.status_page_cname", "label": "1件ずつ再登録", "kind": "db" },
+        { "from": "svc.status_page.updateDomainNameList", "to": "app.statuspage.save", "label": "文字列以外でロールバック", "branch": "error", "kind": "error" },
+        { "from": "api.socket.saveStatusPage", "to": "svc.status_page.loadDomainMappingList", "label": "対応表を再読込", "kind": "call" },
+        { "from": "svc.status_page.loadDomainMappingList", "to": "db.status_page_cname", "label": "domain→slug を作る", "kind": "db" },
+        { "from": "ext.dns.cname", "to": "api.http.entry_root", "label": "そのドメインで来訪", "kind": "http" },
+        { "from": "api.http.entry_root", "to": "db.setting", "label": "trustProxyを読む", "kind": "call" },
+        { "from": "api.http.entry_root", "to": "svc.status_page.handleStatusPageResponse", "label": "対応表に一致", "kind": "call" },
+        { "from": "api.http.entry_root", "to": "ext.dns.cname", "label": "一致せず入口へ転送", "branch": "alt", "kind": "http" },
+        { "from": "svc.status_page.handleStatusPageResponse", "to": "svc.status_page.renderHTML", "label": "そのページをSSR", "kind": "call" },
+        { "from": "svc.status_page.renderHTML", "to": "ui.statuspage.public_view", "label": "トップに表示", "kind": "http" }
+      ],
+      "notes": [
+        "ドメイン一致はメモリ上の domainMappingList だけを見る。保存時と起動時にしか再読込しないので、DBを直接書き換えても反映されない",
+        "対応表はプロセス内 static 変数。複数プロセス/複数インスタンス構成では保存したプロセス以外に反映されない",
+        "domain 列は UNIQUE。他のステータスページが同じドメインを使っていると確認なしで奪う",
+        "空文字の行は登録時にスキップされるが、行自体は残るので保存後も入力欄に空行が見える",
+        "反映されるのはドメインのルート（/）だけ。/status/<slug> のパスは従来どおり両方で開ける",
+        "証明書やCNAMEの設定はアプリ側では一切行わない。Host ヘッダの一致を見ているだけ"
+      ]
+    }
+  ]
+}

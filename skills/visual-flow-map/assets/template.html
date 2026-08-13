@@ -271,9 +271,52 @@
   ::-webkit-scrollbar{width:10px;height:10px}
   ::-webkit-scrollbar-thumb{background:#1d2betc;background:#1d2b4e;border-radius:6px;border:2px solid transparent;background-clip:padding-box}
   ::-webkit-scrollbar-track{background:transparent}
-  @media (max-width:900px){
+  /* ---------- タブレット：縦積み ---------- */
+  @media (max-width:900px) and (min-width:701px){
     .stage{flex-direction:column}
-    aside{flex:0 0 40%;border-left:none;border-top:1px solid var(--line)}
+    aside{flex:0 0 min(45%,340px);border-left:none;border-top:1px solid var(--line)}
+  }
+
+  .panes{display:none}   /* 既定は非表示。下のスマホ用クエリでのみ出す（後置きだと後勝ちして常に消える） */
+
+  /* ---------- スマホ：1画面1役（操作一覧 / 図 / 手順 を下部で切り替える） ----------
+     縦積みのままだと図の領域が 375×157px しか残らず、倍率が下限に張り付いて
+     ラベルが 2px 未満になる＝このツールの中心である図が「点の霧」になるため、
+     同時表示を捨てて図に全高を渡す */
+  @media (max-width:700px){
+    #app{height:100vh; height:100dvh}          /* iOS の URL バー分のズレを消す */
+    .titlerow .stat{margin-left:0;width:100%}
+    .controls{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;
+      scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px}
+    .controls::-webkit-scrollbar{display:none}
+    .controls>*{flex:0 0 auto}
+    #btnFold{display:none}                     /* デッキはペインになるので不要 */
+    .stage{flex-direction:column;flex:1 1 auto;min-height:0}
+    .deck{max-height:none;flex:1 1 auto;min-height:0;border-bottom:none}
+    .deck.folded{max-height:none;padding:10px 18px 12px}
+    .canvaswrap,aside{min-height:0}
+    .deck,.canvaswrap,aside{display:none}
+    #app[data-pane="deck"]  .deck      {display:block;flex:1 1 auto}
+    #app[data-pane="map"]   .canvaswrap{display:block;flex:1 1 auto}
+    #app[data-pane="steps"] aside      {display:flex;flex:1 1 auto;border-left:none;border-top:none}
+    .panes{display:grid;grid-template-columns:repeat(3,1fr);
+      border-top:1px solid var(--line);background:var(--panel2);flex:0 0 auto}
+    .pane{min-height:50px;font-family:inherit;font-size:12.5px;font-weight:700;
+      background:none;border:none;border-top:2px solid transparent;color:var(--fg3);cursor:pointer}
+    .pane[aria-pressed="true"]{color:var(--fg);border-top-color:var(--accent2);background:rgba(56,225,214,.08)}
+    .legend{max-height:22vh;overflow:auto}
+    aside{flex:1 1 auto}
+  }
+
+  /* ---------- タッチ ---------- */
+  .canvaswrap{touch-action:none}               /* 1本指パン・2本指ピンチを JS が持つ */
+  @media (pointer:coarse){
+    .ctl{padding:9px 12px;min-height:40px}
+    input.search{min-height:40px}
+    button.flowbtn{padding:11px 12px 11px 26px;min-height:44px}
+    .step{padding:10px 8px;min-height:44px}
+    #hint .x{padding:9px 13px;font-size:16px}  /* 22×26px では WCAG 2.5.8 の 24px に足りない */
+    .legend a{display:inline-block;padding:7px 4px}
   }
 </style>
 </head>
@@ -323,6 +366,11 @@
     </aside>
   </div>
 
+  <nav class="panes" id="panes" role="group" aria-label="表示の切り替え">
+    <button class="pane" data-pane="deck"  aria-pressed="false"></button>
+    <button class="pane" data-pane="map"   aria-pressed="true"></button>
+    <button class="pane" data-pane="steps" aria-pressed="false"></button>
+  </nav>
   <div class="legend" id="legend"></div>
 </div>
 <div id="tip"></div>
@@ -425,6 +473,8 @@ const NW = 176, NH = 52, COLW = 236, ROWH = 70, LANE_PAD = 26, XPAD = 74, YPAD =
 /* OS の「視差効果を減らす」設定を尊重する（スクロール・演出の可否を1箇所で判定） */
 const REDUCE_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
 const motionOK = () => !REDUCE_MOTION.matches;
+const HOVER = matchMedia('(hover: hover)').matches;   // タッチ端末ではツールチップを出さない
+const MOBILE = () => matchMedia('(max-width:700px)').matches;
 
 const NODES = new Map();
 for (const n of DATA.nodes) {
@@ -628,7 +678,8 @@ function render(ids, edges, grid){
     d.querySelector('.nmeta').textContent = n.ref || n.id;
     if (DIFF_NEW.has(id)) d.insertAdjacentHTML('beforeend', `<span class="chg">${STR.chgNew}</span>`);
     else if (DIFF_MOD.has(id)) d.insertAdjacentHTML('beforeend', `<span class="chg mod">${STR.chgMod}</span>`);
-    d.addEventListener('mouseenter', ev=>showTip(ev, n));
+    // タッチでは mouseenter だけが来て mouseleave が来ず、ツールチップが残り続ける
+    d.addEventListener('mouseenter', ev=>{ if(HOVER) showTip(ev, n); });
     d.addEventListener('mousemove', moveTip);
     d.addEventListener('mouseleave', hideTip);
     d.addEventListener('click', ()=>onNodeClick(id));
@@ -713,6 +764,7 @@ function selectFlow(f){
   // curStep=-1 のまま描くと全経路がフル点灯してから暗転し、段階再生の最初の一歩が台無しになる
   curStep = 0;
   paint(); renderPanel(); fit(true);
+  if(typeof setPane==='function' && MOBILE()) setPane('map');   // 押したら図へ移る（体験の核をスマホでも通す）
   setTimeout(()=>play(), 260);
 }
 function clearFlow(){
@@ -926,6 +978,7 @@ function showNodePanel(id){
     const f = FLOWS.find(x=>x.id===el.dataset.f); if(f) selectFlow(f);
   }));
   view.nodeEls.forEach((el,i)=>el.classList.toggle('hit', i===id));
+  if(typeof setPane==='function' && MOBILE()) setPane('steps');   // 逆引きの結果は手順ペインに出る
 }
 
 /* ============================ デッキ（ボタン） ============================ */
@@ -982,9 +1035,15 @@ function setZoom(z){
   }
   drawLaneBar();
 }
+let pendingFit = null;
 function fit(soft){
   const l = view.lay; if(!l) return;
-  const z = Math.min(1.2, (wrap.clientWidth-28)/l.width, (wrap.clientHeight-28)/l.height);
+  const vw = wrap.clientWidth, vh = wrap.clientHeight;
+  // 非表示のペインや高さ0の iframe では clientWidth が 0 になり、倍率が下限に張り付いてしまう。
+  // 表示に戻ったときに fit し直せるよう覚えておく
+  if(vw < 40 || vh < 40){ pendingFit = soft; return; }
+  pendingFit = null;
+  const z = Math.min(1.2, (vw-28)/l.width, (vh-28)/l.height);
   // soft = 文字が読める大きさを優先（縮めすぎない）。「全体を表示」だけは真にフィットさせる。
   setZoom(soft ? Math.max(0.62, Math.min(1.05, z)) : Math.max(0.16, z));
   if(soft && cur){
@@ -993,30 +1052,60 @@ function fit(soft){
   } else if(!soft) wrap.scrollTo({left:0, top:0});
 }
 
-/* ============================ ドラッグ移動・ホイール拡縮 ============================ */
-/* マップはドラッグで掴んで動かせる。4px以上動いたらパン扱いにして、直後の click を1回だけ握りつぶす */
-let pan = null, suppressClick = false;
+/* ============================ パン・ズーム（マウスとタッチ共通） ============================ */
+/* Pointer Events に統一する。mouse 専用にすると、touch-action:none を指定した時点で
+   スマホからは図をまったく動かせなくなる。2本指はピンチズームに割り当てる */
+const ptrs = new Map();
+let pan = null, pinch = null, suppressClick = false;
 wrap.style.cursor = 'grab';
-wrap.addEventListener('mousedown', e => {
-  if (e.button !== 0) return;
-  pan = { x: e.clientX, y: e.clientY, sl: wrap.scrollLeft, st: wrap.scrollTop, moved: false };
-  wrap.style.cursor = 'grabbing';
-  e.preventDefault();   // テキスト選択とネイティブドラッグを抑止
+wrap.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 1) {
+    pan = { x: e.clientX, y: e.clientY, sl: wrap.scrollLeft, st: wrap.scrollTop, moved: false,
+            touch: e.pointerType !== 'mouse' };
+    try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
+    wrap.style.cursor = 'grabbing';
+  } else if (ptrs.size === 2) {
+    pan = null;
+    const [a, b] = [...ptrs.values()];
+    pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, z: zoom };
+  }
+  e.preventDefault();   // テキスト選択・ネイティブドラッグ・スクロールを抑止
 });
-addEventListener('mousemove', e => {
+wrap.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pinch && ptrs.size >= 2) {
+    const [a, b] = [...ptrs.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    zoomAt((a.x + b.x) / 2, (a.y + b.y) / 2, pinch.z * (d / pinch.d));
+    return;
+  }
   if (!pan) return;
   const dx = e.clientX - pan.x, dy = e.clientY - pan.y;
-  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) pan.moved = true;
+  // 指はマウスより滑るので、タップをドラッグと誤認しないよう閾値を上げる
+  const th = pan.touch ? 8 : 4;
+  if (Math.abs(dx) > th || Math.abs(dy) > th) pan.moved = true;
   if (pan.moved) { wrap.scrollLeft = pan.sl - dx; wrap.scrollTop = pan.st - dy; }
 });
-addEventListener('mouseup', () => {
-  if (!pan) return;
-  suppressClick = pan.moved;
-  pan = null;
-  wrap.style.cursor = 'grab';
-  // click は mouseup 直後（タイマーより先）に配送されるので、次のタスクで必ず解除される
-  setTimeout(() => { suppressClick = false; }, 0);
-});
+function endPointer(e){
+  ptrs.delete(e.pointerId);
+  if (pan) {
+    suppressClick = pan.moved;
+    pan = null;
+    wrap.style.cursor = 'grab';
+    setTimeout(() => { suppressClick = false; }, 0);
+  }
+  if (ptrs.size < 2) pinch = null;
+  // 2本指の片方を離したら、残った指でパンを続けられるようにする
+  if (ptrs.size === 1) {
+    const [p] = [...ptrs.values()];
+    pan = { x: p.x, y: p.y, sl: wrap.scrollLeft, st: wrap.scrollTop, moved: false, touch: true };
+  }
+}
+wrap.addEventListener('pointerup', endPointer);
+wrap.addEventListener('pointercancel', endPointer);
 wrap.addEventListener('click', e => {
   if (suppressClick) { e.stopPropagation(); e.preventDefault(); suppressClick = false; }
 }, true);
@@ -1110,7 +1199,7 @@ addEventListener('keydown', e=>{
   else if(e.key==='ArrowLeft'){ e.preventDefault(); stepBy(-1); }
   else if(e.key===' '){ e.preventDefault(); timer? (stopPlay(),paint()) : play(); }
 });
-addEventListener('resize', ()=>setZoom(zoom));
+addEventListener('resize', ()=>{ setZoom(zoom); if(pendingFit!==null) fit(pendingFit); });
 
 /* ============================ 初回ヒント ============================ */
 // file:// では全ての図が同一オリジンを共有するので、図ごとに名前空間を切らないと
@@ -1157,6 +1246,23 @@ renderDeck();
 showMap();
 renderPanel();
 fit(false);
+/* ============================ スマホのペイン切替 ============================ */
+/* スマホは同時表示を捨てて1画面1役にする。図は非表示中に幅0になるので、戻った直後に必ず再フィットする */
+const APP = document.getElementById('app');
+function setPane(p){
+  APP.dataset.pane = p;
+  document.querySelectorAll('.pane').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.pane===p)));
+  // 非表示だった間は clientWidth が 0 なので、offsetHeight を読んでレイアウトを確定させてから測る
+  if(p==='map'){ void wrap.offsetHeight; setZoom(zoom); fit(!!cur); }
+}
+{
+  const L = LANG==='en' ? ['List','Map','Steps'] : [FLOW_WORD+'一覧','図','手順'];
+  document.querySelectorAll('.pane').forEach((b,i)=>{ b.textContent = L[i]; b.onclick = ()=>setPane(b.dataset.pane); });
+  // data-pane が無いとスマホでは全ペインが display:none のままになるので、描画前に必ず入れる
+  APP.dataset.pane = 'map';
+  setPane('map');
+}
+
 /* ディープリンク（#flow=<id>）で開かれたら、そのフローを選択した状態で始める */
 (function initFromHash(){
   let f = null;

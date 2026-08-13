@@ -1,0 +1,789 @@
+{
+  "nodes": [
+    {
+      "id": "ui.settings_notifications.setup_btn",
+      "lane": "ui",
+      "label": "通知の設定ボタン",
+      "detail": "設定>通知の「Setup Notification」。押すと NotificationDialog を引数なし=新規モードで開く。",
+      "ref": "src/components/settings/Notifications.vue:19"
+    },
+    {
+      "id": "ui.settings_notifications.edit_link",
+      "lane": "ui",
+      "label": "通知先の編集リンク",
+      "detail": "一覧の各行の Edit。notification.id を渡して NotificationDialog を編集モードで開く。",
+      "ref": "src/components/settings/Notifications.vue:15"
+    },
+    {
+      "id": "ui.notificationdialog.show",
+      "lane": "ui",
+      "label": "通知設定ダイアログを開く",
+      "detail": "IDありなら $root.notificationList の config を JSON.parse して復元。IDなしは type=telegram の空フォーム。",
+      "ref": "src/components/NotificationDialog.vue:427"
+    },
+    {
+      "id": "ui.notificationdialog.type_select",
+      "lane": "ui",
+      "label": "通知の種類セレクト",
+      "detail": "9カテゴリの optgroup。選択で currentForm が差し替わり、種類ごとの入力フォームが描画される。",
+      "ref": "src/components/NotificationDialog.vue:15"
+    },
+    {
+      "id": "ui.notificationdialog.save_btn",
+      "lane": "ui",
+      "label": "保存ボタン",
+      "detail": "type=submit。form の @submit.prevent=\"submit\" 経由。processing 中は disabled。",
+      "ref": "src/components/NotificationDialog.vue:147"
+    },
+    {
+      "id": "ui.notificationdialog.test_btn",
+      "lane": "ui",
+      "label": "テストボタン",
+      "detail": "保存せずに現在の入力値でテスト送信する。新規作成中でも押せる。",
+      "ref": "src/components/NotificationDialog.vue:144"
+    },
+    {
+      "id": "ui.notificationdialog.delete_btn",
+      "lane": "ui",
+      "label": "削除ボタン",
+      "detail": "v-if=\"id\" のため編集モードでのみ表示。押すとモーダルを閉じて確認ダイアログを出す。",
+      "ref": "src/components/NotificationDialog.vue:135"
+    },
+    {
+      "id": "ui.notificationdialog.confirm_delete",
+      "lane": "ui",
+      "label": "削除の確認ダイアログ",
+      "detail": "Confirm コンポーネント。@yes で deleteNotification を呼ぶ。Noなら何も起きない。",
+      "ref": "src/components/NotificationDialog.vue:157"
+    },
+    {
+      "id": "ui.notificationdialog.default_switch",
+      "lane": "ui",
+      "label": "既定で有効スイッチ",
+      "detail": "isDefault。新規モニター作成画面で初期チェックが入るだけで、既存モニターには影響しない。",
+      "ref": "src/components/NotificationDialog.vue:118"
+    },
+    {
+      "id": "ui.notificationdialog.apply_existing_switch",
+      "lane": "ui",
+      "label": "既存全モニターに適用",
+      "detail": "applyExisting。保存時に一度だけ全モニターへ紐付ける。DBには保存されない一時フラグ。",
+      "ref": "src/components/NotificationDialog.vue:128"
+    },
+    {
+      "id": "ui.apprise.status",
+      "lane": "ui",
+      "label": "Appriseの導入状態表示",
+      "detail": "appriseInstalled が true なら導入済み、false なら未導入の案内リンクを出す。",
+      "ref": "src/components/notifications/Apprise.vue:18"
+    },
+    {
+      "id": "ui.editmonitor.notification_checkbox",
+      "lane": "ui",
+      "label": "通知先チェックボックス",
+      "detail": "monitor.notificationIDList[id] に true/false を入れる。通知先ごとに1つ表示。",
+      "ref": "src/pages/EditMonitor.vue:2211"
+    },
+    {
+      "id": "ui.editmonitor.setup_notification_btn",
+      "lane": "ui",
+      "label": "モニター編集の通知追加",
+      "detail": "モニター編集画面から同じ NotificationDialog を開く。追加すると自動でチェックが入る。",
+      "ref": "src/pages/EditMonitor.vue:2229"
+    },
+    {
+      "id": "ui.editmonitor.resend_interval",
+      "lane": "ui",
+      "label": "再通知の回数設定",
+      "detail": "resendInterval。DOWNのまま何回ビートしたら再送するか。0で再送しない。",
+      "ref": "src/pages/EditMonitor.vue:1665"
+    },
+    {
+      "id": "ui.editmonitor.save_btn",
+      "lane": "ui",
+      "label": "モニターの保存ボタン",
+      "detail": "id=monitor-submit-btn。type=submit で submit() を呼ぶ。processing 中は disabled。",
+      "ref": "src/pages/EditMonitor.vue:3197"
+    },
+
+    {
+      "id": "app.notificationdialog.submit",
+      "lane": "app",
+      "label": "通知先を保存する",
+      "detail": "addNotification を emit。ok なら閉じてトースト表示。新規時のみ added イベントを親へ emit。",
+      "ref": "src/components/NotificationDialog.vue:457"
+    },
+    {
+      "id": "app.notificationdialog.test",
+      "lane": "app",
+      "label": "テスト送信を投げる",
+      "detail": "未保存の notification オブジェクトをそのまま testNotification で送る。結果はトーストのみ。",
+      "ref": "src/components/NotificationDialog.vue:478"
+    },
+    {
+      "id": "app.notificationdialog.deleteNotification",
+      "lane": "app",
+      "label": "通知先を削除する",
+      "detail": "deleteNotification を this.id で emit。ok ならモーダルを閉じる。",
+      "ref": "src/components/NotificationDialog.vue:490"
+    },
+    {
+      "id": "app.notificationdialog.deleteConfirm",
+      "lane": "app",
+      "label": "削除確認を表示",
+      "detail": "設定モーダルを hide してから Confirm を show する。二重モーダルを避けるための順序。",
+      "ref": "src/components/NotificationDialog.vue:417"
+    },
+    {
+      "id": "app.notificationdialog.getUniqueDefaultName",
+      "lane": "app",
+      "label": "既定名を自動採番",
+      "detail": "「種類 1」形式で既存名と重複しない番号まで加算。名前未入力か旧既定名のままの時だけ上書き。",
+      "ref": "src/components/NotificationDialog.vue:507"
+    },
+    {
+      "id": "app.socket.notificationList",
+      "lane": "app",
+      "label": "通知先一覧を受け取る",
+      "detail": "サーバからの notificationList を $root.notificationList に丸ごと差し替える。",
+      "ref": "src/mixins/socket.js:177"
+    },
+    {
+      "id": "app.socket.add",
+      "lane": "app",
+      "label": "モニターを追加する",
+      "detail": "socket.emit(\"add\", monitor, callback)。monitor には notificationIDList が入っている。",
+      "ref": "src/mixins/socket.js:565"
+    },
+    {
+      "id": "app.editmonitor.submit",
+      "lane": "app",
+      "label": "モニターを保存する",
+      "detail": "新規/複製は $root.add、編集は editMonitor を emit。低間隔確認と入力検証を先に通す。",
+      "ref": "src/pages/EditMonitor.vue:4271"
+    },
+    {
+      "id": "app.editmonitor.addedNotification",
+      "lane": "app",
+      "label": "追加した通知先を自動ON",
+      "detail": "ダイアログの added イベントを受け、新しいIDの notificationIDList を true にする。編集では発火しない。",
+      "ref": "src/pages/EditMonitor.vue:4410"
+    },
+    {
+      "id": "app.editmonitor.default_notification_init",
+      "lane": "app",
+      "label": "既定通知先を初期チェック",
+      "detail": "新規作成時のみ、isDefault が true の通知先を notificationIDList に自動で入れる。",
+      "ref": "src/pages/EditMonitor.vue:4031"
+    },
+    {
+      "id": "app.apprise.checkApprise",
+      "lane": "app",
+      "label": "Appriseの有無を問い合わせ",
+      "detail": "Apprise フォームの mounted で checkApprise を emit し、appriseInstalled に格納する。",
+      "ref": "src/components/notifications/Apprise.vue:35"
+    },
+
+    {
+      "id": "api.socket.connection",
+      "lane": "api",
+      "label": "socket.io 接続受付",
+      "detail": "UI起点の全操作がここを通る。接続直後に sendInfo を返し、以降のイベントハンドラを登録する。",
+      "ref": "server/server.js:389"
+    },
+    {
+      "id": "api.socket.addNotification",
+      "lane": "api",
+      "label": "通知先の追加/編集受口",
+      "detail": "追加と編集が同じイベント。第2引数 notificationID の有無で分岐。失敗時は ok:false と e.message。",
+      "ref": "server/server.js:1562"
+    },
+    {
+      "id": "api.socket.deleteNotification",
+      "lane": "api",
+      "label": "通知先の削除受口",
+      "detail": "notificationID を受け Notification.delete。成功後に通知先一覧を再配信する。",
+      "ref": "server/server.js:1583"
+    },
+    {
+      "id": "api.socket.testNotification",
+      "lane": "api",
+      "label": "テスト送信の受口",
+      "detail": "未保存の設定を受けて即送信。失敗は log.error に出したうえで ok:false を返す。",
+      "ref": "server/server.js:1603"
+    },
+    {
+      "id": "api.socket.checkApprise",
+      "lane": "api",
+      "label": "Apprise導入確認の受口",
+      "detail": "checkLogin 込みで try に入れ、例外なら catch で無条件に false を返す。",
+      "ref": "server/server.js:1623"
+    },
+    {
+      "id": "api.socket.add",
+      "lane": "api",
+      "label": "モニター追加の受口",
+      "detail": "notificationIDList を monitor から切り離してから bean.import する。保存後に紐付けを作る。",
+      "ref": "server/server.js:743"
+    },
+    {
+      "id": "api.socket.editMonitor",
+      "lane": "api",
+      "label": "モニター編集の受口",
+      "detail": "保存後 updateMonitorNotification で通知先の紐付けを作り直し、稼働中なら監視を再起動する。",
+      "ref": "server/server.js:818"
+    },
+
+    {
+      "id": "svc.auth.checkLogin",
+      "lane": "svc",
+      "label": "ログイン必須チェック",
+      "detail": "socket.userID が無ければ「You are not logged in.」を throw。各ハンドラの共通ガード。",
+      "ref": "server/util-server.js:644"
+    },
+    {
+      "id": "svc.notification.save",
+      "lane": "svc",
+      "label": "通知先を保存",
+      "detail": "IDありは id と user_id 一致で1件取得、無ければ notification not found。設定全体を config に JSON で格納。",
+      "ref": "server/notification.js:265"
+    },
+    {
+      "id": "svc.notification.delete",
+      "lane": "svc",
+      "label": "通知先を削除",
+      "detail": "id と user_id 一致で取得し R.trash。見つからなければ notification not found を throw。",
+      "ref": "server/notification.js:301"
+    },
+    {
+      "id": "svc.notification.send",
+      "lane": "svc",
+      "label": "通知プロバイダへ振り分け",
+      "detail": "providerList[type] が無ければ「Notification type is not supported」。あれば該当プロバイダの send を呼ぶ。",
+      "ref": "server/notification.js:250"
+    },
+    {
+      "id": "svc.notification.checkApprise",
+      "lane": "svc",
+      "label": "appriseコマンドの有無",
+      "detail": "commandExists(\"apprise\") の結果をそのまま返す。バージョンや実行可否までは見ない。",
+      "ref": "server/notification.js:315"
+    },
+    {
+      "id": "svc.notification.applyNotificationEveryMonitor",
+      "lane": "svc",
+      "label": "全モニターへ一括適用",
+      "detail": "自分の全モニターを走査し、未登録の組み合わせだけ monitor_notification に追加する。",
+      "ref": "server/notification.js:326"
+    },
+    {
+      "id": "svc.notification.init",
+      "lane": "svc",
+      "label": "プロバイダ一覧を初期化",
+      "detail": "起動時に約100種のプロバイダを name をキーに登録。名前なし・重複があれば起動時に throw。",
+      "ref": "server/notification.js:118"
+    },
+    {
+      "id": "svc.client.sendNotificationList",
+      "lane": "svc",
+      "label": "通知先一覧を配信",
+      "detail": "user_id で取得し isDefault/active を真偽値へ直して、同じユーザーの全接続へ notificationList を emit。",
+      "ref": "server/client.js:18"
+    },
+    {
+      "id": "svc.server.updateMonitorNotification",
+      "lane": "svc",
+      "label": "紐付けを作り直す",
+      "detail": "対象モニターの monitor_notification を全DELETEしてから、true のIDだけ INSERT し直す。",
+      "ref": "server/server.js:1793"
+    },
+    {
+      "id": "svc.monitor.start",
+      "lane": "svc",
+      "label": "監視開始",
+      "detail": "ビートループを起動する。通知先はビートごとにDBから引くため、開始時に固定されるわけではない。",
+      "ref": "server/model/monitor.js:414"
+    },
+    {
+      "id": "svc.monitor.sendNotification",
+      "lane": "svc",
+      "label": "障害/復旧通知を組み立て",
+      "detail": "!isFirstBeat か DOWN のときだけ実行。msg は [名前][🔴 Down / ✅ Up] 理由。タイムゾーン等を付与して各宛先へ逐次送信。",
+      "ref": "server/model/monitor.js:1452"
+    },
+    {
+      "id": "svc.monitor.getNotificationList",
+      "lane": "svc",
+      "label": "モニターの通知先を取得",
+      "detail": "monitor_notification と notification を結合して、そのモニターに紐付く通知先だけを返す。",
+      "ref": "server/model/monitor.js:1526"
+    },
+    {
+      "id": "svc.monitor.isImportantForNotification",
+      "lane": "svc",
+      "label": "通知すべきビートか判定",
+      "detail": "初回、UP→DOWN、DOWN→UP、PENDING→DOWN、MAINTENANCE→DOWN のみ true。メンテ入り/復帰は通知しない。",
+      "ref": "server/model/monitor.js:1420"
+    },
+    {
+      "id": "svc.monitor.sendCertNotificationByTargetDays",
+      "lane": "svc",
+      "label": "証明書期限の通知",
+      "detail": "notification_sent_history に同種の記録があれば送らない。1件でも成功したら履歴を INSERT する。",
+      "ref": "server/model/monitor.js:1544"
+    },
+    {
+      "id": "svc.monitor.handleTlsInfo",
+      "lane": "svc",
+      "label": "TLS情報の保存と期限確認",
+      "detail": "TLS情報を保存後、ignoreTls でなく証明書期限通知が有効なときだけ期限チェックへ進む。",
+      "ref": "server/model/monitor.js:2072"
+    },
+    {
+      "id": "svc.util-server.checkCertExpiryNotifications",
+      "lane": "svc",
+      "label": "証明書の残日数を判定",
+      "detail": "宛先ゼロなら即終了。tlsExpiryNotifyDays(既定7/14/21)ごとに証明書チェーンを辿り、既知ルートは飛ばす。",
+      "ref": "server/util-server.js:924"
+    },
+    {
+      "id": "svc.notification-provider.throwGeneralAxiosError",
+      "lane": "svc",
+      "label": "送信エラーを整形して投げ直す",
+      "detail": "error.code、HTTPステータス、レスポンス本文を連結した1行メッセージの Error を throw する。",
+      "ref": "server/notification-providers/notification-provider.js:121"
+    },
+    {
+      "id": "svc.notification-provider.renderTemplate",
+      "lane": "svc",
+      "label": "本文テンプレートを展開",
+      "detail": "Liquid で msg/monitorJSON/heartbeatJSON を差し込む。テスト送信では monitorJSON が null になる。",
+      "ref": "server/notification-providers/notification-provider.js:75"
+    },
+    {
+      "id": "svc.telegram.send",
+      "lane": "svc",
+      "label": "Telegramへ送信",
+      "detail": "sendMessage を POST。テンプレート利用時は MarkdownV2 のエスケープを行い、テスト時はダミー値で埋める。",
+      "ref": "server/notification-providers/telegram.js:51"
+    },
+    {
+      "id": "svc.webhook.send",
+      "lane": "svc",
+      "label": "Webhookへ送信",
+      "detail": "GET はクエリ、POST は JSON/form-data/カスタム本文。追加ヘッダのJSONが壊れていれば送信前に throw。",
+      "ref": "server/notification-providers/webhook.js:11"
+    },
+    {
+      "id": "svc.smtp.send",
+      "lane": "svc",
+      "label": "メールを送信",
+      "detail": "nodemailer で送信。件名/本文はカスタム指定時のみテンプレート展開。追加ヘッダ不正なら throw。",
+      "ref": "server/notification-providers/smtp.js:11"
+    },
+    {
+      "id": "svc.apprise.send",
+      "lane": "svc",
+      "label": "Apprise経由で送信",
+      "detail": "apprise コマンドを spawn。stdout に ERROR を含めば throw、出力が空なら「No output from apprise」を返す。",
+      "ref": "server/notification-providers/apprise.js:10"
+    },
+
+    {
+      "id": "job.monitor.beat",
+      "lane": "job",
+      "label": "1回分の監視ビート",
+      "detail": "状態を判定して heartbeat を作る。重要ビートなら通知判定へ、そうでなければ再送カウンタを見る。",
+      "ref": "server/model/monitor.js:426"
+    },
+    {
+      "id": "job.monitor.safeBeat",
+      "lane": "job",
+      "label": "次回ビートの予約",
+      "detail": "通知送信を含む1回分の処理が終わってから次回をスケジュールする。宛先が遅いとビート全体が遅れる。",
+      "ref": "server/model/monitor.js:1091"
+    },
+    {
+      "id": "job.monitor.downCount",
+      "lane": "job",
+      "label": "DOWN継続の回数カウンタ",
+      "detail": "重要でないビートで DOWN のとき加算。resendInterval 以上で再送し、送信後は0に戻す。",
+      "ref": "server/model/monitor.js:990"
+    },
+
+    {
+      "id": "db.notification",
+      "lane": "db",
+      "label": "通知先テーブル",
+      "detail": "name / user_id / is_default / config。config には入力値全体がJSONで入る(トークンやパスワードも平文)。",
+      "ref": "db/knex_init_db.js:296"
+    },
+    {
+      "id": "db.monitor_notification",
+      "lane": "db",
+      "label": "モニターと通知先の紐付け",
+      "detail": "monitor_id と notification_id の中間表。どちらも ON DELETE CASCADE。",
+      "ref": "db/knex_init_db.js:306"
+    },
+    {
+      "id": "db.notification_sent_history",
+      "lane": "db",
+      "label": "通知送信済み履歴",
+      "detail": "type/monitor_id/days。証明書期限通知の重複送信を防ぐために使う。",
+      "ref": "db/knex_init_db.js:373"
+    },
+    {
+      "id": "db.monitor",
+      "lane": "db",
+      "label": "モニターテーブル",
+      "detail": "user_id 単位でモニターを保持。一括適用は user_id で絞って全件走査する。",
+      "ref": "db/knex_init_db.js:66"
+    },
+    {
+      "id": "db.heartbeat",
+      "lane": "db",
+      "label": "ビート履歴テーブル",
+      "detail": "復旧通知で important=1 の直近 DOWN を引き、lastDownTime として通知本文に渡す。",
+      "ref": "db/knex_init_db.js:125"
+    },
+    {
+      "id": "db.setting",
+      "lane": "db",
+      "label": "設定テーブル",
+      "detail": "tlsExpiryNotifyDays を保持。未設定または配列でなければ [7,14,21] を書き戻す。",
+      "ref": "db/knex_init_db.js:383"
+    },
+
+    {
+      "id": "ext.telegram.api",
+      "lane": "ext",
+      "label": "Telegram Bot API",
+      "detail": "既定 https://api.telegram.org の /bot<token>/sendMessage。自前サーバURLの指定も可能。",
+      "ref": "server/notification-providers/telegram.js:104"
+    },
+    {
+      "id": "ext.webhook.endpoint",
+      "lane": "ext",
+      "label": "Webhook送信先URL",
+      "detail": "利用者が指定した任意のURL。プロキシ設定があればそれ経由。応答内容は検証しない。",
+      "ref": "server/notification-providers/webhook.js:63"
+    },
+    {
+      "id": "ext.smtp.server",
+      "lane": "ext",
+      "label": "SMTPサーバ",
+      "detail": "host/port/secure と認証情報で接続。STARTTLS無効時は暗号化なしで送るため警告ログが出る。",
+      "ref": "server/notification-providers/smtp.js:93"
+    },
+    {
+      "id": "ext.apprise.cli",
+      "lane": "ext",
+      "label": "appriseコマンド",
+      "detail": "サーバ上にインストールされた apprise を外部プロセスとして起動する。未導入なら送信できない。",
+      "ref": "server/notification-providers/apprise.js:18"
+    }
+  ],
+  "edges": [],
+  "flows": [
+    {
+      "id": "notify-add",
+      "title": "通知先を追加する",
+      "category": "通知",
+      "trigger": "設定 > 通知 の「通知の設定」ボタンを押す",
+      "steps": [
+        { "from": "ui.settings_notifications.setup_btn", "to": "ui.notificationdialog.show", "label": "新規モードで開く", "kind": "call" },
+        { "from": "ui.notificationdialog.show", "to": "ui.notificationdialog.type_select", "label": "初期値 telegram を表示", "kind": "call" },
+        { "from": "ui.notificationdialog.type_select", "to": "app.notificationdialog.getUniqueDefaultName", "label": "既定名を自動採番", "kind": "call" },
+        { "from": "ui.notificationdialog.save_btn", "to": "app.notificationdialog.submit", "label": "保存する", "kind": "call" },
+        { "from": "app.notificationdialog.submit", "to": "api.socket.connection", "label": "addNotification を送る", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.addNotification", "label": "受口へ振り分け", "kind": "realtime" },
+        { "from": "api.socket.addNotification", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "app.notificationdialog.submit", "label": "未ログインなら失敗を返す", "branch": "error", "kind": "error" },
+        { "from": "api.socket.addNotification", "to": "svc.notification.save", "label": "保存を依頼", "kind": "call" },
+        { "from": "svc.notification.save", "to": "db.notification", "label": "新規行を INSERT", "kind": "db" },
+        { "from": "api.socket.addNotification", "to": "svc.client.sendNotificationList", "label": "一覧を再配信", "kind": "call" },
+        { "from": "svc.client.sendNotificationList", "to": "db.notification", "label": "自分の通知先を再取得", "kind": "db" },
+        { "from": "svc.client.sendNotificationList", "to": "app.socket.notificationList", "label": "notificationList を配信", "kind": "realtime" },
+        { "from": "api.socket.addNotification", "to": "app.notificationdialog.submit", "label": "ok と新IDを返す", "kind": "realtime" }
+      ],
+      "notes": [
+        "サーバ側に入力検証は無い。名前必須はダイアログの required だけで、種類の妥当性も見ていない",
+        "入力値はまるごと JSON 化されて config 列に入る。APIトークンやSMTPパスワードも平文で保存される",
+        "新規のときだけ added イベントを emit する。編集では emit しない"
+      ]
+    },
+    {
+      "id": "notify-edit",
+      "title": "通知先の設定を編集する",
+      "category": "通知",
+      "trigger": "設定 > 通知 の一覧で Edit リンクを押す",
+      "steps": [
+        { "from": "ui.settings_notifications.edit_link", "to": "ui.notificationdialog.show", "label": "IDを渡して開く", "kind": "call" },
+        { "from": "app.socket.notificationList", "to": "ui.notificationdialog.show", "label": "config を復元して表示", "kind": "call" },
+        { "from": "ui.notificationdialog.show", "to": "ui.notificationdialog.apply_existing_switch", "label": "applyExisting を false に戻す", "kind": "call" },
+        { "from": "ui.notificationdialog.save_btn", "to": "app.notificationdialog.submit", "label": "保存する", "kind": "call" },
+        { "from": "app.notificationdialog.submit", "to": "api.socket.connection", "label": "IDつきで addNotification", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.addNotification", "label": "受口へ振り分け", "kind": "realtime" },
+        { "from": "api.socket.addNotification", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.addNotification", "to": "svc.notification.save", "label": "上書き保存を依頼", "kind": "call" },
+        { "from": "svc.notification.save", "to": "db.notification", "label": "id と user_id で1件取得", "kind": "db" },
+        { "from": "svc.notification.save", "to": "app.notificationdialog.submit", "label": "他人のIDなら not found", "branch": "error", "kind": "error" },
+        { "from": "svc.notification.save", "to": "db.notification", "label": "config を上書き UPDATE", "kind": "db" },
+        { "from": "api.socket.addNotification", "to": "svc.client.sendNotificationList", "label": "一覧を再配信", "kind": "call" },
+        { "from": "svc.client.sendNotificationList", "to": "app.socket.notificationList", "label": "notificationList を配信", "kind": "realtime" }
+      ],
+      "notes": [
+        "追加と編集は同じ addNotification イベント。第2引数のIDの有無だけで挙動が変わる",
+        "編集では added を emit しないため、モニター編集画面から編集しても紐付けは変化しない",
+        "過去バージョンで applyExisting が DB に焼き込まれた個体があるため、show() で毎回 false に戻している"
+      ]
+    },
+    {
+      "id": "notify-test",
+      "title": "通知をテスト送信する",
+      "category": "通知",
+      "trigger": "通知設定ダイアログの「テスト」ボタンを押す",
+      "steps": [
+        { "from": "ui.notificationdialog.test_btn", "to": "app.notificationdialog.test", "label": "テスト送信", "kind": "call" },
+        { "from": "app.notificationdialog.test", "to": "api.socket.connection", "label": "未保存の設定を送る", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.testNotification", "label": "受口へ振り分け", "kind": "realtime" },
+        { "from": "api.socket.testNotification", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.testNotification", "to": "svc.notification.send", "label": "「<名前> Testing」を送る", "kind": "call" },
+        { "from": "svc.notification.send", "to": "api.socket.testNotification", "label": "未対応の種類なら例外", "branch": "error", "kind": "error" },
+        { "from": "svc.notification.send", "to": "svc.telegram.send", "label": "種類ごとの実装を呼ぶ", "kind": "call" },
+        { "from": "svc.telegram.send", "to": "svc.notification-provider.renderTemplate", "label": "テンプレート利用時のみ展開", "branch": "alt", "kind": "call" },
+        { "from": "svc.telegram.send", "to": "ext.telegram.api", "label": "sendMessage を POST", "kind": "http" },
+        { "from": "ext.telegram.api", "to": "api.socket.testNotification", "label": "成功メッセージを返す", "kind": "http" },
+        { "from": "api.socket.testNotification", "to": "app.notificationdialog.test", "label": "結果をトーストで表示", "kind": "realtime" }
+      ],
+      "notes": [
+        "テストは未保存の入力値をそのまま送るだけで、DBには一切書かない",
+        "monitorJSON と heartbeatJSON が null になるため、本番の通知と本文が変わる。Telegram は MarkdownV2 用のダミー値で埋める",
+        "SMTP は msg が \"Testing\" で終わるときだけカスタム件名/本文を展開する特別扱いがある"
+      ]
+    },
+    {
+      "id": "notify-delete",
+      "title": "通知先を削除する",
+      "category": "通知",
+      "trigger": "通知設定ダイアログの「削除」ボタンを押す",
+      "steps": [
+        { "from": "ui.notificationdialog.delete_btn", "to": "app.notificationdialog.deleteConfirm", "label": "確認へ進む", "kind": "call" },
+        { "from": "app.notificationdialog.deleteConfirm", "to": "ui.notificationdialog.confirm_delete", "label": "設定を閉じて確認を出す", "kind": "call" },
+        { "from": "ui.notificationdialog.confirm_delete", "to": "app.notificationdialog.deleteNotification", "label": "「はい」で削除", "kind": "call" },
+        { "from": "app.notificationdialog.deleteNotification", "to": "api.socket.connection", "label": "deleteNotification を送る", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.deleteNotification", "label": "受口へ振り分け", "kind": "realtime" },
+        { "from": "api.socket.deleteNotification", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.deleteNotification", "to": "svc.notification.delete", "label": "削除を依頼", "kind": "call" },
+        { "from": "svc.notification.delete", "to": "db.notification", "label": "id と user_id で取得", "kind": "db" },
+        { "from": "svc.notification.delete", "to": "app.notificationdialog.deleteNotification", "label": "無ければ not found", "branch": "error", "kind": "error" },
+        { "from": "svc.notification.delete", "to": "db.notification", "label": "行を DELETE", "kind": "db" },
+        { "from": "db.notification", "to": "db.monitor_notification", "label": "CASCADEで紐付けも消える", "kind": "db" },
+        { "from": "api.socket.deleteNotification", "to": "svc.client.sendNotificationList", "label": "一覧を再配信", "kind": "call" },
+        { "from": "svc.client.sendNotificationList", "to": "app.socket.notificationList", "label": "notificationList を配信", "kind": "realtime" }
+      ],
+      "notes": [
+        "monitor_notification は notification_id に ON DELETE CASCADE が付いているため、紐付けは自動で消える",
+        "削除前にどのモニターで使われているかの警告は出ない。使用中でも無言で消える",
+        "確認ダイアログは設定モーダルを閉じてから出す。キャンセルしても設定モーダルは戻らない"
+      ]
+    },
+    {
+      "id": "notify-apply-existing",
+      "title": "新しい通知先を既存の全モニターに適用する",
+      "category": "通知",
+      "trigger": "通知設定ダイアログで「既存の全モニターに適用」をONにして保存",
+      "steps": [
+        { "from": "ui.notificationdialog.apply_existing_switch", "to": "app.notificationdialog.submit", "label": "applyExisting=true で保存", "kind": "call" },
+        { "from": "app.notificationdialog.submit", "to": "api.socket.connection", "label": "addNotification を送る", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.addNotification", "label": "受口へ振り分け", "kind": "realtime" },
+        { "from": "api.socket.addNotification", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.addNotification", "to": "svc.notification.save", "label": "保存を依頼", "kind": "call" },
+        { "from": "svc.notification.save", "to": "db.notification", "label": "applyExisting を false にして保存", "kind": "db" },
+        { "from": "svc.notification.save", "to": "svc.notification.applyNotificationEveryMonitor", "label": "一括適用を実行", "kind": "call" },
+        { "from": "svc.notification.applyNotificationEveryMonitor", "to": "db.monitor", "label": "自分の全モニターIDを取得", "kind": "db" },
+        { "from": "svc.notification.applyNotificationEveryMonitor", "to": "db.monitor_notification", "label": "未登録の組だけ INSERT", "kind": "db" },
+        { "from": "api.socket.addNotification", "to": "svc.client.sendNotificationList", "label": "一覧を再配信", "kind": "call" }
+      ],
+      "notes": [
+        "applyExisting は保存直前に false へ戻されるため DB には残らない。次回の保存では効かない一回きりの操作",
+        "既存の紐付けは消さず追加のみ。取り消すにはモニターごとにチェックを外すしかない",
+        "監視は再起動されないが、通知先はビートごとにDBから引くため次のビートから反映される",
+        "「既定で有効」(isDefault)とは別物。isDefault は新規モニター作成画面の初期チェックにしか効かない"
+      ]
+    },
+    {
+      "id": "notify-attach-monitor",
+      "title": "モニターに通知先を紐付ける",
+      "category": "通知",
+      "trigger": "モニター編集画面で通知先のチェックを入れて保存",
+      "steps": [
+        { "from": "ui.editmonitor.setup_notification_btn", "to": "ui.notificationdialog.show", "label": "その場で通知先を追加", "branch": "alt", "kind": "call" },
+        { "from": "app.notificationdialog.submit", "to": "app.editmonitor.addedNotification", "label": "追加した分を自動ON", "branch": "alt", "kind": "call" },
+        { "from": "app.editmonitor.default_notification_init", "to": "ui.editmonitor.notification_checkbox", "label": "新規時は既定の通知先をON", "branch": "alt", "kind": "call" },
+        { "from": "ui.editmonitor.notification_checkbox", "to": "ui.editmonitor.save_btn", "label": "使う通知先を選ぶ", "kind": "call" },
+        { "from": "ui.editmonitor.save_btn", "to": "app.editmonitor.submit", "label": "モニターを保存", "kind": "call" },
+        { "from": "app.editmonitor.submit", "to": "app.socket.add", "label": "新規なら add", "kind": "call" },
+        { "from": "app.socket.add", "to": "api.socket.connection", "label": "add を送る", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.add", "label": "受口へ振り分け", "kind": "realtime" },
+        { "from": "app.editmonitor.submit", "to": "api.socket.editMonitor", "label": "編集なら editMonitor", "branch": "alt", "kind": "realtime" },
+        { "from": "api.socket.add", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "api.socket.add", "to": "db.monitor", "label": "モニターを保存", "kind": "db" },
+        { "from": "api.socket.add", "to": "svc.server.updateMonitorNotification", "label": "紐付けを作り直す", "kind": "call" },
+        { "from": "api.socket.editMonitor", "to": "svc.server.updateMonitorNotification", "label": "編集でも同じ関数を通る", "branch": "alt", "kind": "call" },
+        { "from": "svc.server.updateMonitorNotification", "to": "db.monitor_notification", "label": "全DELETE後に true の分を INSERT", "kind": "db" },
+        { "from": "api.socket.add", "to": "svc.monitor.start", "label": "有効なら監視を開始", "kind": "call" }
+      ],
+      "notes": [
+        "紐付けは毎回「全削除→再作成」。同じモニターを別画面で同時編集すると後勝ちで消える",
+        "notificationIDList は {id: true/false} のオブジェクトで、false のキーは INSERT されない",
+        "モニター編集画面から既存の通知先を編集しても added は飛ばないので、チェック状態は変わらない"
+      ]
+    },
+    {
+      "id": "notify-down",
+      "title": "障害発生時に通知が飛ぶ",
+      "category": "通知",
+      "trigger": "監視ビートで UP から DOWN に変化した",
+      "steps": [
+        { "from": "job.monitor.beat", "to": "svc.monitor.isImportantForNotification", "label": "通知すべきか判定", "kind": "call" },
+        { "from": "svc.monitor.isImportantForNotification", "to": "job.monitor.safeBeat", "label": "メンテ入り等は送らず次へ", "branch": "alt", "kind": "timer" },
+        { "from": "svc.monitor.isImportantForNotification", "to": "svc.monitor.sendNotification", "label": "重要なら通知へ", "kind": "call" },
+        { "from": "svc.monitor.sendNotification", "to": "svc.monitor.getNotificationList", "label": "宛先を取得", "kind": "call" },
+        { "from": "svc.monitor.getNotificationList", "to": "db.monitor_notification", "label": "紐付け経由で通知先を JOIN", "kind": "db" },
+        { "from": "svc.monitor.sendNotification", "to": "svc.notification.send", "label": "宛先ごとに逐次送信", "kind": "call" },
+        { "from": "svc.notification.send", "to": "svc.webhook.send", "label": "種類ごとの実装を呼ぶ", "kind": "call" },
+        { "from": "svc.webhook.send", "to": "ext.webhook.endpoint", "label": "指定URLへ POST", "kind": "http" },
+        { "from": "svc.notification.send", "to": "svc.smtp.send", "label": "メール宛先の場合", "branch": "alt", "kind": "call" },
+        { "from": "svc.smtp.send", "to": "ext.smtp.server", "label": "メールを送信", "branch": "alt", "kind": "email" },
+        { "from": "svc.monitor.sendNotification", "to": "job.monitor.safeBeat", "label": "全宛先を送り終えて次回予約", "kind": "timer" }
+      ],
+      "notes": [
+        "宛先への送信は for ループの逐次 await。宛先が多い/遅いとビート1回の所要時間がそのまま延びる",
+        "本文は [モニター名] [🔴 Down] 理由 で固定。整形は各プロバイダのテンプレート任せ",
+        "初回ビートでも DOWN なら通知する(!isFirstBeat || status===DOWN)ため、追加直後に落ちていると即通知が来る",
+        "メンテナンス中への遷移(UP→MAINTENANCE)は通知されないが、メンテ中→DOWN は通知される"
+      ]
+    },
+    {
+      "id": "notify-up",
+      "title": "復旧時に通知が飛ぶ",
+      "category": "通知",
+      "trigger": "監視ビートで DOWN から UP に変化した",
+      "steps": [
+        { "from": "job.monitor.beat", "to": "svc.monitor.isImportantForNotification", "label": "通知すべきか判定", "kind": "call" },
+        { "from": "svc.monitor.isImportantForNotification", "to": "svc.monitor.sendNotification", "label": "DOWN→UP なので通知", "kind": "call" },
+        { "from": "svc.monitor.sendNotification", "to": "db.heartbeat", "label": "直近の重要DOWNを引く", "kind": "db" },
+        { "from": "db.heartbeat", "to": "svc.monitor.sendNotification", "label": "失敗しても握り潰して継続", "branch": "error", "kind": "error" },
+        { "from": "svc.monitor.sendNotification", "to": "svc.monitor.getNotificationList", "label": "宛先を取得", "kind": "call" },
+        { "from": "svc.monitor.getNotificationList", "to": "db.monitor_notification", "label": "紐付け経由で通知先を JOIN", "kind": "db" },
+        { "from": "svc.monitor.sendNotification", "to": "svc.notification.send", "label": "「✅ Up」で送信", "kind": "call" },
+        { "from": "svc.notification.send", "to": "svc.smtp.send", "label": "メール宛先の場合", "kind": "call" },
+        { "from": "svc.smtp.send", "to": "svc.notification-provider.renderTemplate", "label": "件名/本文を展開", "kind": "call" },
+        { "from": "svc.smtp.send", "to": "ext.smtp.server", "label": "メールを送信", "kind": "email" },
+        { "from": "svc.monitor.sendNotification", "to": "job.monitor.safeBeat", "label": "次回ビートを予約", "kind": "timer" }
+      ],
+      "notes": [
+        "復旧通知は isFirstBeat では送らない。監視を追加していきなり UP になった場合は通知が来ない",
+        "lastDownTime は important=1 の遷移ビートを見る。直近のDOWNビートではないので停止開始時刻になる",
+        "停止時間の算出に失敗しても debug ログを出すだけで通知自体は止めない"
+      ]
+    },
+    {
+      "id": "notify-resend",
+      "title": "復旧しない間、通知を繰り返す",
+      "category": "通知",
+      "trigger": "DOWN のまま resendInterval 回ぶんビートが進んだ",
+      "steps": [
+        { "from": "ui.editmonitor.resend_interval", "to": "app.editmonitor.submit", "label": "再送回数を設定(0で無効)", "kind": "call" },
+        { "from": "job.monitor.beat", "to": "svc.monitor.isImportantForNotification", "label": "重要ビートか判定", "kind": "call" },
+        { "from": "svc.monitor.isImportantForNotification", "to": "job.monitor.downCount", "label": "重要でなければカウンタへ", "branch": "alt", "kind": "call" },
+        { "from": "job.monitor.downCount", "to": "job.monitor.safeBeat", "label": "回数未満なら送らず次へ", "branch": "alt", "kind": "timer" },
+        { "from": "job.monitor.downCount", "to": "svc.monitor.sendNotification", "label": "回数到達で再送", "kind": "call" },
+        { "from": "svc.monitor.sendNotification", "to": "svc.monitor.getNotificationList", "label": "宛先を取得", "kind": "call" },
+        { "from": "svc.monitor.getNotificationList", "to": "db.monitor_notification", "label": "紐付け経由で通知先を JOIN", "kind": "db" },
+        { "from": "svc.monitor.sendNotification", "to": "svc.notification.send", "label": "同じ本文を再送", "kind": "retry" },
+        { "from": "svc.notification.send", "to": "svc.webhook.send", "label": "種類ごとの実装を呼ぶ", "kind": "call" },
+        { "from": "svc.webhook.send", "to": "ext.webhook.endpoint", "label": "指定URLへ POST", "kind": "http" },
+        { "from": "job.monitor.downCount", "to": "job.monitor.safeBeat", "label": "カウンタを0に戻して次回予約", "kind": "timer" }
+      ],
+      "notes": [
+        "resendInterval は「回数」であってビート間隔ではない。interval を変えると実時間の再送間隔も変わる",
+        "状態が変わった重要ビートでは downCount が0にリセットされる",
+        "再送の本文は初回とまったく同じで、再送であることが受信側から判別できない"
+      ]
+    },
+    {
+      "id": "notify-send-fail",
+      "title": "通知の送信に失敗する",
+      "category": "通知",
+      "trigger": "宛先が落ちている・トークンが失効している等で送信が失敗する",
+      "steps": [
+        { "from": "svc.monitor.sendNotification", "to": "svc.notification.send", "label": "宛先へ送信", "kind": "call" },
+        { "from": "svc.notification.send", "to": "svc.monitor.sendNotification", "label": "未対応の種類なら例外", "branch": "error", "kind": "error" },
+        { "from": "svc.notification.send", "to": "svc.telegram.send", "label": "種類ごとの実装を呼ぶ", "kind": "call" },
+        { "from": "svc.telegram.send", "to": "ext.telegram.api", "label": "sendMessage を POST", "kind": "http" },
+        { "from": "ext.telegram.api", "to": "svc.notification-provider.throwGeneralAxiosError", "label": "HTTPエラー/接続失敗", "branch": "error", "kind": "error" },
+        { "from": "svc.notification-provider.throwGeneralAxiosError", "to": "svc.monitor.sendNotification", "label": "整形した例外を投げ直す", "branch": "error", "kind": "error" },
+        { "from": "svc.monitor.sendNotification", "to": "svc.notification.send", "label": "ログだけ出して次の宛先へ", "branch": "error", "kind": "call" },
+        { "from": "svc.monitor.sendNotification", "to": "job.monitor.safeBeat", "label": "失敗しても監視は続行", "kind": "timer" }
+      ],
+      "notes": [
+        "送信失敗はサーバログにしか出ない。画面には何も表示されず、失敗に気付けるのはテスト送信のときだけ",
+        "自動再送は無い。失敗した1通はそのまま欠落し、次の状態変化まで通知が来ない",
+        "1つの宛先が失敗しても try/catch で吸収され、残りの宛先への送信は続く",
+        "Webhook と SMTP は追加ヘッダのJSONが壊れていると送信前に throw する(宛先には一切届かない)"
+      ]
+    },
+    {
+      "id": "notify-cert-expiry",
+      "title": "証明書の期限切れ前に通知する",
+      "category": "通知",
+      "trigger": "HTTPS監視のビートで TLS 情報を取得したとき",
+      "steps": [
+        { "from": "job.monitor.beat", "to": "svc.monitor.handleTlsInfo", "label": "TLS情報を保存", "kind": "call" },
+        { "from": "svc.monitor.handleTlsInfo", "to": "job.monitor.safeBeat", "label": "期限通知OFFなら何もしない", "branch": "alt", "kind": "timer" },
+        { "from": "svc.monitor.handleTlsInfo", "to": "svc.util-server.checkCertExpiryNotifications", "label": "残日数を判定", "kind": "call" },
+        { "from": "svc.util-server.checkCertExpiryNotifications", "to": "db.monitor_notification", "label": "宛先を取得(0件なら終了)", "kind": "db" },
+        { "from": "svc.util-server.checkCertExpiryNotifications", "to": "db.setting", "label": "閾値日数を取得(既定7/14/21)", "kind": "db" },
+        { "from": "svc.util-server.checkCertExpiryNotifications", "to": "svc.monitor.sendCertNotificationByTargetDays", "label": "閾値以下の証明書ごとに通知", "kind": "call" },
+        { "from": "svc.monitor.sendCertNotificationByTargetDays", "to": "db.notification_sent_history", "label": "送信済みなら送らない", "kind": "db" },
+        { "from": "svc.monitor.sendCertNotificationByTargetDays", "to": "svc.notification.send", "label": "残り日数を本文にして送信", "kind": "call" },
+        { "from": "svc.notification.send", "to": "svc.smtp.send", "label": "種類ごとの実装を呼ぶ", "kind": "call" },
+        { "from": "svc.smtp.send", "to": "ext.smtp.server", "label": "メールを送信", "kind": "email" },
+        { "from": "svc.monitor.sendCertNotificationByTargetDays", "to": "db.notification_sent_history", "label": "1件でも成功したら履歴を記録", "kind": "db" },
+        { "from": "svc.monitor.sendCertNotificationByTargetDays", "to": "svc.util-server.checkCertExpiryNotifications", "label": "全宛先失敗なら履歴を残さない", "branch": "error", "kind": "error" }
+      ],
+      "notes": [
+        "全宛先で送信に失敗すると履歴が残らないため、次のビートでまた送信を試みる(復旧後に重複しにくい設計)",
+        "既知のルート証明書に当たった時点でそのチェーンの探索を打ち切る。中間証明書は issuerCertificate を辿って全部見る",
+        "履歴の判定が days <= targetDays のため、短い閾値で送った後に長い閾値では送られない",
+        "tlsExpiryNotifyDays が未設定または配列でない場合、その場で [7,14,21] を DB に書き戻す"
+      ]
+    },
+    {
+      "id": "notify-apprise-check",
+      "title": "Apprise が入っているか確認する",
+      "category": "通知",
+      "trigger": "通知の種類で Apprise を選んでフォームが表示された",
+      "steps": [
+        { "from": "ui.notificationdialog.type_select", "to": "app.apprise.checkApprise", "label": "Appriseフォームが mounted", "kind": "call" },
+        { "from": "app.apprise.checkApprise", "to": "api.socket.connection", "label": "checkApprise を送る", "kind": "realtime" },
+        { "from": "api.socket.connection", "to": "api.socket.checkApprise", "label": "受口へ振り分け", "kind": "realtime" },
+        { "from": "api.socket.checkApprise", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "call" },
+        { "from": "svc.auth.checkLogin", "to": "ui.apprise.status", "label": "例外なら無条件で false", "branch": "error", "kind": "error" },
+        { "from": "api.socket.checkApprise", "to": "svc.notification.checkApprise", "label": "コマンドの有無を確認", "kind": "call" },
+        { "from": "svc.notification.checkApprise", "to": "ext.apprise.cli", "label": "apprise の存在を照会", "kind": "call" },
+        { "from": "api.socket.checkApprise", "to": "ui.apprise.status", "label": "導入済み/未導入を表示", "kind": "realtime" },
+        { "from": "ui.apprise.status", "to": "svc.apprise.send", "label": "実際の送信は spawn で行う", "branch": "alt", "kind": "call" },
+        { "from": "svc.apprise.send", "to": "ext.apprise.cli", "label": "apprise コマンドを起動", "kind": "call" },
+        { "from": "ext.apprise.cli", "to": "svc.apprise.send", "label": "出力に ERROR を含めば失敗", "branch": "error", "kind": "error" }
+      ],
+      "notes": [
+        "checkApprise は未ログイン時も catch で false を返すため、「未インストール」と「未認証」が画面上で区別できない",
+        "確認しているのはコマンドの存在だけ。実行権限やバージョンは見ていない",
+        "送信結果の判定は stdout の文字列マッチ。出力が空だと「No output from apprise」を成功扱いで返す"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "nodes": [
+    { "id": "ui.setup.mounted_check", "lane": "ui", "label": "セットアップ画面初期確認", "detail": "画面表示時にneedSetupを再確認し、falseなら既にセットアップ済みとしてトップへ戻す", "ref": "src/pages/Setup.vue:89" },
+    { "id": "ui.setup.submit_btn", "lane": "ui", "label": "作成ボタン", "detail": "ユーザー名・パスワード・確認用パスワードを入力してセットアップを送信するボタン", "ref": "src/pages/Setup.vue:100" },
+    { "id": "ui.login.submit_btn", "lane": "ui", "label": "ログインボタン", "detail": "ユーザー名/パスワード(必要なら2FAトークン)を入力してログインを送信するボタン", "ref": "src/components/Login.vue:111" },
+    { "id": "ui.header.logout_btn", "lane": "ui", "label": "ログアウトボタン", "detail": "ヘッダーのドロップダウンにあるログアウト項目", "ref": "src/layouts/Layout.vue:109" },
+    { "id": "ui.security.change_password_form", "lane": "ui", "label": "パスワード変更フォーム", "detail": "現在のパスワードと新パスワード(2回)を入力して送信するフォーム", "ref": "src/components/settings/Security.vue:18" },
+    { "id": "ui.two_fa.enable_btn", "lane": "ui", "label": "2FA有効化ボタン", "detail": "現在のパスワードを条件にQRコード発行(prepare2FA)を要求するボタン", "ref": "src/components/TwoFADialog.vue:59" },
+    { "id": "ui.two_fa.verify_btn", "lane": "ui", "label": "トークン検証ボタン", "detail": "認証アプリに表示された6桁コードをその場で検証するボタン", "ref": "src/components/TwoFADialog.vue:85" },
+    { "id": "ui.two_fa.save_btn", "lane": "ui", "label": "2FA保存ボタン", "detail": "確認ダイアログ経由でsave2FAを実行し2FAを本確定するボタン", "ref": "src/components/TwoFADialog.vue:101" },
+    { "id": "ui.api_keys.add_btn", "lane": "ui", "label": "APIキー追加ボタン", "detail": "APIキー発行ダイアログ(APIKeyDialog)を開くボタン", "ref": "src/components/settings/APIKeys.vue:8" },
+    { "id": "ui.api_key_dialog.generate_btn", "lane": "ui", "label": "キー発行ボタン", "detail": "名前と有効期限を指定してAPIキーを生成するボタン", "ref": "src/components/APIKeyDialog.vue:50" },
+
+    { "id": "app.socket.initSocketIO", "lane": "app", "label": "ソケット初期化処理", "detail": "socket.io接続と各種イベントリスナー(setup/loginRequired/autoLogin等)を登録する", "ref": "src/mixins/socket.js:85" },
+    { "id": "app.socket.login", "lane": "app", "label": "ログイン送信処理", "detail": "username/password/tokenをloginイベントで送信し、成功時にトークンを保存する", "ref": "src/mixins/socket.js:412" },
+    { "id": "app.socket.loginByToken", "lane": "app", "label": "トークンログイン処理", "detail": "保存済みJWTでloginByTokenイベントを送信し、失敗時はlogout()を呼ぶ", "ref": "src/mixins/socket.js:445" },
+    { "id": "app.socket.logout", "lane": "app", "label": "ログアウト処理", "detail": "logoutイベント送信後、保存トークンを削除しローカル状態をクリアする", "ref": "src/mixins/socket.js:462" },
+    { "id": "app.socket.getSocket", "lane": "app", "label": "ソケット直接取得", "detail": "socket.ioインスタンスを返す。複数の画面がこれ経由で直接emitしている", "ref": "src/mixins/socket.js:346" },
+    { "id": "app.socket.addAPIKey", "lane": "app", "label": "APIキー追加送信", "detail": "addAPIKeyイベントでキー情報を送信する", "ref": "src/mixins/socket.js:648" },
+
+    { "id": "api.socket.connection", "lane": "api", "label": "ソケット接続受付", "detail": "socket.io接続確立時のエントリポイント。全ソケットハンドラをここで登録する", "ref": "server/server.js:389" },
+    { "id": "api.socket.needSetup", "lane": "api", "label": "needSetup受信", "detail": "サーバ起動時に決定したneedSetupフラグをそのまま返す", "ref": "server/server.js:701" },
+    { "id": "api.socket.setup", "lane": "api", "label": "setup受信", "detail": "初回管理者アカウントを作成する。強度チェックと二重初期化防止あり", "ref": "server/server.js:705" },
+    { "id": "api.socket.login", "lane": "api", "label": "login受信", "detail": "ID/PW照合、2FA分岐、JWT発行までを行う", "ref": "server/server.js:450" },
+    { "id": "api.socket.loginByToken", "lane": "api", "label": "loginByToken受信", "detail": "JWT検証とパスワード変更検知(shake256比較)を行い自動ログインさせる", "ref": "server/server.js:401" },
+    { "id": "api.socket.logout", "lane": "api", "label": "logout受信", "detail": "socket.leaveとuserIDのクリアのみ行う(DB更新なし)", "ref": "server/server.js:530" },
+    { "id": "api.socket.changePassword", "lane": "api", "label": "changePassword受信", "detail": "強度チェック・現在PW再確認の後、パスワードを更新し新トークンを返す", "ref": "server/server.js:1446" },
+    { "id": "api.socket.prepare2FA", "lane": "api", "label": "prepare2FA受信", "detail": "現在PW確認の後、TOTPシークレットを生成しDBへ保存、QR用URIを返す", "ref": "server/server.js:544" },
+    { "id": "api.socket.verifyToken", "lane": "api", "label": "verifyToken受信", "detail": "現在PW確認の後、入力トークンをtwofa_secretで検証するだけ(状態は変えない)", "ref": "server/server.js:646" },
+    { "id": "api.socket.save2FA", "lane": "api", "label": "save2FA受信", "detail": "現在PW確認の後、twofa_statusを1にして2FAを本確定する", "ref": "server/server.js:587" },
+    { "id": "api.socket.addAPIKey", "lane": "api", "label": "addAPIKey受信", "detail": "APIキーを生成・保存し、apiKeysEnabled設定をONにする", "ref": "server/socket-handlers/api-key-socket-handler.js:18" },
+
+    { "id": "svc.auth.checkLogin", "lane": "svc", "label": "ログイン済み確認", "detail": "socket.userIDが無ければ例外を投げる", "ref": "server/util-server.js:644" },
+    { "id": "svc.util.doubleCheckPassword", "lane": "svc", "label": "現在PW再確認", "detail": "ログイン中ユーザーの現在パスワードをハッシュ照合で再確認する", "ref": "server/util-server.js:658" },
+    { "id": "svc.auth.login", "lane": "svc", "label": "ID/PW照合処理", "detail": "TRIMしたusernameとactive=1でユーザー照会し、bcrypt検証・ハッシュ再生成も行う", "ref": "server/auth.js:15" },
+    { "id": "svc.user.resetPassword", "lane": "svc", "label": "パスワード再設定", "detail": "新パスワードをハッシュ化してuserテーブルを更新する(インスタンスメソッド)", "ref": "server/model/user.js:27" },
+    { "id": "svc.user.createJWT", "lane": "svc", "label": "JWT発行", "detail": "usernameと現パスワードのshake256ダイジェストを含むJWTを署名する", "ref": "server/model/user.js:41" },
+    { "id": "svc.server.afterLogin", "lane": "svc", "label": "ログイン後処理", "detail": "socket.userID設定・ルーム参加、監視/通知/APIキー等の初期リストを送信する", "ref": "server/server.js:1828" },
+    { "id": "svc.api_key.save", "lane": "svc", "label": "APIキー保存処理", "detail": "受け取ったハッシュ済みキー情報でapi_keyレコードを新規作成する", "ref": "server/model/api_key.js:60" },
+    { "id": "svc.settings.set", "lane": "svc", "label": "設定値保存処理", "detail": "settingテーブルへupsertし、内部キャッシュを削除する", "ref": "server/settings.js:71" },
+
+    { "id": "db.user", "lane": "db", "label": "userテーブル", "detail": "username/password/twofa_status/twofa_secret等を保持する", "ref": "db/knex_init_db.js:54" },
+    { "id": "db.api_key", "lane": "db", "label": "api_keyテーブル", "detail": "発行済みAPIキーのハッシュ・有効期限・有効/無効を保持する", "ref": "db/knex_init_db.js:442" },
+    { "id": "db.setting", "lane": "db", "label": "settingテーブル", "detail": "key-value形式のアプリ設定(apiKeysEnabled等)を保持する", "ref": "db/knex_init_db.js:383" }
+  ],
+  "edges": [],
+  "flows": [
+    {
+      "id": "setup_initial",
+      "title": "初回セットアップ",
+      "category": "認証・アカウント",
+      "trigger": "ユーザーが1件も登録されていない状態でアプリに接続する",
+      "steps": [
+        { "from": "api.socket.connection", "to": "app.socket.initSocketIO", "label": "未初期化検知でsetup通知", "kind": "emit", "evidence": "inferred" },
+        { "from": "app.socket.initSocketIO", "to": "ui.setup.mounted_check", "label": "/setup画面へ遷移", "kind": "navigate", "evidence": "framework" },
+        { "from": "ui.setup.mounted_check", "to": "app.socket.getSocket", "label": "needSetupを再確認", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.getSocket", "to": "api.socket.needSetup", "label": "needSetup問い合わせ", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.needSetup", "to": "ui.setup.mounted_check", "label": "needSetup結果を返却", "kind": "return", "evidence": "framework" },
+        { "from": "api.socket.needSetup", "to": "ui.setup.mounted_check", "label": "false時はトップへ戻す", "branch": "alt", "kind": "navigate", "evidence": "direct" },
+        { "from": "ui.setup.submit_btn", "to": "app.socket.getSocket", "label": "ユーザー名/PWを送信", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.getSocket", "to": "api.socket.setup", "label": "setup要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.setup", "to": "ui.setup.submit_btn", "label": "パスワード強度不足エラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.setup", "to": "db.user", "label": "登録済みユーザー数を確認", "kind": "db_read", "evidence": "direct" },
+        { "from": "api.socket.setup", "to": "ui.setup.submit_btn", "label": "初期化済みエラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.setup", "to": "db.user", "label": "管理者アカウントを作成", "kind": "db_write", "evidence": "direct" },
+        { "from": "api.socket.setup", "to": "ui.setup.submit_btn", "label": "作成成功コールバック", "kind": "return", "evidence": "framework" },
+        { "from": "ui.setup.submit_btn", "to": "app.socket.login", "label": "作成直後に自動ログイン", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.login", "to": "api.socket.login", "label": "login要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.login", "to": "svc.auth.login", "label": "ID/PW照合", "kind": "call", "evidence": "direct" },
+        { "from": "svc.auth.login", "to": "db.user", "label": "ユーザー照会", "kind": "db_read", "evidence": "direct" },
+        { "from": "api.socket.login", "to": "svc.server.afterLogin", "label": "セッション確立", "kind": "call", "evidence": "direct" },
+        { "from": "svc.server.afterLogin", "to": "ui.setup.submit_btn", "label": "ログイン完了・トップへ", "kind": "navigate", "evidence": "direct" }
+      ],
+      "notes": [
+        "セットアップ成功後の自動ログインは通常のログインフローと同じ経路(svc.auth.login以降)を通る。2FAは初回ユーザーに未設定のため分岐は発生しない。"
+      ]
+    },
+    {
+      "id": "login",
+      "title": "ログイン",
+      "category": "認証・アカウント",
+      "trigger": "ログイン画面でユーザー名とパスワードを入力して送信する",
+      "steps": [
+        { "from": "ui.login.submit_btn", "to": "app.socket.login", "label": "ログインフォーム送信", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.login", "to": "api.socket.login", "label": "login要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.login", "to": "svc.auth.login", "label": "ID/PW照合", "kind": "call", "evidence": "direct" },
+        { "from": "svc.auth.login", "to": "db.user", "label": "ユーザー照会(TRIM username, active=1)", "kind": "db_read", "evidence": "direct" },
+        { "from": "svc.auth.login", "to": "api.socket.login", "label": "該当なし/不一致でnull返却", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.login", "to": "ui.login.submit_btn", "label": "authIncorrectCredsエラー", "branch": "error", "kind": "return", "evidence": "framework" },
+        { "from": "api.socket.login", "to": "svc.server.afterLogin", "label": "2FA無効なら即ログイン確定", "kind": "call", "evidence": "direct" },
+        { "from": "api.socket.login", "to": "svc.user.createJWT", "label": "JWT発行", "kind": "call", "evidence": "direct" },
+        { "from": "svc.user.createJWT", "to": "api.socket.login", "label": "トークン返却", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.login", "to": "ui.login.submit_btn", "label": "ログイン成功(token)", "kind": "return", "evidence": "framework" },
+        { "from": "api.socket.login", "to": "ui.login.submit_btn", "label": "2FAトークン要求", "branch": "alt", "kind": "return", "evidence": "framework" },
+        { "from": "ui.login.submit_btn", "to": "app.socket.login", "label": "OTP付きで再送信", "branch": "alt", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.login", "to": "api.socket.login", "label": "login要求送信(token付き)", "branch": "alt", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.login", "to": "db.user", "label": "TOTP検証+last_token重複確認", "branch": "alt", "kind": "check", "evidence": "direct" },
+        { "from": "api.socket.login", "to": "ui.login.submit_btn", "label": "authInvalidTokenエラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.login", "to": "db.user", "label": "twofa_last_tokenを更新", "branch": "alt", "kind": "db_write", "evidence": "direct" },
+        { "from": "api.socket.login", "to": "svc.server.afterLogin", "label": "2FA検証成功でログイン確定", "branch": "alt", "kind": "call", "evidence": "direct" },
+        { "from": "api.socket.login", "to": "svc.user.createJWT", "label": "JWT発行", "branch": "alt", "kind": "call", "evidence": "direct" },
+        { "from": "svc.user.createJWT", "to": "api.socket.login", "label": "トークン返却", "branch": "alt", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.login", "to": "ui.login.submit_btn", "label": "ログイン成功(token)", "branch": "alt", "kind": "return", "evidence": "framework" }
+      ],
+      "notes": [
+        "twofa_last_tokenと同一のトークンは再利用防止のため無効トークン扱いになる(server.js:495)。"
+      ]
+    },
+    {
+      "id": "auto_login_by_token",
+      "title": "トークンで自動ログイン",
+      "category": "認証・アカウント",
+      "trigger": "保存済みJWTがある状態でアプリを起動しソケット接続する",
+      "steps": [
+        { "from": "app.socket.initSocketIO", "to": "api.socket.connection", "label": "ソケット接続確立", "kind": "connect", "evidence": "framework" },
+        { "from": "api.socket.connection", "to": "app.socket.initSocketIO", "label": "未ログインのためloginRequired通知", "kind": "emit", "evidence": "inferred" },
+        { "from": "app.socket.initSocketIO", "to": "app.socket.loginByToken", "label": "保存トークンで自動ログイン試行", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.initSocketIO", "to": "ui.login.submit_btn", "label": "トークン未保存はログイン画面表示", "branch": "alt", "kind": "return", "evidence": "direct" },
+        { "from": "app.socket.loginByToken", "to": "api.socket.loginByToken", "label": "loginByToken要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.loginByToken", "to": "db.user", "label": "JWTのusernameでユーザー照会", "kind": "db_read", "evidence": "direct" },
+        { "from": "api.socket.loginByToken", "to": "app.socket.loginByToken", "label": "authUserInactiveOrDeletedエラー", "branch": "error", "kind": "return", "evidence": "framework" },
+        { "from": "api.socket.loginByToken", "to": "db.user", "label": "パスワード変更検知(shake256比較)", "kind": "check", "evidence": "direct" },
+        { "from": "api.socket.loginByToken", "to": "app.socket.loginByToken", "label": "authInvalidTokenエラー", "branch": "error", "kind": "return", "evidence": "framework" },
+        { "from": "api.socket.loginByToken", "to": "svc.server.afterLogin", "label": "有効トークンでログイン確定", "kind": "call", "evidence": "direct" },
+        { "from": "svc.server.afterLogin", "to": "api.socket.loginByToken", "label": "セッション確立完了", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.loginByToken", "to": "app.socket.loginByToken", "label": "ログイン成功コールバック", "kind": "return", "evidence": "framework" },
+        { "from": "app.socket.loginByToken", "to": "ui.login.submit_btn", "label": "ログイン状態を画面へ反映", "kind": "return", "evidence": "direct" },
+        { "from": "app.socket.loginByToken", "to": "app.socket.logout", "label": "無効トークンのためログアウト処理", "branch": "error", "kind": "call", "evidence": "direct" }
+      ],
+      "notes": [
+        "disableAuthが有効な場合はloginRequiredの代わりにautoLoginイベントが送られ、この経路(loginByToken)は通らない(server.js:1751-1754)。"
+      ]
+    },
+    {
+      "id": "logout",
+      "title": "ログアウト",
+      "category": "認証・アカウント",
+      "trigger": "ヘッダーのログアウトボタンを押す",
+      "steps": [
+        { "from": "ui.header.logout_btn", "to": "app.socket.logout", "label": "ログアウトボタン押下", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.logout", "to": "api.socket.logout", "label": "logout要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.logout", "to": "app.socket.logout", "label": "レート制限超過でコールバック無し", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.logout", "to": "app.socket.logout", "label": "ルーム離脱・userID破棄後に空コールバック", "kind": "return", "evidence": "framework" },
+        { "from": "app.socket.logout", "to": "ui.header.logout_btn", "label": "保存トークン破棄・ログイン画面へ", "kind": "return", "evidence": "direct" }
+      ],
+      "notes": [
+        "logoutハンドラはDBを更新しない(socket.leave/userIDクリアのみ)。JWT自体は失効せず、他デバイスのセッションはそのまま残る。"
+      ]
+    },
+    {
+      "id": "change_password",
+      "title": "パスワード変更",
+      "category": "認証・アカウント",
+      "trigger": "設定画面のパスワード変更フォームを送信する",
+      "steps": [
+        { "from": "ui.security.change_password_form", "to": "ui.security.change_password_form", "label": "新PW不一致で送信中止", "branch": "error", "kind": "check", "evidence": "direct" },
+        { "from": "ui.security.change_password_form", "to": "app.socket.getSocket", "label": "変更フォームを送信", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.getSocket", "to": "api.socket.changePassword", "label": "changePassword要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.changePassword", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "check", "evidence": "direct" },
+        { "from": "svc.auth.checkLogin", "to": "ui.security.change_password_form", "label": "未ログインエラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.changePassword", "to": "ui.security.change_password_form", "label": "パスワード強度不足エラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.changePassword", "to": "svc.util.doubleCheckPassword", "label": "現在パスワードを再確認", "kind": "call", "evidence": "direct" },
+        { "from": "svc.util.doubleCheckPassword", "to": "db.user", "label": "現在PWのハッシュ照合", "kind": "db_read", "evidence": "direct" },
+        { "from": "svc.util.doubleCheckPassword", "to": "ui.security.change_password_form", "label": "現在パスワード不一致エラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.changePassword", "to": "svc.user.resetPassword", "label": "新パスワードでハッシュ更新", "kind": "call", "evidence": "direct" },
+        { "from": "svc.user.resetPassword", "to": "db.user", "label": "パスワードハッシュを更新", "kind": "db_write", "evidence": "direct" },
+        { "from": "api.socket.changePassword", "to": "svc.user.createJWT", "label": "新トークンを発行", "kind": "call", "evidence": "direct" },
+        { "from": "svc.user.createJWT", "to": "api.socket.changePassword", "label": "トークン返却", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.changePassword", "to": "ui.security.change_password_form", "label": "変更成功・新トークン反映", "kind": "return", "evidence": "framework" }
+      ],
+      "notes": [
+        "成功時はserver.disconnectAllSocketClients(user.id, socket.id)により現在のソケット以外の全セッションが強制切断される(server.js:1461)。この図には切断先セッションは表現していない。"
+      ]
+    },
+    {
+      "id": "enable_2fa",
+      "title": "2FAを有効にする",
+      "category": "認証・アカウント",
+      "trigger": "設定画面の「2FA Settings」から有効化ボタン(prepare2FA)を押す",
+      "steps": [
+        { "from": "ui.two_fa.enable_btn", "to": "app.socket.getSocket", "label": "2FA準備開始(現在PW送信)", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.getSocket", "to": "api.socket.prepare2FA", "label": "prepare2FA要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.prepare2FA", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "check", "evidence": "direct" },
+        { "from": "svc.auth.checkLogin", "to": "ui.two_fa.enable_btn", "label": "未ログインエラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.prepare2FA", "to": "svc.util.doubleCheckPassword", "label": "現在パスワードを確認", "kind": "call", "evidence": "direct" },
+        { "from": "svc.util.doubleCheckPassword", "to": "db.user", "label": "現在PWのハッシュ照合", "kind": "db_read", "evidence": "direct" },
+        { "from": "svc.util.doubleCheckPassword", "to": "ui.two_fa.enable_btn", "label": "現在パスワード不一致エラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.prepare2FA", "to": "ui.two_fa.enable_btn", "label": "既に2FA有効エラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.prepare2FA", "to": "db.user", "label": "twofa_secretを生成し保存", "kind": "db_write", "evidence": "direct" },
+        { "from": "api.socket.prepare2FA", "to": "ui.two_fa.enable_btn", "label": "QRコード用URIを返却", "kind": "return", "evidence": "framework" },
+        { "from": "ui.two_fa.verify_btn", "to": "app.socket.getSocket", "label": "入力トークンの検証要求", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.getSocket", "to": "api.socket.verifyToken", "label": "verifyToken要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.verifyToken", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "check", "evidence": "direct" },
+        { "from": "api.socket.verifyToken", "to": "svc.util.doubleCheckPassword", "label": "現在パスワードを確認", "kind": "call", "evidence": "direct" },
+        { "from": "svc.util.doubleCheckPassword", "to": "db.user", "label": "現在PWのハッシュ照合", "kind": "db_read", "evidence": "direct" },
+        { "from": "api.socket.verifyToken", "to": "db.user", "label": "TOTP検証(twofa_secret参照)", "kind": "check", "evidence": "direct" },
+        { "from": "api.socket.verifyToken", "to": "ui.two_fa.verify_btn", "label": "authInvalidTokenエラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.verifyToken", "to": "ui.two_fa.verify_btn", "label": "検証OK(valid:true)", "kind": "return", "evidence": "framework" },
+        { "from": "ui.two_fa.save_btn", "to": "app.socket.getSocket", "label": "確認ダイアログ経由でsave2FA実行", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.getSocket", "to": "api.socket.save2FA", "label": "save2FA要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.save2FA", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "check", "evidence": "direct" },
+        { "from": "api.socket.save2FA", "to": "svc.util.doubleCheckPassword", "label": "現在パスワードを確認", "kind": "call", "evidence": "direct" },
+        { "from": "svc.util.doubleCheckPassword", "to": "db.user", "label": "現在PWのハッシュ照合", "kind": "db_read", "evidence": "direct" },
+        { "from": "api.socket.save2FA", "to": "db.user", "label": "twofa_statusを1に更新", "kind": "db_write", "evidence": "direct" },
+        { "from": "api.socket.save2FA", "to": "ui.two_fa.save_btn", "label": "2FA有効化完了", "kind": "return", "evidence": "framework" }
+      ],
+      "notes": [
+        "TwoFADialog.vueはprepare2FA/save2FA/disable2FA/verifyToken/twoFAStatusのいずれも、mixins/socket.js側の同名ラッパーメソッド(481-521行)を使わずapp.socket.getSocket()経由で直接emitしている。ラッパーメソッド自体はこの画面では未使用。",
+        "verifyTokenは検証結果を返すのみで、DBのtwofa_statusやtwofa_last_tokenは変更しない。実際にtwofa_statusを1にするのはsave2FAである。"
+      ]
+    },
+    {
+      "id": "issue_api_key",
+      "title": "APIキーを発行する",
+      "category": "認証・アカウント",
+      "trigger": "設定画面で「Add API Key」からキーを作成する",
+      "steps": [
+        { "from": "ui.api_keys.add_btn", "to": "ui.api_key_dialog.generate_btn", "label": "追加ダイアログを開く", "kind": "call", "evidence": "direct" },
+        { "from": "ui.api_key_dialog.generate_btn", "to": "app.socket.addAPIKey", "label": "キー発行フォームを送信", "kind": "call", "evidence": "direct" },
+        { "from": "app.socket.addAPIKey", "to": "api.socket.addAPIKey", "label": "addAPIKey要求送信", "kind": "emit", "evidence": "inferred" },
+        { "from": "api.socket.addAPIKey", "to": "svc.auth.checkLogin", "label": "ログイン確認", "kind": "check", "evidence": "direct" },
+        { "from": "svc.auth.checkLogin", "to": "ui.api_key_dialog.generate_btn", "label": "未ログインエラー", "branch": "error", "kind": "return", "evidence": "direct" },
+        { "from": "api.socket.addAPIKey", "to": "svc.api_key.save", "label": "APIキーを生成・保存", "kind": "call", "evidence": "direct" },
+        { "from": "svc.api_key.save", "to": "db.api_key", "label": "APIキーレコードを作成", "kind": "db_write", "evidence": "direct" },
+        { "from": "api.socket.addAPIKey", "to": "svc.settings.set", "label": "apiKeysEnabledをON化", "kind": "call", "evidence": "direct" },
+        { "from": "svc.settings.set", "to": "db.setting", "label": "設定値を保存", "kind": "db_write", "evidence": "direct" },
+        { "from": "api.socket.addAPIKey", "to": "ui.api_key_dialog.generate_btn", "label": "生成キーを返却(平文は初回のみ)", "kind": "return", "evidence": "framework" },
+        { "from": "ui.api_key_dialog.generate_btn", "to": "ui.api_keys.add_btn", "label": "一覧に反映・平文キーを表示", "kind": "return", "evidence": "direct" }
+      ],
+      "notes": [
+        "サーバに保存されるのはbcryptハッシュのみ。平文キー(uk<id>_<clearKey>)はこの発行レスポンスの1回しか取得できない。"
+      ]
+    }
+  ]
+}
