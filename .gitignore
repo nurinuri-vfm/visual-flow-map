@@ -2,3 +2,10 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# 作業用メモ（公開しない）
+# 公開手順・アナウンス文面の下書き・記事の下書きは作者の運用メモであり、
+# 利用者には不要なうえ、内部監査の記録や作業環境のパスを含むため追跡しない
+PUBLISH.md
+docs/github-listing.md
+docs/zenn-article-draft.md
