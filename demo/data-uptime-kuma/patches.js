@@ -44,6 +44,17 @@ module.exports = {
   ],
 
   edgePatch: {
+    // 下の addEdges で足した経路にも根拠を明示する（申告なしを残さない）。
+    // 認証4件はいずれもハンドラ本体に checkLogin(socket) の行が実在する
+    'api.socket.unpinIncident -> svc.auth.checkLogin': { evidence: 'direct' },
+    'api.socket.getMaintenanceList -> svc.auth.checkLogin': { evidence: 'direct' },
+    'api.socket.getMonitorMaintenance -> svc.auth.checkLogin': { evidence: 'direct' },
+    'api.socket.getMaintenanceStatusPage -> svc.auth.checkLogin': { evidence: 'direct' },
+    // DNS の解決はブラウザ側で完了しており、コード上の呼び出しではない
+    'ext.dns.cname -> ext.visitor_browser.open': { evidence: 'inferred' },
+    // 外部からの到達なので、リポジトリ内に呼び出し行は存在しない
+    'ext.visitor_browser.open -> api.http.entry_root': { evidence: 'framework' },
+
     // 【根拠の格上げ】抽出時は「型→実装のマップが担当範囲外」として unverified だったが、
     // 検証で構築箇所（server/uptime-kuma-server.js:116 dns / :128 port）と
     // 呼び出し箇所（server/model/monitor.js:869-872 で monitorTypeList[this.type].check）を
@@ -66,6 +77,19 @@ module.exports = {
   flowPatch: {
     'e-statuspage:visit-public-status-page': {
       notesAdd: ['独自ドメインでの来訪は、DNS の CNAME 設定が済んでいる前提でブラウザからリクエストが届く。サーバ側は request.hostname を domainMappingList と照合するだけ（server/server.js:263）'],
+    },
+    // 【根拠付けの副産物】evidence を後付けする過程で、この経路の前提が
+    // 実コードに無いことが判明した。isImportantForNotification（monitor.js:1420）は
+    // monitor.js:968 の「重要なビートだった場合」の中でだけ呼ばれ、通知するかを決める。
+    // 一方 downCount を進めるのは monitor.js:988-1000 の else 側（＝重要ではなかった場合）で、
+    // その分岐に isImportantForNotification は関与しない。
+    // 経路自体は「重要でなければ再送カウンタへ」という筋としては正しいので残し、
+    // 根拠が無いことは evidence: unverified と notes で示す。
+    'd-notify:notify-resend': {
+      notesAdd: ['再送カウンタ（downCount）を進める分岐は monitor.js:988 の else 側にあり、isImportantForNotification は関与しない。図では「重要でなければカウンタへ」という流れとして描いているが、その分岐を担う関数は別（コード上は bean.important=false の側）'],
+    },
+    'd-notify:notify-apprise-check': {
+      notesAdd: ['Apprise のインストール状況表示と、実際の通知送信（Apprise.send）は別の経路。図では関連づけて並べているが、前者から後者を呼ぶコードは存在しない'],
     },
   },
 };
