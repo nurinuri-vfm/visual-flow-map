@@ -8,7 +8,7 @@
   :root{
     --bg:#070b18; --bg2:#0c1226; --panel:#111a33; --panel2:#0e1730;
     --line:#1f2c4d; --line2:#2b3c66;
-    --fg:#e8eeff; --fg2:#9fb0d6; --fg3:#65779f;
+    --fg:#e8eeff; --fg2:#9fb0d6; --fg3:#8493b3;  /* fg3 は旧 #65779f だと本文背景に対し 4.39:1 で AA 未達 */
     --accent:#5b8cff; --accent2:#38e1d6;
     --main:#38e1d6; --alt:#ffb648; --err:#ff6b7d;
     --ui:#a78bfa; --app:#5b8cff; --api:#38bdf8; --svc:#22d3ee; --job:#a3e635;
@@ -161,9 +161,10 @@
     box-shadow:0 0 0 1px var(--c),0 0 22px -6px var(--c);
   }
   .node.pending{opacity:.28}
-  .node.cur{transform:scale(1.06);z-index:6;box-shadow:0 0 0 2px #fff,0 0 30px -4px var(--c)}
-  @keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.09)}100%{transform:scale(1)}}
-  .node.pop{animation:pop .42s cubic-bezier(.3,1.5,.5,1)}
+  /* 白リングはレーン色の意味を壊し、1.06 の拡大は2行クランプの日本語ラベルをにじませる */
+  .node.cur{transform:scale(1.035);z-index:6;box-shadow:0 0 0 2px var(--c),0 0 34px -4px var(--c);
+    animation:pop .42s cubic-bezier(.3,1.5,.5,1)}
+  @keyframes pop{0%{transform:scale(.94)}60%{transform:scale(1.07)}100%{transform:scale(1.035)}}
   .node.hit{outline:2px solid var(--accent2);outline-offset:2px}
   .node .chg{position:absolute;left:-1px;top:-1px;padding:0 5px;height:15px;display:flex;align-items:center;
     border-radius:10px 0 8px 0;font-size:8.5px;font-weight:800;background:#34d399;color:#052b1c;z-index:2}
@@ -204,6 +205,9 @@
   .step.b-alt .no{border-color:var(--alt);color:var(--alt)}
   .step.b-error .no{border-color:var(--err);color:var(--err)}
   .step.cur .no{background:var(--main);color:#052b28;border-color:var(--main)}
+  /* 現在ステップでも分岐の色を保つ（.step.cur .no が後勝ちすると alt/error が正常系の色になる） */
+  .step.cur.b-alt .no{background:var(--alt);color:#3a2400;border-color:var(--alt)}
+  .step.cur.b-error .no{background:var(--err);color:#3d0a10;border-color:var(--err)}
   .step .body{min-width:0}
   .step .arrow{font-size:11.5px;color:var(--fg);line-height:1.4}
   .step .arrow .to{color:#fff;font-weight:700}
@@ -245,6 +249,15 @@
   .legend a{text-decoration:none}
   .legend a:hover{color:var(--fg2)}
 
+  /* OS の「視差効果を減らす」設定では演出を止める（機能は全て残す） */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;scroll-behavior:auto !important}
+    svg.edges path.dash{animation:none}
+    .node.cur{transform:none}
+  }
+  /* キーボード操作時にフォーカス位置が分かること */
+  :focus-visible{outline:2px solid var(--accent2);outline-offset:2px;border-radius:8px}
   ::-webkit-scrollbar{width:10px;height:10px}
   ::-webkit-scrollbar-thumb{background:#1d2betc;background:#1d2b4e;border-radius:6px;border:2px solid transparent;background-clip:padding-box}
   ::-webkit-scrollbar-track{background:transparent}
@@ -386,6 +399,10 @@ const DIFF_FLOW_MOD = new Set(DIFF ? DIFF.changedFlows : []);
 const NW = 176, NH = 52, COLW = 236, ROWH = 70, LANE_PAD = 26, XPAD = 74, YPAD = 16;
 
 /* ============================ 前処理 ============================ */
+/* OS の「視差効果を減らす」設定を尊重する（スクロール・演出の可否を1箇所で判定） */
+const REDUCE_MOTION = matchMedia('(prefers-reduced-motion: reduce)');
+const motionOK = () => !REDUCE_MOTION.matches;
+
 const NODES = new Map();
 for (const n of DATA.nodes) {
   if (!n || !n.id) continue;
@@ -606,10 +623,13 @@ function showTip(ev,n){
   tip.querySelector('.tt').textContent = n.label;
   tip.querySelector('.td').textContent = n.detail;
   if(n.ref) tip.querySelector('.tr').textContent = n.ref;
-  tip.style.opacity=1; moveTip(ev);
+  tip.style.opacity=1;
+  tip._w = tip.offsetWidth; tip._h = tip.offsetHeight;   // ここで1回だけ測る
+  moveTip(ev);
 }
 function moveTip(ev){
-  const pad=14, w=tip.offsetWidth||300, h=tip.offsetHeight||80;
+  // 毎 mousemove で offsetWidth を読むと強制同期レイアウトが走り、ノード上を横切るだけでコマ落ちする
+  const pad=14, w=tip._w||300, h=tip._h||80;
   let x=ev.clientX+pad, y=ev.clientY+pad;
   if(x+w>innerWidth-8) x=ev.clientX-w-pad;
   if(y+h>innerHeight-8) y=ev.clientY-h-pad;
@@ -646,6 +666,9 @@ function selectFlow(f){
   try{ history.replaceState(null,'','#flow='+encodeURIComponent(f.id)); }catch(e){}
   document.querySelectorAll('button.flowbtn').forEach(b=>b.classList.toggle('sel', b.dataset.id===f.id));
   if(focusMode) showRoute(f); else showMap();
+  // 押した瞬間は「起点だけ灯った状態」から始める。
+  // curStep=-1 のまま描くと全経路がフル点灯してから暗転し、段階再生の最初の一歩が台無しになる
+  curStep = 0;
   paint(); renderPanel(); fit(true);
   setTimeout(()=>play(), 260);
 }
@@ -659,54 +682,84 @@ function clearFlow(){
 function paint(){
   const nodes = view.nodeEls, edges = view.edgeEls;
   if(!cur){
-    nodes.forEach(el=>{ el.className='node'; el.querySelector('.idx').textContent=''; });
-    edges.forEach(p=>{ p.className.baseVal='';});
-    applyEdgeLabels(); return;
+    nodes.forEach(el=>{ if(el.className!=='node') el.className='node';
+      const b=el.querySelector('.idx'); if(b.textContent) b.textContent=''; });
+    edges.forEach(p=>{ if(p.getAttribute('class')) p.setAttribute('class',''); });
+    view.painted = null; applyEdgeLabels(); return;
   }
+  /* フロー単位で不変な索引は選択のたびに1回だけ作る。
+     毎ティックで作り直すと O(ノード数 × 手順数)（638×40 ≒ 25,000回）になり再生がコマ落ちする */
+  if(view.painted !== cur.id){
+    const order = new Map(), branchOf = new Map(), arriveAt = new Map();
+    cur.steps.forEach((s,i)=>{
+      for(const id of [s.from,s.to]) if(!order.has(id)) order.set(id, i);
+      if(!arriveAt.has(s.to)) arriveAt.set(s.to, i+1);
+      const b = s.branch||'main';
+      for(const id of [s.from,s.to]){
+        const prev = branchOf.get(id);
+        if(prev===undefined || (prev!=='main' && b==='main')) branchOf.set(id, b);
+      }
+    });
+    view.order = order; view.branchOf = branchOf;
+    const startId = cur.steps[0].from;
+    nodes.forEach((el,id)=>{                       // 番号バッジもフロー切替時だけ書く
+      const t = order.has(id) ? (id===startId ? STR.badgeStart : (arriveAt.get(id) || STR.badgeSrc)) : '';
+      const b = el.querySelector('.idx'); if(b.textContent !== String(t)) b.textContent = t;
+    });
+    edges.forEach(p=>p.setAttribute('class','faded'));
+    view.hotKeys = []; view.painted = cur.id;
+  }
+  const order = view.order, branchOf = view.branchOf;
   const upto = curStep<0 ? cur.steps.length-1 : curStep;
-  const order = new Map(); const branchOf = new Map();
-  cur.steps.forEach((s,i)=>{
-    for(const id of [s.from,s.to]) if(!order.has(id)) order.set(id, i);
-    const b = s.branch||'main';
-    for(const id of [s.from,s.to]){
-      const prev = branchOf.get(id);
-      if(prev===undefined || (prev!=='main' && b==='main')) branchOf.set(id, b);
-    }
-  });
   const activeUpto = new Set();
   cur.steps.slice(0, upto+1).forEach(s=>{ activeUpto.add(s.from); activeUpto.add(s.to); });
+  const curTo   = curStep>=0 ? cur.steps[curStep].to   : null;
+  const curFrom = curStep>=0 ? cur.steps[curStep].from : null;
 
   nodes.forEach((el,id)=>{
-    const idx = order.get(id);
-    el.className = 'node';
-    const badge = el.querySelector('.idx');
-    if(idx===undefined){ el.classList.add('dim'); badge.textContent=''; return; }
-    const stepNo = cur.steps.findIndex(s=>s.to===id);
-    badge.textContent = (id===cur.steps[0].from) ? STR.badgeStart : (stepNo>=0? stepNo+1 : STR.badgeSrc);
-    const b = branchOf.get(id);
-    if(b==='alt') el.classList.add('altOnly'); if(b==='error') el.classList.add('errOnly');
-    if(activeUpto.has(id)) el.classList.add('on'); else el.classList.add('pending');
+    let cls = 'node';
+    if(!order.has(id)) cls += ' dim';
+    else {
+      const b = branchOf.get(id);
+      if(b==='alt') cls += ' altOnly'; else if(b==='error') cls += ' errOnly';
+      cls += (activeUpto.has(id) || id===curFrom) ? ' on' : ' pending';
+      if(id===curTo) cls += ' cur';
+    }
+    if(el.className !== cls) el.className = cls;   // 変化した要素だけ触る（全要素の style 再計算を避ける）
   });
-  edges.forEach((p,k)=>{ p.setAttribute('class', cur ? 'faded':''); });
+  // 前回光らせたエッジだけ戻す（毎ティックの全エッジ書き換えを避ける）
+  view.hotKeys.forEach(k=>{ const p=edges.get(k); if(p) p.setAttribute('class','faded'); });
+  const hot = [];
   cur.steps.forEach((s,i)=>{
-    const p = edges.get(ekey(s.from,s.to)); if(!p) return;
+    const k = ekey(s.from,s.to), p = edges.get(k); if(!p) return;
     const b = s.branch||'main';
-    if(i<=upto) p.setAttribute('class', 'hot '+(b==='alt'?'alt':b==='error'?'err':'')+(i===curStep?' dash':''));
-    else p.setAttribute('class','pending');
+    p.setAttribute('class', i<=upto
+      ? 'hot '+(b==='alt'?'alt':b==='error'?'err':'')+(i===curStep?' dash':'')
+      : 'pending');
+    hot.push(k);
   });
-  if(curStep>=0){
-    const s = cur.steps[curStep];
-    const el = nodes.get(s.to);
-    if(el){ el.classList.add('cur','pop'); setTimeout(()=>el.classList.remove('pop'),450); scrollTo(el); }
-    const fe = nodes.get(s.from); if(fe) fe.classList.add('on');
-  }
-  document.querySelectorAll('.step').forEach((el,i)=>{
+  view.hotKeys = hot;
+  if(curTo){ const el = nodes.get(curTo); if(el) scrollTo(el); }
+  // 手順パネルの行だけを対象にする（'.step' だと逆引きパネルの接続行まで光ってしまう）
+  const rows = document.querySelectorAll('#apanel .step[data-i]');
+  rows.forEach((el,i)=>{
     el.classList.toggle('cur', i===curStep);
     el.classList.toggle('future', curStep>=0 && i>curStep);
   });
+  if(curStep>=0 && rows[curStep]) followStep(rows[curStep]);
   const pg = document.getElementById('prog');
   if(pg) pg.innerHTML = curStep>=0 ? STR.showingStep(curStep+1) : STR.showingAll;
   applyEdgeLabels();
+}
+/* 再生中、光っている手順が右パネルの画面外に出たままにならないよう追従させる */
+function followStep(row){
+  const box = document.querySelector('.steps'); if(!box) return;
+  const r = row.getBoundingClientRect(), b = box.getBoundingClientRect();
+  if(r.top < b.top + 8 || r.bottom > b.bottom - 8){
+    // 常に即時。滑らかスクロールにすると再生の間隔に追いつかず、光っている行が画面外に残り続ける。
+    // ここは「今どこか」を示すための移動なので、過程を見せる必要もない
+    box.scrollTop = box.scrollTop + (r.top - b.top) - box.clientHeight*0.35;
+  }
 }
 function applyEdgeLabels(){
   // 既定では「いま光っているステップ」のラベルだけ出す（全部出すと重なって読めない）
@@ -715,11 +768,13 @@ function applyEdgeLabels(){
     t.setAttribute('class','elabel'+((showLabels || k===curKey)?' show':''));
   });
 }
+/* 画面外に出たときだけ寄せる。毎ステップ無条件に中央寄せすると図が流れ続けて読めない */
 function scrollTo(el){
-  const r = {x: el.offsetLeft*zoom, y: el.offsetTop*zoom, w: NW*zoom, h: NH*zoom};
-  const vw = wrap.clientWidth, vh = wrap.clientHeight;
-  const tx = r.x + r.w/2 - vw/2, ty = r.y + r.h/2 - vh/2;
-  wrap.scrollTo({left:Math.max(0,tx), top:Math.max(0,ty), behavior:'smooth'});
+  const x = el.offsetLeft*zoom, y = el.offsetTop*zoom, w = NW*zoom, h = NH*zoom;
+  const L = wrap.scrollLeft, T = wrap.scrollTop, vw = wrap.clientWidth, vh = wrap.clientHeight, pad = 48;
+  if(x >= L+pad && x+w <= L+vw-pad && y >= T+pad && y+h <= T+vh-pad) return;
+  wrap.scrollTo({ left: Math.max(0, x+w/2-vw/2), top: Math.max(0, y+h/2-vh/2),
+                  behavior: motionOK() ? 'smooth' : 'auto' });
 }
 
 /* ============================ 再生 ============================ */
@@ -853,7 +908,8 @@ document.getElementById('q').addEventListener('input', e=>{
   document.querySelectorAll('button.flowbtn').forEach(b=>{
     b.classList.toggle('hidden', !!q && !b.dataset.s.includes(q));
   });
-  document.querySelectorAll('.cat').forEach(c=>{
+  // '.cat' は逆引きパネルの見出しにも使われている。deck 内に限定しないと検索でパネルが消える
+  document.querySelectorAll('#deck .cat').forEach(c=>{
     c.style.display = c.querySelectorAll('button.flowbtn:not(.hidden)').length ? '' : 'none';
   });
   view.nodeEls.forEach((el,id)=>{
@@ -982,16 +1038,24 @@ document.getElementById('btnOnly').onclick = e=>{
   else showMap();
 };
 addEventListener('keydown', e=>{
-  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+  const tag = e.target.tagName;
+  if(e.key==='Escape'){                      // 検索窓からも必ず抜けられるようにする
+    if(tag==='INPUT'){ e.target.value=''; e.target.dispatchEvent(new Event('input',{bubbles:true})); e.target.blur(); }
+    else clearFlow();
+    e.preventDefault(); return;
+  }
+  if(tag==='INPUT'||tag==='SELECT') return;
+  if(tag==='BUTTON' && (e.key===' '||e.key==='Enter')) return;  // ボタン自身の起動を奪わない
   if(e.key==='ArrowRight'){ e.preventDefault(); stepBy(1); }
   else if(e.key==='ArrowLeft'){ e.preventDefault(); stepBy(-1); }
   else if(e.key===' '){ e.preventDefault(); timer? (stopPlay(),paint()) : play(); }
-  else if(e.key==='Escape'){ clearFlow(); }
 });
 addEventListener('resize', ()=>setZoom(zoom));
 
 /* ============================ 初回ヒント ============================ */
-const HINT_KEY = 'flowmap_hint_v1';
+// file:// では全ての図が同一オリジンを共有するので、図ごとに名前空間を切らないと
+// 2枚目以降を受け取った人にヒントが一度も出ない
+const HINT_KEY = 'flowmap:hint:' + (META.title || 'default');
 function showHintOnce(){
   let seen = false;
   try{ seen = !!localStorage.getItem(HINT_KEY); }catch(e){}
