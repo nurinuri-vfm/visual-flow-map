@@ -1,4 +1,4 @@
-# interactive-flow-map（フローマップ）
+# visual-flow-map（ビジュアルフローマップ）
 
 **「操作や事象を選ぶと、通る経路だけが順番に光る」単一HTMLのフロー図を、AIエージェントが実コードから抽出・検証して生成する Agent Skill。**
 
@@ -31,15 +31,15 @@
 ### Claude Code（プラグインとして）
 
 ```bash
-/plugin marketplace add <your-github-id>/interactive-flow-map
-/plugin install interactive-flow-map
+/plugin marketplace add <your-github-id>/visual-flow-map
+/plugin install visual-flow-map
 ```
 
 ### 手動（スキルを直接置く）
 
 ```bash
-git clone https://github.com/<your-github-id>/interactive-flow-map
-cp -r interactive-flow-map/skills/interactive-flow-map ~/.claude/skills/
+git clone https://github.com/<your-github-id>/visual-flow-map
+cp -r visual-flow-map/skills/visual-flow-map ~/.claude/skills/
 ```
 
 Agent Skills 標準（[agentskills.io](https://agentskills.io)）準拠なので、対応する他のエージェントでも使えます。スクリプト実行に Node.js が必要です。
@@ -56,12 +56,12 @@ Agent Skills 標準（[agentskills.io](https://agentskills.io)）準拠なので
 先週の障害対応の経緯を、対応記録をもとに事象フローの図にして。
 ```
 
-スキルが領域分割 → 並列抽出 → 監査（ID分裂・参照切れ・コード実在）→ 敵対的検証 → ビルドまでの手順を持っています。詳細は [`skills/interactive-flow-map/SKILL.md`](skills/interactive-flow-map/SKILL.md)。
+スキルが領域分割 → 並列抽出 → 監査（ID分裂・参照切れ・コード実在）→ 敵対的検証 → ビルドまでの手順を持っています。詳細は [`skills/visual-flow-map/SKILL.md`](skills/visual-flow-map/SKILL.md)。
 
 ## 手動でビルドする場合
 
 ```bash
-node skills/interactive-flow-map/scripts/build.js \
+node skills/visual-flow-map/scripts/build.js \
   --data demo/data-code --out flow-map.html --repo demo/sample-app
 ```
 

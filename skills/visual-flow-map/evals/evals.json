@@ -1,5 +1,5 @@
 {
-  "skill_name": "interactive-flow-map",
+  "skill_name": "visual-flow-map",
   "notes": "テスト対象（{{REPO}}）には demo/sample-app（web / api / worker の3プロセス + 決済・メールの外部サービス）が使える。正解が分かっているので採点しやすい。",
   "evals": [
     {

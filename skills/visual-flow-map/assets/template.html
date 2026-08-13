@@ -943,8 +943,8 @@ if (STAMP.refTotal) stampBits.push(STR.stampRefs(STAMP.refOk, STAMP.refTotal));
 const creditHref = /^https?:\/\//i.test(String(META.creditUrl || '')) ? META.creditUrl : null;
 const credit = META.credit === false ? '' :
   (creditHref
-    ? `<a href="${esc(creditHref)}" target="_blank" rel="noopener" style="color:var(--fg3)">Generated with interactive-flow-map</a>`
-    : `<span>Generated with interactive-flow-map</span>`);
+    ? `<a href="${esc(creditHref)}" target="_blank" rel="noopener" style="color:var(--fg3)">Generated with visual-flow-map</a>`
+    : `<span>Generated with visual-flow-map</span>`);
 document.getElementById('legend').innerHTML =
   LANES.filter(([k])=>[...NODES.values()].some(n=>n.lane===k))
     .map(([k,v])=>`<span class="lg" style="--c:var(--${k})"><i class="dot"></i>${esc(v)}</span>`).join('')

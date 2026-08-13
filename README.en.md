@@ -1,4 +1,4 @@
-# interactive-flow-map
+# visual-flow-map
 
 **An Agent Skill that generates a single-file interactive HTML flow map — pick an operation (or an event) and watch only its path light up, step by step — extracted from your actual codebase by AI agents and mechanically verified.**
 
@@ -27,15 +27,15 @@ In the diagram: click a flow button to replay its path · click a node for rever
 ### Claude Code (as a plugin)
 
 ```bash
-/plugin marketplace add <your-github-id>/interactive-flow-map
-/plugin install interactive-flow-map
+/plugin marketplace add <your-github-id>/visual-flow-map
+/plugin install visual-flow-map
 ```
 
 ### Manual
 
 ```bash
-git clone https://github.com/<your-github-id>/interactive-flow-map
-cp -r interactive-flow-map/skills/interactive-flow-map ~/.claude/skills/
+git clone https://github.com/<your-github-id>/visual-flow-map
+cp -r visual-flow-map/skills/visual-flow-map ~/.claude/skills/
 ```
 
 The skill follows the open [Agent Skills](https://agentskills.io) standard. Node.js is required for the build/audit scripts. Note: the skill instructions are in Japanese, but the generated diagram UI can be switched to English with `"lang": "en"` in `meta.json`.
@@ -46,12 +46,12 @@ The skill follows the open [Agent Skills](https://agentskills.io) standard. Node
 Visualize the processing flows of this repository so I can trace what runs behind each user action.
 ```
 
-The skill drives the whole pipeline: scope splitting → parallel extraction → audits (ID drift, dangling refs, ref existence) → adversarial verification → build. See [`skills/interactive-flow-map/SKILL.md`](skills/interactive-flow-map/SKILL.md).
+The skill drives the whole pipeline: scope splitting → parallel extraction → audits (ID drift, dangling refs, ref existence) → adversarial verification → build. See [`skills/visual-flow-map/SKILL.md`](skills/visual-flow-map/SKILL.md).
 
 ## Manual build
 
 ```bash
-node skills/interactive-flow-map/scripts/build.js \
+node skills/visual-flow-map/scripts/build.js \
   --data demo/data-code --out flow-map.html --repo demo/sample-app
 ```
 

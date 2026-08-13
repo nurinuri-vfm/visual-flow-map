@@ -6,14 +6,14 @@
 
 - [ ] GitHub のユーザー名（または組織名）
 - [ ] public か private か（まず private で上げて中身を確認してから public 化も可）
-- [ ] リポジトリ名（推奨: `interactive-flow-map`）
+- [ ] リポジトリ名（推奨: `visual-flow-map`）
 
 ## 方法A: GitHub CLI（gh）を使う
 
 このマシンには gh が未インストール（2026-08-13 時点）。`winget install GitHub.cli` → `gh auth login` の後:
 
 ```bash
-gh repo create <ユーザー名>/interactive-flow-map --private --source . --push
+gh repo create <ユーザー名>/visual-flow-map --private --source . --push
 ```
 
 （public にするなら `--private` を `--public` に。後から公開する場合は `gh repo edit --visibility public`）
@@ -24,18 +24,18 @@ gh repo create <ユーザー名>/interactive-flow-map --private --source . --pus
 2. このディレクトリで:
 
 ```bash
-git remote add origin https://github.com/<ユーザー名>/interactive-flow-map.git
+git remote add origin https://github.com/<ユーザー名>/visual-flow-map.git
 git push -u origin main
 ```
 
 ## push 前の置き換え（2箇所）
 
 - `README.md` / `README.en.md` 内の `<your-github-id>` を実ユーザー名に置換
-- `demo/data-code/meta.json` に `"creditUrl": "https://github.com/<ユーザー名>/interactive-flow-map"` を追加してデモを再ビルドすると、図のクレジットがリポジトリへのリンクになる:
+- `demo/data-code/meta.json` に `"creditUrl": "https://github.com/<ユーザー名>/visual-flow-map"` を追加してデモを再ビルドすると、図のクレジットがリポジトリへのリンクになる:
 
 ```bash
-node skills/interactive-flow-map/scripts/build.js --data demo/data-code --out demo/order-flow-map.html --repo demo/sample-app
-node skills/interactive-flow-map/scripts/build.js --data demo/data-event --out demo/incident-flow-map.html
+node skills/visual-flow-map/scripts/build.js --data demo/data-code --out demo/order-flow-map.html --repo demo/sample-app
+node skills/visual-flow-map/scripts/build.js --data demo/data-event --out demo/incident-flow-map.html
 ```
 
 ## 公開後にやると効果が大きい順
@@ -48,4 +48,4 @@ node skills/interactive-flow-map/scripts/build.js --data demo/data-event --out d
 
 ## 公開しない場合
 
-このファイルとローカルリポジトリはそのまま置いておけばよい。スキル本体は `~/.claude/skills/interactive-flow-map` で既に動いている（公開と無関係に使える）。
+このファイルとローカルリポジトリはそのまま置いておけばよい。スキル本体は `~/.claude/skills/visual-flow-map` で既に動いている（公開と無関係に使える）。

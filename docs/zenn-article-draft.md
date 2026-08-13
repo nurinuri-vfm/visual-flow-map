@@ -74,8 +74,8 @@ PRレビューで「この変更でどの経路が変わったか」を10秒で�
 ## 使い方
 
 ```
-/plugin marketplace add ★your-github-id/interactive-flow-map
-/plugin install interactive-flow-map
+/plugin marketplace add ★your-github-id/visual-flow-map
+/plugin install visual-flow-map
 ```
 
 あとは Claude Code に頼むだけです。
@@ -92,6 +92,6 @@ Agent Skills 標準（agentskills.io）準拠なので、対応する他のエ�
 - 単一HTMLなのでコードは手元から出ない。SaaS 不要
 - コードのフローも、現実の出来事の流れも、同じ形式で描ける
 
-リポジトリ: ★https://github.com/your-github-id/interactive-flow-map
+リポジトリ: ★https://github.com/your-github-id/visual-flow-map
 
 フィードバック歓迎です。
