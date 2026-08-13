@@ -1,6 +1,12 @@
 {
   "title": "Uptime Kuma 処理フロー全図",
   "mode": "code",
+  "subject": {
+    "name": "Uptime Kuma",
+    "url": "https://github.com/louislam/uptime-kuma",
+    "license": "MIT",
+    "commit": "b980621"
+  },
   "catOrder": [
     "認証・アカウント",
     "モニター管理",

@@ -217,4 +217,18 @@ See [`skills/visual-flow-map/SKILL.md`](skills/visual-flow-map/SKILL.md) for the
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
+
+Two things in `demo/` are other people's work and keep their own licenses:
+
+- [`demo/conduit-app/`](demo/conduit-app/) is vendored **unmodified** from
+  [gothinkster/flask-realworld-example-app](https://github.com/gothinkster/flask-realworld-example-app)
+  (MIT, © 2017 Mohamed Aziz Knani) at commit `4b95fb2` — its own
+  [LICENSE](demo/conduit-app/LICENSE) travels with it, and
+  [VENDORED.md](demo/conduit-app/VENDORED.md) records what was taken and why.
+- [`demo/data-uptime-kuma/`](demo/data-uptime-kuma/) contains analysis *about*
+  [Uptime Kuma](https://github.com/louislam/uptime-kuma) (MIT) — function names, line numbers and
+  descriptions. No source from that project is included here.
+
+Each generated diagram also states its subject and that subject's license in its own footer, so
+the attribution survives when a single HTML file is passed along on its own.

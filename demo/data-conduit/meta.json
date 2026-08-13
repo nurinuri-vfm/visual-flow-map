@@ -1,4 +1,10 @@
 {
   "title": "Conduit（RealWorld Flask）処理フロー全図",
+  "subject": {
+    "name": "flask-realworld-example-app",
+    "url": "https://github.com/gothinkster/flask-realworld-example-app",
+    "license": "MIT © 2017 Mohamed Aziz Knani",
+    "commit": "4b95fb2"
+  },
   "catOrder": ["認証・アカウント", "プロフィール", "記事", "コメント・タグ"]
 }

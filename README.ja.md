@@ -154,4 +154,11 @@ node skills/visual-flow-map/scripts/build.js \
 
 ## ライセンス
 
-MIT
+MIT（[LICENSE](LICENSE)）。
+
+`demo/` の中の2つは他者の著作物で、それぞれのライセンスに従います。
+
+- [`demo/conduit-app/`](demo/conduit-app/) は [gothinkster/flask-realworld-example-app](https://github.com/gothinkster/flask-realworld-example-app)（MIT, © 2017 Mohamed Aziz Knani）の commit `4b95fb2` を**無改変で**取り込んだものです。[LICENSE](demo/conduit-app/LICENSE) をそのまま同梱し、取り込んだ範囲と理由は [VENDORED.md](demo/conduit-app/VENDORED.md) に記録しています。
+- [`demo/data-uptime-kuma/`](demo/data-uptime-kuma/) は [Uptime Kuma](https://github.com/louislam/uptime-kuma)（MIT）**を解析した結果**（関数名・行番号・説明）です。同プロジェクトのソースコードは含んでいません。
+
+生成される図にも、対象プロジェクト名とそのライセンスがフッターに表示されます。HTML 1枚だけが人手に渡っても出典が失われないようにするためです。
