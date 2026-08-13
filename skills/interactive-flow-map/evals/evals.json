@@ -1,6 +1,6 @@
 {
   "skill_name": "interactive-flow-map",
-  "notes": "テスト対象は workspace/testrepo（web / api / worker の3プロセス + 決済・メールの外部サービス、16ファイル567行）。正解が分かっているので採点しやすい。",
+  "notes": "テスト対象（{{REPO}}）には demo/sample-app（web / api / worker の3プロセス + 決済・メールの外部サービス）が使える。正解が分かっているので採点しやすい。",
   "evals": [
     {
       "id": 0,
