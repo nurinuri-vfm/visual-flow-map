@@ -56,6 +56,10 @@ const provenance = new Map(), problems = [];
 const BOM = new RegExp('^' + String.fromCharCode(0xFEFF));  // JSON 先頭の BOM を落とす
 const SEP = String.fromCharCode(1);  // ID には現れない区切り
 const ekey = (a, b) => a + SEP + b;   // ID に出てこない区切りで連結（'a'+'bc' と 'ab'+'c' の衝突を防ぐ）
+/* 経路の根拠の強さ。数字が大きいほど弱い（マージ時は弱いほうを残す）。
+   ノードの ref は実在検査で機械的に確かめられるが、「AがBを呼ぶ」という経路は確かめられない。
+   だから根拠の強さを申告させ、図とスタンプで正直に出す */
+const EV_RANK = { direct: 0, inferred: 1, framework: 2, unverified: 3 };
 
 /* ---------- 読み込みとマージ ---------- */
 for (const f of files) {
@@ -82,8 +86,14 @@ for (const f of files) {
     e = { ...e, from: canon(e.from), to: canon(e.to) };
     if (e.from === e.to) continue;
     const k = ekey(e.from, e.to);
-    if (!edges.has(k)) edges.set(k, { from: e.from, to: e.to, label: e.label || '', kind: e.kind || 'call' });
-    else if (!edges.get(k).label && e.label) edges.get(k).label = e.label;
+    if (!edges.has(k)) edges.set(k, { from: e.from, to: e.to, label: e.label || '', kind: e.kind || 'call', ...(EV_RANK[e.evidence] !== undefined ? { evidence: e.evidence } : {}) });
+    else {
+      const cur = edges.get(k);
+      if (!cur.label && e.label) cur.label = e.label;
+      // 同じ経路を複数のエージェントが書いたら、根拠は弱いほうを採る（実態より強く見せない）
+      if (EV_RANK[e.evidence] !== undefined &&
+          (cur.evidence === undefined || EV_RANK[e.evidence] > EV_RANK[cur.evidence])) cur.evidence = e.evidence;
+    }
   }
   for (const fl of j.flows || []) {
     if (!fl || !fl.id || !Array.isArray(fl.steps) || !fl.steps.length) { problems.push(`[FLOW] ${f}: 不正な flow ${fl && fl.id}`); continue; }
@@ -109,7 +119,13 @@ for (const fl of flows) {
     for (const id of [s.from, s.to]) if (!nodes.has(id)) { ok = false; note(id); }
     if (!ok) return false;
     const k = ekey(s.from, s.to);
-    if (!edges.has(k)) edges.set(k, { from: s.from, to: s.to, label: s.label || '', kind: s.kind || 'call' });
+    if (!edges.has(k)) edges.set(k, { from: s.from, to: s.to, label: s.label || '', kind: s.kind || 'call', ...(EV_RANK[s.evidence] !== undefined ? { evidence: s.evidence } : {}) });
+    else {
+      // 既に edges 側にある経路でも、手順が弱い根拠を申告していればそちらを採る
+      const cur = edges.get(k);
+      if (EV_RANK[s.evidence] !== undefined &&
+          (cur.evidence === undefined || EV_RANK[s.evidence] > EV_RANK[cur.evidence])) cur.evidence = s.evidence;
+    }
     return true;
   });
 }
@@ -267,6 +283,7 @@ if (REPO) {
     if (lines >= +m[2]) ok++; else badRefs.push(`${n.ref} ← ${n.id}`);
   }
   stamp.refTotal = total; stamp.refOk = ok;
+  stamp.refScope = 'node';   // 実在検査したのはノードの参照だけ。経路（エッジ）は検査対象外
   try { stamp.commit = require('child_process').execSync('git rev-parse --short HEAD', { cwd: repo, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); } catch (e) {}
 }
 
@@ -332,6 +349,17 @@ if (DIFF_BASE) {
   }
 }
 
+/* ---------- 経路の根拠の集計 ---------- */
+// ノードの ref は実ファイルと突き合わせられるが、「AがBを呼ぶ」は機械的に確かめようがない。
+// 抽出側の申告（evidence）を集計して図に出し、「何を検証して何をしていないか」を受け手に見せる。
+// 1本も申告が無いデータ（旧形式）では内訳を出さず、従来どおりの表示に落ちる。
+const evCount = { direct: 0, inferred: 0, framework: 0, unverified: 0, unspecified: 0 };
+for (const e of edges.values()) evCount[EV_RANK[e.evidence] !== undefined ? e.evidence : 'unspecified']++;
+const evDeclared = evCount.direct + evCount.inferred + evCount.framework + evCount.unverified;
+stamp.edgeTotal = edges.size;
+if (evDeclared) stamp.evidence = evCount;
+const weakEdges = [...edges.values()].filter(e => e.evidence === 'unverified');
+
 /* ---------- 出力 ---------- */
 const data = { meta: { ...META, stamp }, nodes: [...nodes.values()], edges: [...edges.values()], flows: kept.map(({ src, ...f }) => f) };
 if (!fs.existsSync(TPL)) { console.error(`[FATAL] テンプレートが無い: ${TPL}`); process.exit(1); }
@@ -363,8 +391,16 @@ if (!QUIET) {
   if (diffSummary) console.log('diff       :', diffSummary.unchanged ? `変更なし（基準: ${diffSummary.baseLabel}）` :
     `+${diffSummary.addedNodes}ノード / 変更${diffSummary.changedNodes} / 削除${diffSummary.removedNodes} | 経路 +${diffSummary.addedEdges}/-${diffSummary.removedEdges}（基準: ${diffSummary.baseLabel}）`);
   if (stamp.refTotal !== undefined) {
-    console.log('ref verify :', stamp.refOk + '/' + stamp.refTotal, '実在検証OK', stamp.commit ? `| commit ${stamp.commit}` : '');
+    console.log('ref verify : ノード参照', stamp.refOk + '/' + stamp.refTotal, '実在OK（経路は検査対象外）', stamp.commit ? `| commit ${stamp.commit}` : '');
     badRefs.slice(0, 20).forEach(r => console.log('   !', r));
+  }
+  if (evDeclared) {
+    console.log('edge basis :', `直接 ${evCount.direct} / 推定 ${evCount.inferred} / 暗黙 ${evCount.framework} / 未確認 ${evCount.unverified}`
+      + (evCount.unspecified ? ` / 申告なし ${evCount.unspecified}` : ''));
+    weakEdges.slice(0, 15).forEach(e => console.log('   ? 未確認:', e.from, '->', e.to, e.label ? `« ${e.label} »` : ''));
+    if (weakEdges.length) console.log('   → 未確認の経路は、知っている人に確認して patches.js に根拠つきで書き直す');
+  } else if (edges.size) {
+    console.log('edge basis : 申告なし（全', edges.size, '経路）。抽出時に evidence を書かせると、図に根拠の内訳が出る');
   }
   console.log('no-ref     :', data.nodes.filter(n => !n.ref).length, '個のノードにコード参照が無い');
   console.log('avg steps  :', data.flows.length ? (data.flows.reduce((s, f) => s + f.steps.length, 0) / data.flows.length).toFixed(1) : 0);

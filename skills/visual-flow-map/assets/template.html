@@ -115,6 +115,13 @@
   svg.edges path.hot.alt{stroke:var(--alt);filter:drop-shadow(0 0 5px rgba(255,182,72,.6))}
   svg.edges path.hot.err{stroke:var(--err);stroke-dasharray:7 5;filter:drop-shadow(0 0 5px rgba(255,107,125,.6))}
   svg.edges path.pending{opacity:.13}
+  /* 経路の根拠。色は分岐（正常/条件/失敗）が担うので、根拠は線の切り方と印で示す */
+  svg.edges path.ev-framework{stroke-dasharray:2 4}
+  svg.edges path.ev-unverified{stroke-dasharray:1 5;opacity:.5}
+  svg.edges path.hot.ev-unverified{opacity:.85}
+  svg.edges .evmark{font-size:11px;font-weight:800;fill:var(--fg3);paint-order:stroke;stroke:var(--bg);stroke-width:3px;
+    pointer-events:none;font-family:inherit}
+  svg.edges .evmark.q{fill:var(--alt)}
   svg.edges path.faded{opacity:.06}
   svg.edges path.dash{stroke-dasharray:9 7;animation:march 1s linear infinite}
   @keyframes march{to{stroke-dashoffset:-16}}
@@ -213,6 +220,9 @@
   .step .arrow .to{color:#fff;font-weight:700}
   .step .arrow .ar{color:var(--fg3);margin:0 4px}
   .step .desc{font-size:10.5px;color:var(--fg2);margin-top:1px}
+  .step .evtag{display:inline-block;margin-top:3px;font-size:9.5px;padding:1px 6px;border-radius:6px;
+    border:1px dashed var(--line2);color:var(--fg3);cursor:help}
+  .step .evtag.unverified{border-color:rgba(255,182,72,.5);color:var(--alt);border-style:solid}
   .step .ref{font-size:9.5px;color:var(--fg3);margin-top:2px;font-family:ui-monospace,Menlo,Consolas,monospace;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .notes{margin:6px 10px 14px;padding:9px 11px;border-radius:10px;background:rgba(255,182,72,.07);
@@ -360,7 +370,10 @@ const STR = LANG === 'en' ? {
   stat:(w,f,n,e)=>`${esc(w)}s <b>${f}</b> · nodes <b>${n}</b> · edges <b>${e}</b>`,
   diffStat:(a,c)=>` · vs prev <b style="color:#34d399">+${a}</b>/<b style="color:var(--alt)">mod ${c}</b>`,
   lgMain:'main path', lgAlt:'conditional', lgErr:'failure / retry',
-  stampGen:d=>`built ${d}`, stampRefs:(ok,t)=>`refs ${ok}/${t} verified`,
+  stampGen:d=>`built ${d}`, stampRefs:(ok,t)=>`node refs ${ok}/${t} exist`,
+  stampEdges:e=>`edges: ${e.direct} direct / ${e.inferred} inferred / ${e.framework} implicit / ${e.unverified} unverified`,
+  evHelp:'Node refs are checked against the repo. Edges cannot be — each edge carries the strength of its basis instead: direct = the call appears in the source; inferred = deduced from types, DI or config; implicit = the framework calls it, no such line exists; unverified = the target could not be determined.',
+  evLabel:{direct:'direct call',inferred:'inferred',framework:'implicit (framework)',unverified:'unverified'},
   empty:w=>`Pick an ${esc(w)} above —<br>only its route lights up.<br><br><span class="k">drag</span> to pan, <span class="k">Ctrl+wheel</span> to zoom<br><span class="k">←</span> <span class="k">→</span> to step, <span class="k">Space</span> to play/pause<br><span class="k">Esc</span> to clear`,
   trg:w=>`${esc(w)}: `, steps:n=>`${n} steps`,
   showingStep:i=>`· showing step <b style="color:var(--main)">${i}</b>`, showingAll:'· showing full route',
@@ -380,7 +393,10 @@ const STR = LANG === 'en' ? {
   stat:(w,f,n,e)=>`${esc(w)} <b>${f}</b> ・ 処理ノード <b>${n}</b> ・ 経路 <b>${e}</b>`,
   diffStat:(a,c)=>` ・ 前回比 <b style="color:#34d399">+${a}</b>/<b style="color:var(--alt)">変更${c}</b>`,
   lgMain:'正常系', lgAlt:'条件分岐', lgErr:'失敗・再試行',
-  stampGen:d=>`${d} 生成`, stampRefs:(ok,t)=>`コード参照 ${ok}/${t} 実在検証済み`,
+  stampGen:d=>`${d} 生成`, stampRefs:(ok,t)=>`ノード参照 ${ok}/${t} 実在`,
+  stampEdges:e=>`経路の根拠 直接${e.direct} / 推定${e.inferred} / 暗黙${e.framework} / 未確認${e.unverified}`,
+  evHelp:'ノードの参照はリポジトリと突き合わせて実在を確認しています。経路（AがBを呼ぶ）は機械的に確かめようがないため、代わりに根拠の強さを表示しています。直接=呼び出し行がソースにある／推定=型・DI・設定から導いた／暗黙=フレームワークが呼ぶためソースに行が無い／未確認=呼び出し先を特定できなかった。',
+  evLabel:{direct:'直接の呼び出し',inferred:'推定',framework:'暗黙（フレームワーク）',unverified:'未確認'},
   empty:w=>`上のボタンから${esc(w)}を選ぶと<br>そのルートだけが光ります。<br><br><span class="k">ドラッグ</span> で移動、<span class="k">Ctrl+ホイール</span> で拡大縮小<br><span class="k">←</span> <span class="k">→</span> で1ステップずつ、<span class="k">Space</span> で再生／停止<br><span class="k">Esc</span> で選択解除`,
   trg:w=>`${esc(w)}：`, steps:n=>`全 ${n} ステップ`,
   showingStep:i=>`・<b style="color:var(--main)">${i}</b> 番目を表示中`, showingAll:'・全経路を表示中',
@@ -414,15 +430,20 @@ for (const n of DATA.nodes) {
   }
   NODES.set(n.id, {id:n.id, lane:LANE_LABEL[n.lane]?n.lane:FALLBACK_LANE, label:n.label||n.id, detail:n.detail||'', ref:n.ref||''});
 }
-const EDGES = new Map(); // key -> {from,to,label,kind}
+const EV_RANK = { direct:0, inferred:1, framework:2, unverified:3 };  // 大きいほど根拠が弱い
+const EDGES = new Map(); // key -> {from,to,label,kind,evidence}
 const ekey = (f,t)=>f+''+t;
 function addEdge(e){
   if(!e||!e.from||!e.to||e.from===e.to) return;
   if(!NODES.has(e.from)||!NODES.has(e.to)) return;
   const k = ekey(e.from,e.to);
   const cur = EDGES.get(k);
-  if(cur){ if(!cur.label && e.label) cur.label=e.label; if(!cur.kind && e.kind) cur.kind=e.kind; return; }
-  EDGES.set(k,{from:e.from,to:e.to,label:e.label||'',kind:e.kind||'call'});
+  if(cur){ if(!cur.label && e.label) cur.label=e.label; if(!cur.kind && e.kind) cur.kind=e.kind;
+           // 同じ経路に複数の申告があれば弱いほうを残す（実態より強く見せない）
+           if(EV_RANK[e.evidence]!==undefined &&
+              (cur.evidence===undefined||cur.evidence===''||EV_RANK[e.evidence]>EV_RANK[cur.evidence])) cur.evidence=e.evidence;
+           return; }
+  EDGES.set(k,{from:e.from,to:e.to,label:e.label||'',kind:e.kind||'call',evidence:e.evidence||''});
 }
 DATA.edges.forEach(addEdge);
 const FLOWS = DATA.flows.filter(f=>f&&f.steps&&f.steps.length).map(f=>({
@@ -562,8 +583,23 @@ function render(ids, edges, grid){
     if(!lay.pos.has(e.from)||!lay.pos.has(e.to)) continue;
     const p = document.createElementNS(SVGNS,'path');
     p.setAttribute('d', edgePath(lay.pos.get(e.from), lay.pos.get(e.to)));
+    if(e.evidence && e.evidence!=='direct'){
+      p.dataset.ev = e.evidence;
+      p.setAttribute('class','ev-'+e.evidence);
+    }
     svg.appendChild(p);
     view.edgeEls.set(ekey(e.from,e.to), p);
+    // 根拠が「暗黙(framework)」「未確認(unverified)」の経路には印を置く。
+    // 線種だけだと縮小時に見分けが付かず、色は分岐(正常/条件/失敗)が使っている
+    if(e.evidence==='framework' || e.evidence==='unverified'){
+      const a=lay.pos.get(e.from), b=lay.pos.get(e.to);
+      const m = document.createElementNS(SVGNS,'text');
+      m.setAttribute('x', (a.x+NW+b.x)/2); m.setAttribute('y', (a.y+b.y)/2+NH/2+4);
+      m.setAttribute('text-anchor','middle');
+      m.setAttribute('class','evmark'+(e.evidence==='unverified'?' q':''));
+      m.textContent = e.evidence==='unverified' ? '?' : '◇';
+      svg.appendChild(m);
+    }
     if(e.label){
       const t = document.createElementNS(SVGNS,'text');
       const a=lay.pos.get(e.from), b=lay.pos.get(e.to);
@@ -684,7 +720,7 @@ function paint(){
   if(!cur){
     nodes.forEach(el=>{ if(el.className!=='node') el.className='node';
       const b=el.querySelector('.idx'); if(b.textContent) b.textContent=''; });
-    edges.forEach(p=>{ if(p.getAttribute('class')) p.setAttribute('class',''); });
+    edges.forEach(p=>{ const c=evCls(p).trim(); if(p.getAttribute('class')!==c) p.setAttribute('class',c); });
     view.painted = null; applyEdgeLabels(); return;
   }
   /* フロー単位で不変な索引は選択のたびに1回だけ作る。
@@ -706,7 +742,7 @@ function paint(){
       const t = order.has(id) ? (id===startId ? STR.badgeStart : (arriveAt.get(id) || STR.badgeSrc)) : '';
       const b = el.querySelector('.idx'); if(b.textContent !== String(t)) b.textContent = t;
     });
-    edges.forEach(p=>p.setAttribute('class','faded'));
+    edges.forEach(p=>p.setAttribute('class','faded'+evCls(p)));
     view.hotKeys = []; view.painted = cur.id;
   }
   const order = view.order, branchOf = view.branchOf;
@@ -728,14 +764,14 @@ function paint(){
     if(el.className !== cls) el.className = cls;   // 変化した要素だけ触る（全要素の style 再計算を避ける）
   });
   // 前回光らせたエッジだけ戻す（毎ティックの全エッジ書き換えを避ける）
-  view.hotKeys.forEach(k=>{ const p=edges.get(k); if(p) p.setAttribute('class','faded'); });
+  view.hotKeys.forEach(k=>{ const p=edges.get(k); if(p) p.setAttribute('class','faded'+evCls(p)); });
   const hot = [];
   cur.steps.forEach((s,i)=>{
     const k = ekey(s.from,s.to), p = edges.get(k); if(!p) return;
     const b = s.branch||'main';
-    p.setAttribute('class', i<=upto
+    p.setAttribute('class', (i<=upto
       ? 'hot '+(b==='alt'?'alt':b==='error'?'err':'')+(i===curStep?' dash':'')
-      : 'pending');
+      : 'pending') + evCls(p));
     hot.push(k);
   });
   view.hotKeys = hot;
@@ -751,6 +787,9 @@ function paint(){
   if(pg) pg.innerHTML = curStep>=0 ? STR.showingStep(curStep+1) : STR.showingAll;
   applyEdgeLabels();
 }
+/* 経路の根拠クラスは分岐の色クラスと共存させる（上書きで消さない） */
+const evCls = p => p.dataset.ev ? ' ev-'+p.dataset.ev : '';
+
 /* 再生中、光っている手順が右パネルの画面外に出たままにならないよう追従させる */
 function followStep(row){
   const box = document.querySelector('.steps'); if(!box) return;
@@ -814,10 +853,14 @@ function renderPanel(){
   const st = cur.steps.map((s,i)=>{
     const to = NODES.get(s.to), from = NODES.get(s.from);
     const b = s.branch||'main';
+    // 根拠が弱い経路は手順の側にも出す（図の印だけだと見落とす）
+    const ed = EDGES.get(ekey(s.from,s.to));
+    const ev = ed && ed.evidence && ed.evidence!=='direct' ? ed.evidence : '';
     return `<div class="step b-${b}" data-i="${i}">
       <div class="no">${i+1}</div>
       <div class="body">
         <div class="arrow"><span style="color:var(--${from.lane})">${esc(from.label)}</span><span class="ar">▶</span><span class="to" style="color:var(--${to.lane})">${esc(to.label)}</span></div>
+        ${ev?`<div class="evtag ${ev}" title="${esc(STR.evHelp)}">${ev==='unverified'?'? ':ev==='framework'?'◇ ':''}${esc(STR.evLabel[ev]||ev)}</div>`:''}
         ${s.label?`<div class="desc">${esc(s.label)}</div>`:''}
         ${to.detail?`<div class="desc" style="color:var(--fg3)">${esc(to.detail)}</div>`:''}
         ${to.ref?`<div class="ref">${esc(to.ref)}</div>`:''}
@@ -994,7 +1037,12 @@ const STAMP = META.stamp || {};
 const stampBits = [];
 if (STAMP.builtAt) stampBits.push(STR.stampGen(esc(String(STAMP.builtAt).slice(0,10))));
 if (STAMP.commit) stampBits.push('commit ' + esc(STAMP.commit));
+// 実在検査したのは「ノードの参照」だけ。経路そのものは機械的に確かめられないので、そう書く
 if (STAMP.refTotal) stampBits.push(STR.stampRefs(STAMP.refOk, STAMP.refTotal));
+if (STAMP.evidence){
+  const e = STAMP.evidence;
+  stampBits.push(`<span title="${esc(STR.evHelp)}">${STR.stampEdges(e)}</span>`);
+}
 /* creditUrl は http(s) のみリンク化する（javascript: 等のスキームを弾く） */
 const creditHref = /^https?:\/\//i.test(String(META.creditUrl || '')) ? META.creditUrl : null;
 const credit = META.credit === false ? '' :
@@ -1008,6 +1056,11 @@ document.getElementById('legend').innerHTML =
   + `<span class="lg" style="--c:var(--main)"><i class="dot"></i>${STR.lgMain}</span>`
   + `<span class="lg" style="--c:var(--alt)"><i class="dot"></i>${STR.lgAlt}</span>`
   + `<span class="lg" style="--c:var(--err)"><i class="dot"></i>${STR.lgErr}</span>`
+  + (STAMP.evidence && (STAMP.evidence.framework || STAMP.evidence.unverified)
+      ? `<span class="lg" title="${esc(STR.evHelp)}" style="color:var(--fg3)">`
+        + (STAMP.evidence.framework ? `◇ ${esc(STR.evLabel.framework)}　` : '')
+        + (STAMP.evidence.unverified ? `<b style="color:var(--alt)">?</b> ${esc(STR.evLabel.unverified)}` : '')
+        + `</span>` : '')
   + ((stampBits.length || credit)
     ? `<span class="lg" style="color:var(--fg3)">${stampBits.join(' ・ ')}${stampBits.length && credit ? ' ・ ' : ''}${credit}</span>`
     : '');
