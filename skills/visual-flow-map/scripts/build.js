@@ -378,7 +378,42 @@ const tpl = fs.readFileSync(TPL, 'utf8');
 const MARK = '/*__FLOW_DATA__*/{nodes:[],edges:[],flows:[]}';
 if (!tpl.includes(MARK)) { console.error(`[FATAL] テンプレートに差し込み位置 ${MARK} が無い`); process.exit(1); }
 // "</script>" を含む文字列が <script> ブロックを破らないよう "<" をエスケープして埋め込む（JSONとしては同値）
-const html = tpl.replace(MARK, () => JSON.stringify(data).replace(/</g, '\\u003c'));
+let html = tpl.replace(MARK, () => JSON.stringify(data).replace(/</g, '\\u003c'));
+/* 静的シェル（JS が走る前に見える部分）も meta に合わせる。
+   タブ名・リンク共有のプレビュー・初回描画が図の言語とずれると、英語の図に日本語の題名が付く */
+{
+  const uiLang = META.lang === 'en' ? 'en' : 'ja';
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const title = esc(META.title || (uiLang === 'en' ? 'Flow Map' : '処理フロー全図'));
+  const sub = esc(uiLang === 'en'
+    ? 'Press a button — only that route lights up, in order'
+    : 'ボタンを押すと、そのルートだけが順番に光ります');
+  html = html
+    .replace('<html lang="ja">', `<html lang="${uiLang}">`)
+    .replace('<title>処理フロー全図</title>', `<title>${title}</title>`)
+    .replace('<h1><span class="mark">処理フロー全図</span></h1>', `<h1><span class="mark">${title}</span></h1>`)
+    .replace('<span class="sub">ボタンを押すと、そのルートだけが順番に光ります</span>', `<span class="sub">${sub}</span>`);
+  // 操作ボタンの初期文字も同様。JS が上書きするまでの一瞬と、JS を切った状態で見えるのはこちら
+  if (uiLang === 'en') {
+    const SHELL = {
+      'placeholder="検索…"': 'placeholder="Search…"',
+      '>全体マップに重ねる<': '>Overlay on full map<',
+      '>エッジのラベル<': '>Edge labels<',
+      '>▶ 順に再生<': '>▶ Play<',
+      '>◀ 前<': '>◀ Prev<',
+      '>次 ▶<': '>Next ▶<',
+      'title="再生速度"': 'title="Playback speed"',
+      '>ゆっくり<': '>Slow<',
+      '>標準<': '>Normal<',
+      '>はやい<': '>Fast<',
+      '>全体を表示<': '>Fit view<',
+      '>選択解除<': '>Clear selection<',
+      '>操作一覧を畳む<': '>Hide operation list<',
+      'aria-label="表示の切り替え"': 'aria-label="Switch view"',
+    };
+    for (const [from, to] of Object.entries(SHELL)) html = html.split(from).join(to);
+  }
+}
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
 fs.writeFileSync(OUT, html, 'utf8');
 

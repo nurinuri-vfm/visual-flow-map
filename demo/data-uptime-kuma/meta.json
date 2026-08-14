@@ -1,6 +1,7 @@
 {
-  "title": "Uptime Kuma 処理フロー全図",
+  "title": "Uptime Kuma — Complete Flow Map",
   "mode": "code",
+  "lang": "en",
   "subject": {
     "name": "Uptime Kuma",
     "url": "https://github.com/louislam/uptime-kuma",
@@ -8,22 +9,22 @@
     "commit": "b980621"
   },
   "catOrder": [
-    "認証・アカウント",
-    "モニター管理",
-    "監視の実行",
-    "通知",
-    "ステータスページ",
-    "メンテナンス",
-    "設定・保守",
-    "公開API・タグ"
+    "Auth & account",
+    "Monitor management",
+    "Running the checks",
+    "Notifications",
+    "Status page",
+    "Maintenance",
+    "Settings & upkeep",
+    "Public API & tags"
   ],
   "lanes": [
-    { "key": "ui",     "label": "画面 / ユーザー操作" },
-    { "key": "app",    "label": "フロント内部（socket.js）" },
-    { "key": "api",    "label": "socket.io / HTTP 受信口" },
-    { "key": "svc",    "label": "サーバ内部処理" },
-    { "key": "job",    "label": "常駐・定期処理（監視ビート）" },
-    { "key": "db",     "label": "テーブル" },
-    { "key": "ext",    "label": "外部（監視対象・通知先）" }
+    { "key": "ui",     "label": "Screen / user action" },
+    { "key": "app",    "label": "Front-end internals (socket.js)" },
+    { "key": "api",    "label": "socket.io / HTTP entry" },
+    { "key": "svc",    "label": "Server-side logic" },
+    { "key": "job",    "label": "Background jobs (heartbeat)" },
+    { "key": "db",     "label": "Tables" },
+    { "key": "ext",    "label": "External (targets & notification services)" }
   ]
 }

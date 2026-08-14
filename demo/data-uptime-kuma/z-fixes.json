@@ -1,18 +1,18 @@
 {
-  "_comment": "敵対的検証で判明した欠落ノードの補完。build.js は data ディレクトリの全 *.json を読むので、追加ノードはこのファイルに置く（patches.js は既存ノードの修正しかできない）。",
+  "_comment": "Fills in nodes the adversarial review found missing. build.js reads every *.json in the data directory, so added nodes go in this file (patches.js can only amend nodes that already exist).",
   "nodes": [
     {
       "id": "svc.status_page.getStatusDescription",
       "lane": "svc",
-      "label": "状態を説明文に変換",
-      "detail": "overallStatus の数値を RSS 用の定型文へ変換。-1=No Services、全UP=All Systems Operational、混在=Partially Degraded、全DOWN=Degraded、メンテ=Under maintenance",
+      "label": "Turn the status into a description",
+      "detail": "Turns the overallStatus number into the fixed RSS wording: -1 = No Services, all UP = All Systems Operational, mixed = Partially Degraded, all DOWN = Degraded, maintenance = Under maintenance",
       "ref": "server/model/status_page.js:247"
     },
     {
       "id": "ext.visitor_browser.open",
       "lane": "ext",
-      "label": "訪問者のブラウザ",
-      "detail": "独自ドメインのトップを開く主体。DNS の CNAME は事前設定であって、リクエストを送るのはブラウザ側",
+      "label": "Visitor's browser",
+      "detail": "Whoever opens the root of the custom domain. The DNS CNAME is set up beforehand; it is the browser that sends the request",
       "ref": "server/server.js:263"
     }
   ],
