@@ -7,73 +7,74 @@
 <style>
   /* 色は「役割」で持ち、テーマごとに値だけ差し替える。
      意味色（正常系/条件分岐/失敗）は透明度を変えて多用するので、rgb 3値も併せて持つ。
-     こうしておくと rgba(var(--main-rgb), .2) の形で全バリエーションがテーマに追従する */
+     こうしておくと rgba(var(--main-rgb), .2) の形で全バリエーションがテーマに追従する。
+     基準はライト（白地に濃いインク・全文字AA確保）。暗地の「発光」は白地では成立しないので、
+     光は影に置き換え、経路は「最も濃いインク」として立たせる */
   :root{
-    color-scheme: dark;
-    --bg:#070b18; --bg2:#0c1226; --panel:#111a33; --panel2:#0e1730;
-    --glow1:#16224a; --glow2:#0f2f47;                    /* body の放射グラデ */
-    --head-bg:linear-gradient(180deg,rgba(11,17,38,.92),rgba(11,17,38,.55));
-    --deck-bg:rgba(7,11,24,.55);
-    --surface:linear-gradient(180deg,rgba(14,23,48,.96),rgba(9,14,32,.96));  /* 右パネル */
-    --legend-bg:#070b18;
-    --elev1:linear-gradient(180deg,#111c38,#0d1730);     /* ノード */
-    --elev1-solid:#0d1730;                                /* ノードの混合ベース */
-    --elev3:rgba(8,13,30,.97);                            /* ツールチップ・ヒント */
-    --badge-bg:rgba(7,11,24,.9);
-    --shadow-strong:#000;
-    --line:#1f2c4d; --line2:#2b3c66;
-    --hair:rgba(120,150,220,.14);                         /* レーン境界 */
-    --grid:rgba(120,150,220,.10);                         /* 点グリッド */
-    --wash:rgba(255,255,255,.012);                        /* レーン帯 */
-    --scroll:#1d2b4e;
-    --chip:rgba(255,255,255,.04);
-    --fg:#e8eeff; --fg2:#9fb0d6; --fg3:#8493b3;  /* fg3 は旧 #65779f だと本文背景に対し 4.39:1 で AA 未達 */
-    --fg-strong:#fff;                                     /* 強調文字 */
-    --on-fill:#052b28;                                    /* 塗りチップの上に載る文字 */
-    --elabel-fg:#cfe4ff;                                  /* 経路ラベル */
-    --accent:#5b8cff; --accent2:#38e1d6;
-    --main:#38e1d6; --alt:#ffb648; --err:#ff6b7d; --new:#34d399;
-    --main-rgb:56,225,214; --alt-rgb:255,182,72; --err-rgb:255,107,125;
-    --accent-rgb:91,140,255; --new-rgb:52,211,153;
-    --glow-blur:5px;                                      /* 経路の発光量 */
-    --ui:#a78bfa; --app:#5b8cff; --api:#38bdf8; --svc:#22d3ee; --job:#a3e635;
-    --db:#f59e0b; --store:#fb923c; --mqtt:#f472b6; --device:#34d399; --hw:#94a3b8; --ext:#e879f9;
-    --rt:#c084fc; --net:#60a5fa;
-  }
-
-  /* ライト。暗地の「発光」は白地では成立しないので、光を影に置き換え、
-     経路は「最も濃いインク」として立たせる。意味色は暗地用より濃くする（AA 確保） */
-  :root[data-theme="light"]{
     color-scheme: light;
     --bg:#eef2f8; --bg2:#e6ecf5; --panel:#fff; --panel2:#f7f9fd;
-    --glow1:#dfe8f8; --glow2:#dff0f4;
+    --glow1:#dfe8f8; --glow2:#dff0f4;                    /* body の放射グラデ */
     --head-bg:linear-gradient(180deg,rgba(255,255,255,.94),rgba(255,255,255,.72));
     --deck-bg:rgba(255,255,255,.72);
-    --surface:linear-gradient(180deg,#fff,#fbfcfe);
+    --surface:linear-gradient(180deg,#fff,#fbfcfe);      /* 右パネル */
     --legend-bg:#fff;
-    --elev1:linear-gradient(180deg,#fff,#f6f9fd);
-    --elev1-solid:#fff;
-    --elev3:rgba(255,255,255,.98);
+    --elev1:linear-gradient(180deg,#fff,#f6f9fd);        /* ノード */
+    --elev1-solid:#fff;                                   /* ノードの混合ベース */
+    --elev3:rgba(255,255,255,.98);                        /* ツールチップ・ヒント */
     --badge-bg:rgba(255,255,255,.92);
     --shadow-strong:rgba(23,42,77,.34);
     --line:#dde5f0; --line2:#c4d0e2;
-    --hair:rgba(70,95,140,.18);
-    --grid:rgba(70,95,140,.16);
-    --wash:rgba(13,21,38,.016);
+    --hair:rgba(70,95,140,.18);                           /* レーン境界 */
+    --grid:rgba(70,95,140,.16);                           /* 点グリッド */
+    --wash:rgba(13,21,38,.016);                           /* レーン帯 */
     --scroll:#c4d0e2;
     --chip:rgba(13,21,38,.045);
-    --fg:#0d1526; --fg2:#47566f; --fg3:#5b6a80;
-    --fg-strong:#0d1526;
-    --on-fill:#fff;
-    --elabel-fg:#1c3d63;
+    --fg:#0d1526; --fg2:#47566f; --fg3:#5b6a80;  /* fg3 は #65779f だと本文背景に対し 4.39:1 で AA 未達 */
+    --fg-strong:#0d1526;                                  /* 強調文字 */
+    --on-fill:#fff;                                       /* 塗りチップの上に載る文字 */
+    --elabel-fg:#1c3d63;                                  /* 経路ラベル */
     --accent:#2563d9; --accent2:#00736d;
     --main:#00736d; --alt:#875800; --err:#b21f40; --new:#0a7c53;
     --main-rgb:0,115,109; --alt-rgb:135,88,0; --err-rgb:178,31,64;
     --accent-rgb:37,99,217; --new-rgb:10,124,83;
-    --glow-blur:0px;
+    --glow-blur:0px;                                      /* 経路の発光量（白地では影で代替） */
     --ui:#6a4bb4; --app:#2e59c7; --api:#006c94; --svc:#007080; --job:#4b7100;
     --db:#8a5600; --store:#964d00; --mqtt:#a62871; --device:#007651; --hw:#576478; --ext:#9625a6;
     --rt:#7b3fc4; --net:#2f5fc0;
+  }
+
+  /* ダーク（利用者が◐で選んだときだけ）。意味色はライトより明るく、経路は発光で立たせる */
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#070b18; --bg2:#0c1226; --panel:#111a33; --panel2:#0e1730;
+    --glow1:#16224a; --glow2:#0f2f47;
+    --head-bg:linear-gradient(180deg,rgba(11,17,38,.92),rgba(11,17,38,.55));
+    --deck-bg:rgba(7,11,24,.55);
+    --surface:linear-gradient(180deg,rgba(14,23,48,.96),rgba(9,14,32,.96));
+    --legend-bg:#070b18;
+    --elev1:linear-gradient(180deg,#111c38,#0d1730);
+    --elev1-solid:#0d1730;
+    --elev3:rgba(8,13,30,.97);
+    --badge-bg:rgba(7,11,24,.9);
+    --shadow-strong:#000;
+    --line:#1f2c4d; --line2:#2b3c66;
+    --hair:rgba(120,150,220,.14);
+    --grid:rgba(120,150,220,.10);
+    --wash:rgba(255,255,255,.012);
+    --scroll:#1d2b4e;
+    --chip:rgba(255,255,255,.04);
+    --fg:#e8eeff; --fg2:#9fb0d6; --fg3:#8493b3;
+    --fg-strong:#fff;
+    --on-fill:#052b28;
+    --elabel-fg:#cfe4ff;
+    --accent:#5b8cff; --accent2:#38e1d6;
+    --main:#38e1d6; --alt:#ffb648; --err:#ff6b7d; --new:#34d399;
+    --main-rgb:56,225,214; --alt-rgb:255,182,72; --err-rgb:255,107,125;
+    --accent-rgb:91,140,255; --new-rgb:52,211,153;
+    --glow-blur:5px;
+    --ui:#a78bfa; --app:#5b8cff; --api:#38bdf8; --svc:#22d3ee; --job:#a3e635;
+    --db:#f59e0b; --store:#fb923c; --mqtt:#f472b6; --device:#34d399; --hw:#94a3b8; --ext:#e879f9;
+    --rt:#c084fc; --net:#60a5fa;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -90,11 +91,12 @@
 
   /* ---------- header ---------- */
   header{
-    padding:12px 18px 10px; border-bottom:1px solid var(--line);
+    position:relative;                          /* 表示メニュー（viewpop）の基準 */
+    padding:9px 18px 8px; border-bottom:1px solid var(--line);
     background:var(--head-bg);
     backdrop-filter:blur(8px); flex:0 0 auto;
   }
-  .titlerow{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .titlerow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   h1{margin:0;font-size:19px;letter-spacing:.06em;font-weight:800}
   h1 .mark{
     background:linear-gradient(92deg,var(--accent2),var(--accent) 60%,var(--ui));
@@ -104,8 +106,7 @@
   .stat{color:var(--fg2);font-size:12px;margin-left:auto;display:flex;gap:14px;flex-wrap:wrap}
   .stat b{color:var(--fg);font-variant-numeric:tabular-nums}
 
-  /* ---------- controls ---------- */
-  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  /* ---------- controls（ヘッダーは1行。表示切替はメニューに畳む） ---------- */
   .ctl{
     display:inline-flex;align-items:center;gap:6px;
     background:var(--panel);border:1px solid var(--line2);color:var(--fg2);
@@ -117,22 +118,26 @@
   .ctl[disabled]{opacity:.4;cursor:default}
   input.search{
     background:var(--panel);border:1px solid var(--line2);color:var(--fg);
-    border-radius:9px;padding:6px 11px;font-size:12px;min-width:210px;font-family:inherit;outline:none;
+    border-radius:9px;padding:6px 11px;font-size:12px;font-family:inherit;outline:none;
   }
   input.search:focus{border-color:var(--accent)}
-  .sep{width:1px;height:20px;background:var(--line2);margin:0 3px}
-
-  /* ---------- buttons deck ---------- */
-  .deck{
-    flex:0 0 auto;max-height:26vh;overflow:auto;padding:10px 18px 12px;
-    border-bottom:1px solid var(--line);background:var(--deck-bg);
-    transition:max-height .25s, padding .25s;
+  /* 表示メニュー（全体マップに重ねる／エッジのラベル） */
+  .viewpop{
+    position:absolute;right:14px;top:calc(100% + 4px);z-index:45;min-width:210px;
+    background:var(--elev3);border:1px solid var(--line2);border-radius:11px;padding:6px;
+    box-shadow:0 18px 40px -14px var(--shadow-strong);display:none;
   }
-  .deck.folded{max-height:0;padding-top:0;padding-bottom:0;overflow:hidden;border-bottom-color:transparent}
-  .catgrid{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
-  .cat{min-width:190px;flex:1 1 210px}
+  .viewpop.open{display:block}
+  .viewpop .ctl{display:flex;width:100%;border-color:transparent;background:none;text-align:left}
+  .viewpop .ctl:hover{background:rgba(var(--accent-rgb),.10)}
+  .viewpop .ctl.on{background:rgba(var(--accent-rgb),.14);border-color:var(--accent)}
+
+  /* ---------- 一覧（右パネルの「一覧」タブ。旧デッキの中身をそのまま縦1列で持つ） ---------- */
+  #deck{flex:1 1 auto;overflow:auto;padding:8px 10px 14px;min-height:0}
+  .catgrid{display:block}
+  .cat{min-width:0}
   .cat h2{
-    margin:0 0 6px;font-size:10.5px;letter-spacing:.16em;font-weight:700;color:var(--fg3);
+    margin:10px 0 6px;font-size:10.5px;letter-spacing:.16em;font-weight:700;color:var(--fg3);
     display:flex;align-items:center;gap:6px;
   }
   .cat h2::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -161,8 +166,11 @@
 
   /* ---------- stage ---------- */
   .stage{flex:1 1 auto;display:flex;min-height:0}
+  /* 浮遊ボタン（プレイヤー・ズーム・折畳）の座標系。
+     overflow:auto の canvaswrap 内に絶対配置するとスクロールで一緒に流れるため、1枚外に置く */
+  .maparea{flex:1 1 auto;position:relative;display:flex;min-width:0;min-height:0}
   .canvaswrap{
-    flex:1 1 auto;position:relative;overflow:auto;
+    flex:1 1 auto;position:relative;overflow:auto;min-width:0;
     background-image:radial-gradient(circle at 1px 1px, var(--grid) 1px, transparent 0);
     background-size:26px 26px;
   }
@@ -240,14 +248,51 @@
     background:rgba(var(--new-rgb),.18);color:var(--new);border:1px solid rgba(var(--new-rgb),.4)}
   button.flowbtn .fchip.mod{background:rgba(var(--alt-rgb),.14);color:var(--alt);border-color:rgba(var(--alt-rgb),.4)}
 
-  /* ---------- side panel ---------- */
+  /* ---------- 図の上に浮く操作（プレイヤーバー・ズーム） ---------- */
+  /* 再生系は「選んだときだけ」下部中央に出す。未選択時に見えるボタンを最少にするため */
+  .player{
+    position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:30;
+    display:none;align-items:center;gap:7px;padding:7px 10px;max-width:calc(100% - 20px);
+    background:var(--elev3);border:1px solid var(--line2);border-radius:12px;
+    box-shadow:0 14px 34px -12px var(--shadow-strong);
+  }
+  .player.show{display:flex}
+  .player .prog{font-size:11px;color:var(--fg2);min-width:64px;text-align:center;
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  .zoomctl{position:absolute;right:14px;bottom:14px;z-index:30;display:flex;flex-direction:column;gap:6px}
+  .zoomctl .ctl{width:38px;height:34px;justify-content:center;padding:0;
+    background:var(--elev3);box-shadow:0 8px 22px -10px var(--shadow-strong)}
+  .zoomctl .ctl.fitb{font-size:10px;letter-spacing:.04em}
+  /* パネルの折畳（図を全幅にしたいとき） */
+  .edgefold{
+    position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:31;
+    width:18px;height:56px;border-radius:9px 0 0 9px;border:1px solid var(--line2);border-right:none;
+    background:var(--elev3);color:var(--fg3);cursor:pointer;font-size:11px;padding:0;
+  }
+  .edgefold:hover{color:var(--fg)}
+
+  /* ---------- side panel（一覧⇄手順のタブ切替） ---------- */
   aside{
     flex:0 0 clamp(280px,25vw,380px);border-left:1px solid var(--line);
     background:var(--surface);
     display:flex;flex-direction:column;min-height:0;
   }
+  #app.noaside aside{display:none}
+  .aside-top{flex:0 0 auto;padding:10px 10px 0}
+  .aside-top .search{display:block;width:100%;min-width:0}
+  .tabs{display:grid;grid-template-columns:1fr 1fr;margin-top:8px;border-bottom:1px solid var(--line)}
+  .tabs button{
+    background:none;border:none;border-bottom:2px solid transparent;color:var(--fg3);
+    font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 0;cursor:pointer;
+  }
+  .tabs button:hover{color:var(--fg2)}
+  .tabs button.on{color:var(--fg);border-bottom-color:var(--accent2)}
+  aside[data-tab="steps"] #deck{display:none}
+  aside[data-tab="list"] #apanel{display:none}
   /* #apanel が flex 縦積みでないと .steps の overflow:auto が効かず、手順が下まで読めなくなる */
   #apanel{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+  /* 手順タブ内の選択解除 */
+  .aclear{margin-top:8px;font-size:11px;padding:3px 10px}
   aside .ahead{padding:12px 14px 10px;border-bottom:1px solid var(--line);flex:0 0 auto}
   aside .ahead .t{font-size:14.5px;font-weight:800;line-height:1.35}
   aside .ahead .g{font-size:11px;color:var(--fg3);margin-top:3px}
@@ -319,9 +364,10 @@
   .legend a{text-decoration:none}
   .legend a:hover{color:var(--fg2)}
 
-  /* 紙に暗地は刷れないので、印刷時はライトの値を使う */
+  /* 紙に暗地は刷れないので、印刷時はライトの値を使う。
+     セレクタは :root[data-theme="dark"]（詳細度0,2,0）に勝つ形で書く */
   @media print{
-    :root{
+    :root, :root[data-theme="dark"]{
       --bg:#fff; --bg2:#fff; --panel:#fff; --panel2:#fff; --glow1:#fff; --glow2:#fff;
       --head-bg:#fff; --deck-bg:#fff; --surface:#fff; --legend-bg:#fff;
       --elev1:#fff; --elev1-solid:#fff; --elev3:#fff; --badge-bg:#fff;
@@ -331,9 +377,17 @@
       --main-rgb:0,115,109; --alt-rgb:135,88,0; --err-rgb:178,31,64; --new-rgb:10,124,83;
       --accent:#2563d9; --accent-rgb:37,99,217; --shadow-strong:rgba(0,0,0,.25); --glow-blur:0px;
     }
-    body{background:#fff}
-    .controls,.panes,#hint,.themebtn{display:none !important}
-    .deck{max-height:none}
+    body{background:#fff;overflow:visible}
+    #app{height:auto}
+    .panes,#hint,.themebtn,.player,.zoomctl,.edgefold,.aside-top{display:none !important}
+    /* 図の下に一覧と手順を全展開して刷る（タブ状態に関わらず両方出す） */
+    .stage{display:block}
+    .maparea{display:block}
+    .canvaswrap{overflow:visible;height:auto}
+    aside{border-left:none;border-top:1px solid var(--line)}
+    aside[data-tab="steps"] #deck{display:block}
+    aside[data-tab="list"] #apanel{display:flex}
+    #deck,#apanel .steps{overflow:visible}
   }
 
   /* OS の「視差効果を減らす」設定では演出を止める（機能は全て残す） */
@@ -359,36 +413,38 @@
   /* ---------- スマホ：1画面1役（操作一覧 / 図 / 手順 を下部で切り替える） ----------
      縦積みのままだと図の領域が 375×157px しか残らず、倍率が下限に張り付いて
      ラベルが 2px 未満になる＝このツールの中心である図が「点の霧」になるため、
-     同時表示を捨てて図に全高を渡す */
+     同時表示を捨てて図に全高を渡す。一覧・手順はどちらもパネル（aside）のタブなので、
+     ペイン切替はタブ切替と同じ状態を共有する */
   @media (max-width:700px){
     #app{height:100vh; height:100dvh}          /* iOS の URL バー分のズレを消す */
     .titlerow .stat{margin-left:0;width:100%}
-    .controls{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;
-      scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px}
-    .controls::-webkit-scrollbar{display:none}
-    .controls>*{flex:0 0 auto}
-    #btnFold{display:none}                     /* デッキはペインになるので不要 */
+    .edgefold{display:none}                    /* パネルはペインになるので折畳は不要 */
+    .tabs{display:none}                        /* タブは下部のペイン切替が兼ねる（二重の切替を出さない） */
+    aside[data-tab="steps"] .aside-top{display:none}  /* 検索は一覧ペインでだけ */
     .stage{flex-direction:column;flex:1 1 auto;min-height:0}
-    .deck{max-height:none;flex:1 1 auto;min-height:0;border-bottom:none}
-    .deck.folded{max-height:none;padding:10px 18px 12px}
-    .canvaswrap,aside{min-height:0}
-    .deck,.canvaswrap,aside{display:none}
-    #app[data-pane="deck"]  .deck      {display:block;flex:1 1 auto}
-    #app[data-pane="map"]   .canvaswrap{display:block;flex:1 1 auto}
-    #app[data-pane="steps"] aside      {display:flex;flex:1 1 auto;border-left:none;border-top:none}
+    .maparea,aside{min-height:0}
+    .maparea,aside{display:none}
+    #app[data-pane="map"]   .maparea{display:flex;flex:1 1 auto}
+    #app[data-pane="deck"]  aside,
+    #app[data-pane="steps"] aside{display:flex;flex:1 1 auto;flex-basis:auto;border-left:none;border-top:none;width:100%}
     .panes{display:grid;grid-template-columns:repeat(3,1fr);
       border-top:1px solid var(--line);background:var(--panel2);flex:0 0 auto}
     .pane{min-height:50px;font-family:inherit;font-size:12.5px;font-weight:700;
       background:none;border:none;border-top:2px solid transparent;color:var(--fg3);cursor:pointer}
     .pane[aria-pressed="true"]{color:var(--fg);border-top-color:var(--accent2);background:rgba(var(--main-rgb),.08)}
     .legend{max-height:22vh;overflow:auto}
-    aside{flex:1 1 auto}
+    /* 中央のプレイヤーと右下のズームが 375px 幅で重ならないよう、ズームを上へ逃がす */
+    .zoomctl{bottom:76px}
+    .player{bottom:10px;gap:5px;padding:6px 8px}
+    .player .prog{min-width:48px}
   }
 
   /* ---------- タッチ ---------- */
   .canvaswrap{touch-action:none}               /* 1本指パン・2本指ピンチを JS が持つ */
   @media (pointer:coarse){
     .ctl{padding:9px 12px;min-height:40px}
+    .zoomctl .ctl{width:44px;height:40px;padding:0}
+    .tabs button{min-height:40px}
     input.search{min-height:40px}
     button.flowbtn{padding:11px 12px 11px 26px;min-height:44px}
     .step{padding:10px 8px;min-height:44px}
@@ -402,43 +458,53 @@
   <header>
     <div class="titlerow">
       <h1><span class="mark">処理フロー全図</span></h1>
-      <span class="sub">ボタンを押すと、そのルートだけが順番に光ります</span>
+      <span class="sub">一覧から選ぶと、そのルートだけが順番に光ります</span>
       <span class="stat" id="stat"></span>
+      <button class="ctl" id="btnView" aria-haspopup="true" aria-expanded="false">表示 ▾</button>
     </div>
-    <div class="controls">
-      <input class="search" id="q" placeholder="検索…">
+    <div class="viewpop" id="viewpop">
       <button class="ctl" id="btnOnly">全体マップに重ねる</button>
       <button class="ctl" id="btnLabels">エッジのラベル</button>
-      <div class="sep"></div>
-      <button class="ctl" id="btnPlay">▶ 順に再生</button>
-      <button class="ctl" id="btnPrev">◀ 前</button>
-      <button class="ctl" id="btnNext">次 ▶</button>
-      <select class="ctl" id="speed" title="再生速度">
-        <option value="1400">ゆっくり</option>
-        <option value="850" selected>標準</option>
-        <option value="420">はやい</option>
-      </select>
-      <div class="sep"></div>
-      <button class="ctl" id="btnFit">全体を表示</button>
-      <button class="ctl" id="btnZoomOut">−</button>
-      <button class="ctl" id="btnZoomIn">＋</button>
-      <button class="ctl" id="btnClear">選択解除</button>
-      <button class="ctl" id="btnFold">操作一覧を畳む</button>
     </div>
   </header>
 
-  <div class="deck" id="deck"></div>
-
   <div class="stage">
-    <div class="canvaswrap" id="wrap">
-      <div class="canvas" id="canvas">
-        <div class="zoomlayer" id="zoomlayer">
-          <svg class="edges" id="edges"></svg>
+    <div class="maparea">
+      <div class="canvaswrap" id="wrap">
+        <div class="canvas" id="canvas">
+          <div class="zoomlayer" id="zoomlayer">
+            <svg class="edges" id="edges"></svg>
+          </div>
         </div>
+        <div id="lanebar"></div>
       </div>
-      <div id="lanebar"></div>
+      <div class="player" id="player">
+        <button class="ctl" id="btnPlay">▶ 順に再生</button>
+        <button class="ctl" id="btnPrev">◀ 前</button>
+        <button class="ctl" id="btnNext">次 ▶</button>
+        <select class="ctl" id="speed" title="再生速度">
+          <option value="1400">ゆっくり</option>
+          <option value="850" selected>標準</option>
+          <option value="420">はやい</option>
+        </select>
+        <span class="prog" id="prog"></span>
+      </div>
+      <div class="zoomctl">
+        <button class="ctl" id="btnZoomIn" title="拡大">＋</button>
+        <button class="ctl" id="btnZoomOut" title="縮小">−</button>
+        <button class="ctl fitb" id="btnFit">全体</button>
+      </div>
+      <button class="edgefold" id="btnAside">⇥</button>
     </div>
-    <aside>
+    <aside id="aside" data-tab="list">
+      <div class="aside-top">
+        <input class="search" id="q" placeholder="検索…">
+        <nav class="tabs" role="tablist">
+          <button id="tabList" class="on" role="tab" aria-selected="true">一覧</button>
+          <button id="tabSteps" role="tab" aria-selected="false">手順</button>
+        </nav>
+      </div>
+      <div id="deck"></div>
       <div id="apanel"></div>
     </aside>
   </div>
@@ -453,7 +519,7 @@
 <div id="tip"></div>
 
 <script>
-const DATA = {"meta":{"title":"Conduit（RealWorld Flask）処理フロー全図","subject":{"name":"flask-realworld-example-app","url":"https://github.com/gothinkster/flask-realworld-example-app","license":"MIT © 2017 Mohamed Aziz Knani","commit":"4b95fb2"},"catOrder":["認証・アカウント","プロフィール","記事","コメント・タグ"],"stamp":{"builtAt":"2026-08-13T17:19:21.438Z","refTotal":59,"refOk":59,"refScope":"node","commit":"e2273dd","edgeTotal":130}},"nodes":[{"id":"api.articles.get_articles","lane":"api","label":"記事一覧取得","detail":"GET /api/articles。tag/author/favorited/limit/offsetで絞込み可。認証任意(@jwt_optional)","ref":"conduit/articles/views.py:28"},{"id":"api.articles.make_article","lane":"api","label":"記事作成","detail":"POST /api/articles。認証必須。未登録タグは新規作成し記事に紐付けてから保存","ref":"conduit/articles/views.py:43"},{"id":"api.articles.update_article","lane":"api","label":"記事更新","detail":"PUT /api/articles/\u003cslug>。slug×投稿者本人で検索、未検出時article_not_found(404)","ref":"conduit/articles/views.py:61"},{"id":"api.articles.delete_article","lane":"api","label":"記事削除","detail":"DELETE /api/articles/\u003cslug>。slug×投稿者本人で検索するが未検出チェックが無い","ref":"conduit/articles/views.py:72"},{"id":"api.articles.get_article","lane":"api","label":"記事取得","detail":"GET /api/articles/\u003cslug>。未検出時article_not_found(404)。認証任意でfavoritedは本人視点","ref":"conduit/articles/views.py:81"},{"id":"api.articles.favorite_an_article","lane":"api","label":"お気に入り登録","detail":"POST .../favorite。認証必須。記事未検出時article_not_found(404)","ref":"conduit/articles/views.py:91"},{"id":"api.articles.unfavorite_an_article","lane":"api","label":"お気に入り解除","detail":"DELETE .../favorite。認証必須。記事未検出時article_not_found(404)","ref":"conduit/articles/views.py:104"},{"id":"api.articles.articles_feed","lane":"api","label":"フィード取得","detail":"GET /api/articles/feed。認証必須。フォロー中著者の記事を作成日時降順で取得","ref":"conduit/articles/views.py:118"},{"id":"api.articles.get_tags","lane":"api","label":"タグ一覧取得","detail":"GET /api/tags。認証不要。marshal_withを使わずjsonifyで{tags:[...]}を直接返す","ref":"conduit/articles/views.py:128"},{"id":"api.articles.get_comments","lane":"api","label":"コメント一覧取得","detail":"GET .../comments。認証デコレータなし(未ログイン可)。記事未検出時article_not_found(404)","ref":"conduit/articles/views.py:139"},{"id":"api.articles.make_comment_on_article","lane":"api","label":"コメント作成","detail":"POST .../comments。認証必須。記事未検出時article_not_found(404)","ref":"conduit/articles/views.py:150"},{"id":"api.articles.delete_comment_on_article","lane":"api","label":"コメント削除","detail":"DELETE .../comments/\u003ccid>。所有者チェックはfilter_by埋め込みでcomment_not_owned例外は未使用","ref":"conduit/articles/views.py:161"},{"id":"svc.auth.jwt_required","lane":"svc","label":"JWT認証必須","detail":"flask_jwt_extended の @jwt_required。リポジトリ内に定義は無く各 views で直輸入。ref は代表的な適用行","ref":"conduit/user/views.py:44"},{"id":"svc.crud.save","lane":"svc","label":"レコード保存","detail":"CRUDMixin.save。db.session.addし既定でcommitする全モデル共通の保存処理","ref":"conduit/extensions.py:27"},{"id":"svc.crud.update","lane":"svc","label":"CRUD更新","detail":"CRUDMixin.update。kwargsを各属性にsetattrし、commit=True既定で内部でsave()も呼ぶ","ref":"conduit/extensions.py:21"},{"id":"svc.crud.delete","lane":"svc","label":"レコード削除","detail":"CRUDMixin.delete。db.session.deleteしcommitする全モデル共通の削除処理","ref":"conduit/extensions.py:34"},{"id":"svc.schema.article_schema","lane":"svc","label":"記事スキーマ","detail":"ArticleSchema。use_kwargsで入力load、marshal_withで出力dump(article封筒)に使用","ref":"conduit/articles/serializers.py:85"},{"id":"svc.schema.articles_schema","lane":"svc","label":"記事一覧スキーマ","detail":"ArticleSchemas(many=True)。articles配列とarticlesCountに封筒化して返す","ref":"conduit/articles/serializers.py:86"},{"id":"svc.schema.comment_schema","lane":"svc","label":"コメントスキーマ","detail":"CommentSchema。use_kwargsで入力load、marshal_withで出力dump(comment封筒)に使用","ref":"conduit/articles/serializers.py:87"},{"id":"svc.schema.comments_schema","lane":"svc","label":"コメント一覧スキーマ","detail":"CommentsSchema(many=True)。comments配列に封筒化して返す","ref":"conduit/articles/serializers.py:88"},{"id":"svc.article.__init__","lane":"svc","label":"Article生成","detail":"Articleコンストラクタ。slug未指定ならtitleをslugify、authorに投稿者プロフィールを設定","ref":"conduit/articles/models.py:72"},{"id":"svc.tags.__init__","lane":"svc","label":"Tags生成","detail":"Tagsコンストラクタ。既存タグが無い場合のみ呼ばれ直後にsave()される","ref":"conduit/articles/models.py:27"},{"id":"svc.comment.__init__","lane":"svc","label":"Comment生成","detail":"Commentコンストラクタ。article/author(投稿者プロフィール)/bodyを紐付けて生成","ref":"conduit/articles/models.py:45"},{"id":"svc.article.favourite","lane":"svc","label":"お気に入り追加","detail":"is_favourite判定後、未登録ならfavoritersに追加しTrue、既存ならFalse(戻り値は未使用)","ref":"conduit/articles/models.py:76"},{"id":"svc.article.unfavourite","lane":"svc","label":"お気に入り削除","detail":"is_favourite判定後、登録済みならfavoritersから削除しTrue、未登録ならFalse(戻り値は未使用)","ref":"conduit/articles/models.py:82"},{"id":"svc.article.is_favourite","lane":"svc","label":"お気に入り判定","detail":"favoriter_assocをprofile.idで検索しカウントが1以上かを判定","ref":"conduit/articles/models.py:88"},{"id":"svc.article.add_tag","lane":"svc","label":"タグ付与","detail":"tagListに未登録のタグのみtag_assoc経由で追加、既存ならFalseで何もしない","ref":"conduit/articles/models.py:91"},{"id":"svc.article.favoritesCount","lane":"svc","label":"お気に入り数算出","detail":"favoriters.all()の件数を返すプロパティ。記事シリアライズ時に常に参照される","ref":"conduit/articles/models.py:104"},{"id":"svc.article.favorited","lane":"svc","label":"本人お気に入り判定","detail":"current_user在圈時のみ本人がお気に入り済みか判定。未ログイン時は常にFalse","ref":"conduit/articles/models.py:108"},{"id":"svc.error.article_not_found","lane":"svc","label":"記事未検出エラー","detail":"InvalidUsage.article_not_found()。404 'Article not found'を送出","ref":"conduit/exceptions.py:42"},{"id":"db.article","lane":"db","label":"articleテーブル","detail":"記事本体(slug/title/body等)。author_idでuserprofileに外部キー","ref":"conduit/articles/models.py:50"},{"id":"db.comment","lane":"db","label":"commentテーブル","detail":"コメント本体。article_id/author_id(userprofile)で外部キー","ref":"conduit/articles/models.py:35"},{"id":"db.tags","lane":"db","label":"tagsテーブル","detail":"タグ名マスタ(tagname)。記事とはtag_assocで多対多","ref":"conduit/articles/models.py:22"},{"id":"db.favoriter_assoc","lane":"db","label":"お気に入り関連","detail":"favoritor_assoc。userprofile↔articleの多対多お気に入り関連テーブル","ref":"conduit/articles/models.py:12"},{"id":"db.tag_assoc","lane":"db","label":"タグ関連テーブル","detail":"tag_assoc。tags↔articleの多対多タグ付け関連テーブル","ref":"conduit/articles/models.py:16"},{"id":"db.users","lane":"db","label":"usersテーブル","detail":"username/email(共にunique)・password(bcryptハッシュ)・bio・image等を保持","ref":"conduit/user/models.py:11"},{"id":"db.userprofile","lane":"db","label":"userprofileテーブル","detail":"users.idを参照するuser_id(1:1)。username/bio/image/emailはUserへのプロパティ委譲","ref":"conduit/profile/models.py:13"},{"id":"api.user.register_user","lane":"api","label":"アカウント登録","detail":"POST /api/users。username/email/passwordを受け取りUser+UserProfileを作成しJWTを発行する","ref":"conduit/user/views.py:20"},{"id":"api.user.login_user","lane":"api","label":"ログイン","detail":"POST /api/users/login。emailでUser検索しcheck_passwordで照合、成功時にfreshトークンを発行","ref":"conduit/user/views.py:34"},{"id":"api.user.get_user","lane":"api","label":"自分の情報取得","detail":"GET /api/user。jwt_required必須。current_userにAuthorizationヘッダーのtokenを再設定して返す","ref":"conduit/user/views.py:46"},{"id":"api.user.update_user","lane":"api","label":"プロフィール更新","detail":"PUT /api/user。jwt_required必須。passwordがあれば再ハッシュ化し、残りのkwargsでupdate","ref":"conduit/user/views.py:57"},{"id":"api.profiles.get_profile","lane":"api","label":"プロフィール取得","detail":"GET /api/profiles/\u003cusername>。jwt_optional。usernameでUser検索し見つからなければ404","ref":"conduit/profile/views.py:17"},{"id":"api.profiles.follow_user","lane":"api","label":"フォローする","detail":"POST /api/profiles/\u003cusername>/follow。jwt_required必須。current_user.profileでfollowを実行","ref":"conduit/profile/views.py:27"},{"id":"api.profiles.unfollow_user","lane":"api","label":"フォロー解除","detail":"DELETE /api/profiles/\u003cusername>/follow。jwt_required必須。current_user.profileでunfollowを実行","ref":"conduit/profile/views.py:39"},{"id":"svc.auth.jwt_optional","lane":"svc","label":"JWT検証任意","detail":"@jwt_optional。トークンがあれば検証しcurrent_userを設定、なくても処理は継続する","ref":"conduit/user/views.py:31"},{"id":"svc.auth.create_access_token","lane":"svc","label":"JWT発行","detail":"flask_jwt_extendedのcreate_access_token。register/loginでトークン発行(loginはfresh=True)","ref":"conduit/user/views.py:23"},{"id":"svc.schema.user_schema","lane":"svc","label":"UserSchema","detail":"@use_kwargs/@marshal_withで使用。リクエストのuserラップを外し、レスポンスをuserでラップして返す","ref":"conduit/user/serializers.py:6"},{"id":"svc.schema.profile_schema","lane":"svc","label":"ProfileSchema","detail":"@marshal_withで使用。profileラップの解除/付与とfollowingフラグの出力を担う","ref":"conduit/profile/serializers.py:4"},{"id":"svc.user.init","lane":"svc","label":"User生成","detail":"User.__init__。username/emailを設定し、passwordがあればset_password、なければNoneのまま","ref":"conduit/user/models.py:21"},{"id":"svc.user.set_password","lane":"svc","label":"パスワード設定","detail":"bcrypt.generate_password_hashでハッシュ化して保存。registerとupdate-userの両方で使用","ref":"conduit/user/models.py:29"},{"id":"svc.user.check_password","lane":"svc","label":"パスワード照合","detail":"bcrypt.check_password_hashで照合。falseなら呼び出し元でuser_not_foundにまとめられる","ref":"conduit/user/models.py:33"},{"id":"svc.profile.init","lane":"svc","label":"UserProfile生成","detail":"UserProfile.__init__。保存済みUserを紐づけて生成(registerでUser.save()後に呼ばれる)","ref":"conduit/profile/models.py:27"},{"id":"svc.profile.follow","lane":"svc","label":"フォロー実行","detail":"self以外かつ未フォローならfollowsに追加してTrue、それ以外は何もせずFalse(冪等)","ref":"conduit/profile/models.py:33"},{"id":"svc.profile.unfollow","lane":"svc","label":"フォロー解除実行","detail":"self以外かつフォロー中ならfollowsから削除してTrue、それ以外は何もせずFalse(冪等)","ref":"conduit/profile/models.py:39"},{"id":"svc.profile.is_following","lane":"svc","label":"フォロー中か判定","detail":"followers_assocをfollowed_by=profile.idで絞り込みcountで判定。follow/unfollow/followingが使用","ref":"conduit/profile/models.py:30"},{"id":"svc.profile.following","lane":"svc","label":"followingフラグ","detail":"current_userがいればcurrent_user.profile.is_followingで判定、いなければ常にFalse","ref":"conduit/profile/models.py:46"},{"id":"svc.exceptions.user_not_found","lane":"svc","label":"user_not_foundエラー","detail":"InvalidUsage.user_not_found。404 'User not found' を返す例外を生成してraise","ref":"conduit/exceptions.py:30"},{"id":"svc.exceptions.user_already_registered","lane":"svc","label":"重複登録エラー","detail":"InvalidUsage.user_already_registered。422 'User already registered' を返す(IntegrityError捕捉時)","ref":"conduit/exceptions.py:34"},{"id":"db.followers_assoc","lane":"db","label":"followers_assoc中間表","detail":"follower/followed_byの2列でuserprofile.user_id同士の多対多フォロー関係を保持","ref":"conduit/profile/models.py:7"}],"edges":[{"from":"api.articles.get_articles","to":"db.article","label":"GET /api/articles","kind":"http"},{"from":"api.articles.get_articles","to":"db.tags","label":"tag指定時に絞込み","kind":"db"},{"from":"api.articles.get_articles","to":"db.userprofile","label":"author指定時にauthorへ結合","kind":"db"},{"from":"db.userprofile","to":"db.users","label":"usernameで絞込み","kind":"db"},{"from":"api.articles.get_articles","to":"db.favoriter_assoc","label":"favorited指定時に結合","kind":"db"},{"from":"db.favoriter_assoc","to":"db.users","label":"usernameで絞込み","kind":"db"},{"from":"api.articles.get_articles","to":"svc.schema.articles_schema","label":"一覧をシリアライズ","kind":"call"},{"from":"api.articles.articles_feed","to":"svc.auth.jwt_required","label":"GET /api/articles/feed","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.articles_feed","label":"認証OK","kind":"call"},{"from":"db.userprofile","to":"db.article","label":"作成日時降順で取得","kind":"db"},{"from":"api.articles.articles_feed","to":"svc.schema.articles_schema","label":"一覧をシリアライズ","kind":"call"},{"from":"api.articles.get_article","to":"db.article","label":"slugで記事検索","kind":"http"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","kind":"error"},{"from":"api.articles.get_article","to":"svc.schema.article_schema","label":"記事をシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"},{"from":"api.articles.make_article","to":"svc.auth.jwt_required","label":"POST /api/articles","kind":"http"},{"from":"api.articles.make_article","to":"svc.article.__init__","label":"記事オブジェクトを生成","kind":"call"},{"from":"svc.article.__init__","to":"db.userprofile","label":"投稿者プロフィールを紐付け","kind":"db"},{"from":"api.articles.make_article","to":"db.tags","label":"tagList指定時タグを検索","kind":"db"},{"from":"db.tags","to":"svc.tags.__init__","label":"未登録タグは新規生成","kind":"call"},{"from":"svc.tags.__init__","to":"svc.crud.save","label":"新規タグを保存","kind":"call"},{"from":"api.articles.make_article","to":"svc.article.add_tag","label":"記事にタグを付与","kind":"call"},{"from":"svc.article.add_tag","to":"db.tag_assoc","label":"記事とタグの関連を追加","kind":"db"},{"from":"api.articles.make_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"記事レコードをコミット","kind":"db"},{"from":"api.articles.update_article","to":"svc.auth.jwt_required","label":"PUT /api/articles/\u003cslug>","kind":"http"},{"from":"api.articles.update_article","to":"db.article","label":"slug×本人所有で記事検索","kind":"db"},{"from":"api.articles.update_article","to":"svc.crud.update","label":"更新項目を反映","kind":"call"},{"from":"svc.crud.update","to":"svc.crud.save","label":"commit既定で内部保存","kind":"call"},{"from":"api.articles.update_article","to":"svc.crud.save","label":"直後に明示保存(冗長)","kind":"call"},{"from":"api.articles.delete_article","to":"svc.auth.jwt_required","label":"DELETE /api/articles/\u003cslug>","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.delete_article","label":"認証OK","kind":"call"},{"from":"api.articles.delete_article","to":"db.article","label":"slug×本人所有で記事検索","kind":"db"},{"from":"api.articles.delete_article","to":"svc.crud.delete","label":"取得した記事を削除","kind":"call"},{"from":"svc.crud.delete","to":"db.article","label":"記事レコードを削除","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.auth.jwt_required","label":"POST .../favorite","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.favorite_an_article","label":"認証OK","kind":"call"},{"from":"api.articles.favorite_an_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.article.favourite","label":"お気に入りに追加","kind":"call"},{"from":"svc.article.favourite","to":"svc.article.is_favourite","label":"既に登録済みか判定","kind":"call"},{"from":"svc.article.is_favourite","to":"db.favoriter_assoc","label":"お気に入り関連を検索","kind":"db"},{"from":"svc.article.favourite","to":"db.favoriter_assoc","label":"未登録なら関連を追加","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"api.articles.favorite_an_article","to":"svc.schema.article_schema","label":"結果をシリアライズ","kind":"call"},{"from":"api.articles.unfavorite_an_article","to":"svc.auth.jwt_required","label":"DELETE .../favorite","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.unfavorite_an_article","label":"認証OK","kind":"call"},{"from":"api.articles.unfavorite_an_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"api.articles.unfavorite_an_article","to":"svc.article.unfavourite","label":"お気に入りを解除","kind":"call"},{"from":"svc.article.unfavourite","to":"svc.article.is_favourite","label":"現在登録済みか判定","kind":"call"},{"from":"svc.article.unfavourite","to":"db.favoriter_assoc","label":"登録済みなら関連を削除","kind":"db"},{"from":"api.articles.unfavorite_an_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"api.articles.unfavorite_an_article","to":"svc.schema.article_schema","label":"結果をシリアライズ","kind":"call"},{"from":"api.articles.get_comments","to":"db.article","label":"GET .../comments","kind":"http"},{"from":"api.articles.get_comments","to":"db.comment","label":"記事のコメント一覧を取得","kind":"db"},{"from":"api.articles.get_comments","to":"svc.schema.comments_schema","label":"一覧をシリアライズ","kind":"call"},{"from":"api.articles.make_comment_on_article","to":"svc.auth.jwt_required","label":"POST .../comments","kind":"http"},{"from":"api.articles.make_comment_on_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"api.articles.make_comment_on_article","to":"svc.comment.__init__","label":"コメントを生成","kind":"call"},{"from":"svc.comment.__init__","to":"db.userprofile","label":"投稿者プロフィールを紐付け","kind":"db"},{"from":"api.articles.make_comment_on_article","to":"svc.crud.save","label":"コメントを保存","kind":"call"},{"from":"svc.crud.save","to":"db.comment","label":"コメントレコードをコミット","kind":"db"},{"from":"api.articles.delete_comment_on_article","to":"svc.auth.jwt_required","label":"DELETE .../comments/\u003ccid>","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.delete_comment_on_article","label":"認証OK","kind":"call"},{"from":"api.articles.delete_comment_on_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"api.articles.delete_comment_on_article","to":"db.comment","label":"id×本人投稿でコメント検索","kind":"db"},{"from":"api.articles.delete_comment_on_article","to":"svc.crud.delete","label":"取得したコメントを削除","kind":"call"},{"from":"svc.crud.delete","to":"db.comment","label":"コメントレコードを削除","kind":"db"},{"from":"api.articles.get_tags","to":"db.tags","label":"全タグを取得","kind":"http"},{"from":"api.user.register_user","to":"svc.schema.user_schema","label":"POST /api/users受信","kind":"http"},{"from":"svc.schema.user_schema","to":"api.user.register_user","label":"body/userをデシリアライズ","kind":"call"},{"from":"api.user.register_user","to":"svc.user.init","label":"User(username,email,password)生成","kind":"call"},{"from":"svc.user.init","to":"svc.user.set_password","label":"bcryptでパスワードハッシュ化","kind":"call"},{"from":"svc.user.set_password","to":"svc.crud.save","label":"User.save()","kind":"call"},{"from":"svc.crud.save","to":"db.users","label":"INSERT users","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_already_registered","label":"username/email重複(IntegrityError)","kind":"error"},{"from":"db.users","to":"svc.profile.init","label":"保存成功→UserProfile生成","kind":"call"},{"from":"svc.profile.init","to":"svc.crud.save","label":"UserProfile.save()","kind":"call"},{"from":"svc.crud.save","to":"db.userprofile","label":"INSERT userprofile","kind":"db"},{"from":"db.userprofile","to":"svc.auth.create_access_token","label":"JWTトークン発行","kind":"call"},{"from":"svc.auth.create_access_token","to":"svc.schema.user_schema","label":"userをシリアライズ","kind":"call"},{"from":"api.user.login_user","to":"svc.auth.jwt_optional","label":"POST /api/users/login受信","kind":"http"},{"from":"svc.auth.jwt_optional","to":"svc.schema.user_schema","label":"認証任意で通過","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.login_user","label":"email/passwordをデシリアライズ","kind":"call"},{"from":"api.user.login_user","to":"db.users","label":"emailでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当ユーザーなし","kind":"error"},{"from":"db.users","to":"svc.user.check_password","label":"該当ユーザーあり→パスワード照合","kind":"call"},{"from":"svc.user.check_password","to":"svc.exceptions.user_not_found","label":"パスワード不一致","kind":"error"},{"from":"svc.user.check_password","to":"svc.auth.create_access_token","label":"照合成功→freshトークン発行","kind":"call"},{"from":"api.user.get_user","to":"svc.auth.jwt_required","label":"GET /api/user受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.user.get_user","label":"検証OK→current_user解決","kind":"call"},{"from":"api.user.get_user","to":"svc.schema.user_schema","label":"Authorizationヘッダーのtokenを再設定しシリアライズ","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.get_user","label":"レスポンス返却","kind":"call"},{"from":"api.user.update_user","to":"svc.auth.jwt_required","label":"PUT /api/user受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.user_schema","label":"検証OK→ボディをデシリアライズ","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.update_user","label":"デシリアライズ済みkwargs取得","kind":"call"},{"from":"api.user.update_user","to":"svc.user.set_password","label":"passwordが含まれる場合のみ再ハッシュ化","kind":"call"},{"from":"svc.user.set_password","to":"svc.crud.update","label":"残りのkwargsで属性更新","kind":"call"},{"from":"api.user.update_user","to":"svc.crud.update","label":"passwordなしはkwargsそのまま属性更新","kind":"call"},{"from":"db.users","to":"svc.schema.user_schema","label":"更新後のuserをシリアライズ","kind":"call"},{"from":"api.profiles.get_profile","to":"svc.auth.jwt_optional","label":"GET受信","kind":"http"},{"from":"svc.auth.jwt_optional","to":"api.profiles.get_profile","label":"認証任意で通過","kind":"call"},{"from":"api.profiles.get_profile","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"db.userprofile","label":"見つかった→関連profile取得(backref)","kind":"db"},{"from":"db.userprofile","to":"svc.schema.profile_schema","label":"シリアライズ開始","kind":"call"},{"from":"svc.schema.profile_schema","to":"svc.profile.following","label":"following属性を評価","kind":"call"},{"from":"svc.profile.following","to":"svc.profile.is_following","label":"current_user起点でフォロー判定","kind":"call"},{"from":"svc.profile.is_following","to":"api.profiles.get_profile","label":"レスポンス返却","kind":"call"},{"from":"api.profiles.follow_user","to":"svc.auth.jwt_required","label":"POST受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.profiles.follow_user","label":"検証OK","kind":"call"},{"from":"api.profiles.follow_user","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.profile.follow","label":"見つかった→フォロー実行","kind":"call"},{"from":"svc.profile.follow","to":"svc.profile.is_following","label":"自分自身/既フォローかを判定","kind":"call"},{"from":"svc.profile.is_following","to":"svc.crud.save","label":"followers_assocに追加しcurrent_userのprofileを保存","kind":"call"},{"from":"svc.crud.save","to":"db.followers_assoc","label":"INSERT follower関係","kind":"db"},{"from":"db.followers_assoc","to":"svc.schema.profile_schema","label":"対象userのprofileをシリアライズ","kind":"call"},{"from":"svc.schema.profile_schema","to":"api.profiles.follow_user","label":"レスポンス返却","kind":"call"},{"from":"api.profiles.unfollow_user","to":"svc.auth.jwt_required","label":"DELETE受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.profiles.unfollow_user","label":"検証OK","kind":"call"},{"from":"api.profiles.unfollow_user","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.profile.unfollow","label":"見つかった→フォロー解除実行","kind":"call"},{"from":"svc.profile.unfollow","to":"svc.profile.is_following","label":"現在フォロー中かを判定","kind":"call"},{"from":"svc.schema.profile_schema","to":"api.profiles.unfollow_user","label":"レスポンス返却","kind":"call"},{"from":"svc.auth.jwt_required","to":"svc.schema.article_schema","label":"POSTボディをデシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"api.articles.make_article","label":"デシリアライズ済み引数で実行","kind":"call"},{"from":"svc.schema.article_schema","to":"api.articles.update_article","label":"デシリアライズ済み引数で実行","kind":"call"},{"from":"svc.auth.jwt_required","to":"svc.schema.comment_schema","label":"POSTボディをデシリアライズ","kind":"call"},{"from":"svc.schema.comment_schema","to":"api.articles.make_comment_on_article","label":"デシリアライズ済み引数で実行","kind":"call"},{"from":"api.articles.articles_feed","to":"db.followers_assoc","label":"current_user.profile.follows で結合","kind":"db"},{"from":"db.followers_assoc","to":"db.userprofile","label":"フォロー中プロフィールへ結合","kind":"db"}],"flows":[{"id":"list-articles","title":"記事一覧を見る","category":"記事","trigger":"GET /api/articles","steps":[{"from":"api.articles.get_articles","to":"db.article","label":"GET /api/articles","kind":"http"},{"from":"api.articles.get_articles","to":"db.tags","label":"tag指定時に絞込み","branch":"alt","kind":"db"},{"from":"api.articles.get_articles","to":"db.userprofile","label":"author指定時にauthorへ結合","branch":"alt","kind":"db"},{"from":"db.userprofile","to":"db.users","label":"usernameで絞込み","branch":"alt","kind":"db"},{"from":"api.articles.get_articles","to":"db.favoriter_assoc","label":"favorited指定時に結合","branch":"alt","kind":"db"},{"from":"db.favoriter_assoc","to":"db.users","label":"usernameで絞込み","branch":"alt","kind":"db"},{"from":"api.articles.get_articles","to":"svc.schema.articles_schema","label":"一覧をシリアライズ","kind":"call"}],"notes":["tag/author/favoritedはいずれも任意で、指定された条件だけクエリに追加される(併用可)","author絞込みはArticle.author→Userを明示的にjoinするが、favorited絞込みはArticle.favoriters(UserProfile側)への結合のみでUserへの明示joinが無く、実装が非対称","認証不要(@jwt_optional)。ログイン中なら一覧内の各記事のfavoritedが本人視点の値になる"]},{"id":"articles-feed","title":"フォロー中のフィードを見る","category":"記事","trigger":"GET /api/articles/feed","steps":[{"from":"api.articles.articles_feed","to":"svc.auth.jwt_required","label":"GET /api/articles/feed","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.articles_feed","label":"認証OK","kind":"call"},{"from":"api.articles.articles_feed","to":"db.followers_assoc","label":"current_user.profile.follows で結合","branch":"main"},{"from":"db.followers_assoc","to":"db.userprofile","label":"フォロー中プロフィールへ結合","branch":"main"},{"from":"db.userprofile","to":"db.article","label":"作成日時降順で取得","kind":"db"},{"from":"api.articles.articles_feed","to":"svc.schema.articles_schema","label":"一覧をシリアライズ","kind":"call"}],"notes":["current_user.profile.followsはフォロー中プロフィール一覧(follows関係の定義自体はprofile側で境界外)","未認証だと@jwt_requiredにより401相当で弾かれる"]},{"id":"get-article","title":"記事を読む","category":"記事","trigger":"GET /api/articles/\u003cslug>","steps":[{"from":"api.articles.get_article","to":"db.article","label":"slugで記事検索","kind":"http"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.get_article","to":"svc.schema.article_schema","label":"記事をシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["認証不要(@jwt_optional)。ログイン中のみfavoritedが本人視点の値になり、未ログイン時は常にfalse","記事が見つからない場合InvalidUsage.article_not_found()(404 'Article not found')を送出"]},{"id":"create-article","title":"記事を書く","category":"記事","trigger":"POST /api/articles","steps":[{"from":"api.articles.make_article","to":"svc.auth.jwt_required","label":"POST /api/articles","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.article_schema","label":"POSTボディをデシリアライズ","branch":"main"},{"from":"svc.schema.article_schema","to":"api.articles.make_article","label":"デシリアライズ済み引数で実行","branch":"main"},{"from":"api.articles.make_article","to":"svc.article.__init__","label":"記事オブジェクトを生成","kind":"call"},{"from":"svc.article.__init__","to":"db.userprofile","label":"投稿者プロフィールを紐付け","kind":"db"},{"from":"api.articles.make_article","to":"db.tags","label":"tagList指定時タグを検索","branch":"alt","kind":"db"},{"from":"db.tags","to":"svc.tags.__init__","label":"未登録タグは新規生成","branch":"alt","kind":"call"},{"from":"svc.tags.__init__","to":"svc.crud.save","label":"新規タグを保存","branch":"alt","kind":"call"},{"from":"api.articles.make_article","to":"svc.article.add_tag","label":"記事にタグを付与","branch":"alt","kind":"call"},{"from":"svc.article.add_tag","to":"db.tag_assoc","label":"記事とタグの関連を追加","branch":"alt","kind":"db"},{"from":"api.articles.make_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"記事レコードをコミット","kind":"db"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["応答は @marshal_with(article_schema) が暗黙にシリアライズして返す","tagList未指定時はタグ関連処理を全てスキップし記事のみ作成する","同名タグが既存なら再利用し、新規作成時のみTags.save()が呼ばれる"]},{"id":"update-article","title":"記事を編集する","category":"記事","trigger":"PUT /api/articles/\u003cslug>","steps":[{"from":"api.articles.update_article","to":"svc.auth.jwt_required","label":"PUT /api/articles/\u003cslug>","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.article_schema","label":"PUTボディをデシリアライズ","branch":"main"},{"from":"svc.schema.article_schema","to":"api.articles.update_article","label":"デシリアライズ済み引数で実行","branch":"main"},{"from":"api.articles.update_article","to":"db.article","label":"slug×本人所有で記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"未検出or他人の記事","branch":"error","kind":"error"},{"from":"api.articles.update_article","to":"svc.crud.update","label":"更新項目を反映","kind":"call"},{"from":"svc.crud.update","to":"svc.crud.save","label":"commit既定で内部保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"記事レコードをコミット","kind":"db"},{"from":"api.articles.update_article","to":"svc.crud.save","label":"直後に明示保存(冗長)","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["応答は @marshal_with(article_schema) が暗黙にシリアライズして返す","所有者チェックはfilter_by(author_id=...)に埋め込まれ、他人の記事は「存在しない」と同じ扱いでarticle_not_found(404)になる","article.update()は内部で既にsave()を呼んでおり、直後の明示的なarticle.save()は冗長な二重呼び出し(実害はないが無駄なcommitが発生)","article_schemaにあるtagListをリクエストに含めるとsetattr(article,'tagList',[文字列...])が実行されるが、Tagsモデルへの変換もadd_tag経由の処理も無いため意図通りタグ関連を更新できない可能性がある"]},{"id":"delete-article","title":"記事を削除する","category":"記事","trigger":"DELETE /api/articles/\u003cslug>","steps":[{"from":"api.articles.delete_article","to":"svc.auth.jwt_required","label":"DELETE /api/articles/\u003cslug>","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.delete_article","label":"認証OK","kind":"call"},{"from":"api.articles.delete_article","to":"db.article","label":"slug×本人所有で記事検索","kind":"db"},{"from":"api.articles.delete_article","to":"svc.crud.delete","label":"取得した記事を削除","kind":"call"},{"from":"svc.crud.delete","to":"db.article","label":"記事レコードを削除","kind":"db"}],"notes":["他の記事系フローと異なりarticle_not_foundの存在チェックが無い実装上の穴がある。slugが存在しない、または他人の記事の場合articleはNoneのままとなり、直後のarticle.delete()でAttributeError(未捕捉の500相当)になる","成功時は本文なしの200を返す(削除後の記事はレスポンスに含まれない)"]},{"id":"favorite-article","title":"記事をお気に入りにする","category":"記事","trigger":"POST /api/articles/\u003cslug>/favorite","steps":[{"from":"api.articles.favorite_an_article","to":"svc.auth.jwt_required","label":"POST .../favorite","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.favorite_an_article","label":"認証OK","kind":"call"},{"from":"api.articles.favorite_an_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.favorite_an_article","to":"svc.article.favourite","label":"お気に入りに追加","kind":"call"},{"from":"svc.article.favourite","to":"svc.article.is_favourite","label":"既に登録済みか判定","kind":"call"},{"from":"svc.article.is_favourite","to":"db.favoriter_assoc","label":"お気に入り関連を検索","kind":"db"},{"from":"svc.article.favourite","to":"db.favoriter_assoc","label":"未登録なら関連を追加","branch":"alt","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"変更をコミット","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.schema.article_schema","label":"結果をシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["既にお気に入り済みでも200で成功応答する。favourite()の戻り値(True/False)はビュー側で参照されず無視される(冪等的)"]},{"id":"unfavorite-article","title":"お気に入りを解除する","category":"記事","trigger":"DELETE /api/articles/\u003cslug>/favorite","steps":[{"from":"api.articles.unfavorite_an_article","to":"svc.auth.jwt_required","label":"DELETE .../favorite","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.unfavorite_an_article","label":"認証OK","kind":"call"},{"from":"api.articles.unfavorite_an_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.unfavorite_an_article","to":"svc.article.unfavourite","label":"お気に入りを解除","kind":"call"},{"from":"svc.article.unfavourite","to":"svc.article.is_favourite","label":"現在登録済みか判定","kind":"call"},{"from":"svc.article.is_favourite","to":"db.favoriter_assoc","label":"お気に入り関連を検索","kind":"db"},{"from":"svc.article.unfavourite","to":"db.favoriter_assoc","label":"登録済みなら関連を削除","branch":"alt","kind":"db"},{"from":"api.articles.unfavorite_an_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"変更をコミット","kind":"db"},{"from":"api.articles.unfavorite_an_article","to":"svc.schema.article_schema","label":"結果をシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["既にお気に入りでない場合も200で成功応答する。unfavourite()の戻り値は無視される(冪等的)"]},{"id":"get-comments","title":"コメントを読む","category":"コメント・タグ","trigger":"GET /api/articles/\u003cslug>/comments","steps":[{"from":"api.articles.get_comments","to":"db.article","label":"GET .../comments","kind":"http"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.get_comments","to":"db.comment","label":"記事のコメント一覧を取得","kind":"db"},{"from":"api.articles.get_comments","to":"svc.schema.comments_schema","label":"一覧をシリアライズ","kind":"call"}],"notes":["認証デコレータ無しで未ログイン閲覧できるのは、この GET コメントと GET /api/tags（get_tags）の2つ"]},{"id":"create-comment","title":"コメントを書く","category":"コメント・タグ","trigger":"POST /api/articles/\u003cslug>/comments","steps":[{"from":"api.articles.make_comment_on_article","to":"svc.auth.jwt_required","label":"POST .../comments","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.comment_schema","label":"POSTボディをデシリアライズ","branch":"main"},{"from":"svc.schema.comment_schema","to":"api.articles.make_comment_on_article","label":"デシリアライズ済み引数で実行","branch":"main"},{"from":"api.articles.make_comment_on_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.make_comment_on_article","to":"svc.comment.__init__","label":"コメントを生成","kind":"call"},{"from":"svc.comment.__init__","to":"db.userprofile","label":"投稿者プロフィールを紐付け","kind":"db"},{"from":"api.articles.make_comment_on_article","to":"svc.crud.save","label":"コメントを保存","kind":"call"},{"from":"svc.crud.save","to":"db.comment","label":"コメントレコードをコミット","kind":"db"}],"notes":["応答は @marshal_with(comment_schema) が暗黙にシリアライズして返す"]},{"id":"delete-comment","title":"コメントを削除する","category":"コメント・タグ","trigger":"DELETE /api/articles/\u003cslug>/comments/\u003ccid>","steps":[{"from":"api.articles.delete_comment_on_article","to":"svc.auth.jwt_required","label":"DELETE .../comments/\u003ccid>","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.delete_comment_on_article","label":"認証OK","kind":"call"},{"from":"api.articles.delete_comment_on_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.delete_comment_on_article","to":"db.comment","label":"id×本人投稿でコメント検索","kind":"db"},{"from":"api.articles.delete_comment_on_article","to":"svc.crud.delete","label":"取得したコメントを削除","kind":"call"},{"from":"svc.crud.delete","to":"db.comment","label":"コメントレコードを削除","kind":"db"}],"notes":["所有者チェックはInvalidUsage.comment_not_owned()例外ではなく、検索クエリのfilter_by(id=cid, author=current_user.profile)に埋め込まれている","id不一致または他人のコメントの場合commentはNoneのままとなり、直後のcomment.delete()でAttributeError(未捕捉の500相当)になる。exceptions.pyに定義済みのInvalidUsage.comment_not_owned()(422 'Not your article')はこの経路では一度も呼ばれない"]},{"id":"get-tags","title":"タグ一覧を見る","category":"コメント・タグ","trigger":"GET /api/tags","steps":[{"from":"api.articles.get_tags","to":"db.tags","label":"全タグを取得","kind":"http"}],"notes":["marshal_withを使わず素のjsonifyで{tags:[tagname,...]}を返す唯一のエンドポイント。認証も不要"]},{"id":"register","title":"アカウントを登録する","category":"認証・アカウント","trigger":"POST /api/users","steps":[{"from":"api.user.register_user","to":"svc.schema.user_schema","label":"POST /api/users受信","kind":"http"},{"from":"svc.schema.user_schema","to":"api.user.register_user","label":"body/userをデシリアライズ","kind":"call"},{"from":"api.user.register_user","to":"svc.user.init","label":"User(username,email,password)生成","kind":"call"},{"from":"svc.user.init","to":"svc.user.set_password","label":"bcryptでパスワードハッシュ化","kind":"call"},{"from":"svc.user.set_password","to":"svc.crud.save","label":"User.save()","kind":"call"},{"from":"svc.crud.save","to":"db.users","label":"INSERT users","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_already_registered","label":"username/email重複(IntegrityError)","branch":"error","kind":"error"},{"from":"db.users","to":"svc.profile.init","label":"保存成功→UserProfile生成","kind":"call"},{"from":"svc.profile.init","to":"svc.crud.save","label":"UserProfile.save()","kind":"call"},{"from":"svc.crud.save","to":"db.userprofile","label":"INSERT userprofile","kind":"db"},{"from":"db.userprofile","to":"svc.auth.create_access_token","label":"JWTトークン発行","kind":"call"},{"from":"svc.auth.create_access_token","to":"svc.schema.user_schema","label":"userをシリアライズ","kind":"call"}],"notes":["IntegrityErrorはUser.save()/UserProfile.save()どちらの保存でも発生しうるが、raise前に必ずdb.session.rollback()する","エラー時はDBロールバック後にInvalidUsage(422)を送出し、後続のUserProfile生成・JWT発行は行われない","use_kwargsによるusername/email/password欠落はwebargs側のバリデーションで別途弾かれる(この経路には現れない)"]},{"id":"login","title":"ログインする","category":"認証・アカウント","trigger":"POST /api/users/login","steps":[{"from":"api.user.login_user","to":"svc.auth.jwt_optional","label":"POST /api/users/login受信","kind":"http"},{"from":"svc.auth.jwt_optional","to":"svc.schema.user_schema","label":"認証任意で通過","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.login_user","label":"email/passwordをデシリアライズ","kind":"call"},{"from":"api.user.login_user","to":"db.users","label":"emailでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当ユーザーなし","branch":"error","kind":"error"},{"from":"db.users","to":"svc.user.check_password","label":"該当ユーザーあり→パスワード照合","kind":"call"},{"from":"svc.user.check_password","to":"svc.exceptions.user_not_found","label":"パスワード不一致","branch":"error","kind":"error"},{"from":"svc.user.check_password","to":"svc.auth.create_access_token","label":"照合成功→freshトークン発行","kind":"call"},{"from":"svc.auth.create_access_token","to":"svc.schema.user_schema","label":"userをシリアライズ","kind":"call"}],"notes":["ユーザー未検出とパスワード不一致は同じuser_not_found(404)にまとめて返す","jwt_optionalなので既存トークンの有無に関わらずログイン処理自体は常に実行される"]},{"id":"get-current-user","title":"自分の情報を取得する","category":"認証・アカウント","trigger":"GET /api/user","steps":[{"from":"api.user.get_user","to":"svc.auth.jwt_required","label":"GET /api/user受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.user.get_user","label":"検証OK→current_user解決","kind":"call"},{"from":"api.user.get_user","to":"svc.schema.user_schema","label":"Authorizationヘッダーのtokenを再設定しシリアライズ","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.get_user","label":"レスポンス返却","kind":"call"}],"notes":["jwt_required検証失敗時の401はflask_jwt_extended側の既定処理で、本コードのInvalidUsageは経由しない","Authorizationヘッダーを'Token 'で分割する実装で、コード中に'Not sure about this'というコメントがあり形式依存を示唆"]},{"id":"update-user","title":"プロフィール情報を更新する","category":"認証・アカウント","trigger":"PUT /api/user","steps":[{"from":"api.user.update_user","to":"svc.auth.jwt_required","label":"PUT /api/user受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.user_schema","label":"検証OK→ボディをデシリアライズ","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.update_user","label":"デシリアライズ済みkwargs取得","kind":"call"},{"from":"api.user.update_user","to":"svc.user.set_password","label":"passwordが含まれる場合のみ再ハッシュ化","branch":"alt","kind":"call"},{"from":"svc.user.set_password","to":"svc.crud.update","label":"残りのkwargsで属性更新","branch":"alt","kind":"call"},{"from":"api.user.update_user","to":"svc.crud.update","label":"passwordなしはkwargsそのまま属性更新","kind":"call"},{"from":"svc.crud.update","to":"svc.crud.save","label":"変更をsave()でコミット","kind":"call"},{"from":"svc.crud.save","to":"db.users","label":"UPDATE users","kind":"db"},{"from":"db.users","to":"svc.schema.user_schema","label":"更新後のuserをシリアライズ","kind":"call"}],"notes":["kwargsに'updated_at'が含まれる場合、created_atの値で上書きしてから更新している(意図せずcreated_atを再代入している可能性がある実装)","passwordは更新前にkwargsから取り除かれてからupdate()に渡るため、set_password()とCRUD更新で二重に処理されることはない"]},{"id":"get-profile","title":"他ユーザーのプロフィールを見る","category":"プロフィール","trigger":"GET /api/profiles/\u003cusername>","steps":[{"from":"api.profiles.get_profile","to":"svc.auth.jwt_optional","label":"GET受信","kind":"http"},{"from":"svc.auth.jwt_optional","to":"api.profiles.get_profile","label":"認証任意で通過","kind":"call"},{"from":"api.profiles.get_profile","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当usernameなし","branch":"error","kind":"error"},{"from":"db.users","to":"db.userprofile","label":"見つかった→関連profile取得(backref)","kind":"db"},{"from":"db.userprofile","to":"svc.schema.profile_schema","label":"シリアライズ開始","kind":"call"},{"from":"svc.schema.profile_schema","to":"svc.profile.following","label":"following属性を評価","kind":"call"},{"from":"svc.profile.following","to":"svc.profile.is_following","label":"current_user起点でフォロー判定","kind":"call"},{"from":"svc.profile.is_following","to":"api.profiles.get_profile","label":"レスポンス返却","kind":"call"}],"notes":["未ログイン(current_userなし)ならfollowingは常にFalse","jwt_optionalなので未認証でもプロフィール閲覧自体はできる"]},{"id":"follow-user","title":"ユーザーをフォローする","category":"プロフィール","trigger":"POST /api/profiles/\u003cusername>/follow","steps":[{"from":"api.profiles.follow_user","to":"svc.auth.jwt_required","label":"POST受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.profiles.follow_user","label":"検証OK","kind":"call"},{"from":"api.profiles.follow_user","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当usernameなし","branch":"error","kind":"error"},{"from":"db.users","to":"svc.profile.follow","label":"見つかった→フォロー実行","kind":"call"},{"from":"svc.profile.follow","to":"svc.profile.is_following","label":"自分自身/既フォローかを判定","kind":"call"},{"from":"svc.profile.is_following","to":"svc.crud.save","label":"followers_assocに追加しcurrent_userのprofileを保存","kind":"call"},{"from":"svc.crud.save","to":"db.followers_assoc","label":"INSERT follower関係","kind":"db"},{"from":"db.followers_assoc","to":"svc.schema.profile_schema","label":"対象userのprofileをシリアライズ","kind":"call"},{"from":"svc.schema.profile_schema","to":"api.profiles.follow_user","label":"レスポンス返却","kind":"call"}],"notes":["自分自身や既にフォロー済みの場合はfollow()が何もせずFalseを返すだけで、save()とレスポンスは常に200で成功のように見える(冪等)"]},{"id":"unfollow-user","title":"フォローを解除する","category":"プロフィール","trigger":"DELETE /api/profiles/\u003cusername>/follow","steps":[{"from":"api.profiles.unfollow_user","to":"svc.auth.jwt_required","label":"DELETE受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.profiles.unfollow_user","label":"検証OK","kind":"call"},{"from":"api.profiles.unfollow_user","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当usernameなし","branch":"error","kind":"error"},{"from":"db.users","to":"svc.profile.unfollow","label":"見つかった→フォロー解除実行","kind":"call"},{"from":"svc.profile.unfollow","to":"svc.profile.is_following","label":"現在フォロー中かを判定","kind":"call"},{"from":"svc.profile.is_following","to":"svc.crud.save","label":"followers_assocから削除しcurrent_userのprofileを保存","kind":"call"},{"from":"svc.crud.save","to":"db.followers_assoc","label":"DELETE follower関係","kind":"db"},{"from":"db.followers_assoc","to":"svc.schema.profile_schema","label":"対象userのprofileをシリアライズ","kind":"call"},{"from":"svc.schema.profile_schema","to":"api.profiles.unfollow_user","label":"レスポンス返却","kind":"call"}],"notes":["自分自身やフォローしていない相手の場合はunfollow()が何もせずFalseを返すだけで、レスポンスは常に200で成功のように見える(冪等)"]}]};
+const DATA = {"meta":{"title":"Conduit（RealWorld Flask）処理フロー全図","subject":{"name":"flask-realworld-example-app","url":"https://github.com/gothinkster/flask-realworld-example-app","license":"MIT © 2017 Mohamed Aziz Knani","commit":"4b95fb2"},"catOrder":["認証・アカウント","プロフィール","記事","コメント・タグ"],"stamp":{"builtAt":"2026-08-29T14:33:27.900Z","edgeTotal":130}},"nodes":[{"id":"api.articles.get_articles","lane":"api","label":"記事一覧取得","detail":"GET /api/articles。tag/author/favorited/limit/offsetで絞込み可。認証任意(@jwt_optional)","ref":"conduit/articles/views.py:28"},{"id":"api.articles.make_article","lane":"api","label":"記事作成","detail":"POST /api/articles。認証必須。未登録タグは新規作成し記事に紐付けてから保存","ref":"conduit/articles/views.py:43"},{"id":"api.articles.update_article","lane":"api","label":"記事更新","detail":"PUT /api/articles/\u003cslug>。slug×投稿者本人で検索、未検出時article_not_found(404)","ref":"conduit/articles/views.py:61"},{"id":"api.articles.delete_article","lane":"api","label":"記事削除","detail":"DELETE /api/articles/\u003cslug>。slug×投稿者本人で検索するが未検出チェックが無い","ref":"conduit/articles/views.py:72"},{"id":"api.articles.get_article","lane":"api","label":"記事取得","detail":"GET /api/articles/\u003cslug>。未検出時article_not_found(404)。認証任意でfavoritedは本人視点","ref":"conduit/articles/views.py:81"},{"id":"api.articles.favorite_an_article","lane":"api","label":"お気に入り登録","detail":"POST .../favorite。認証必須。記事未検出時article_not_found(404)","ref":"conduit/articles/views.py:91"},{"id":"api.articles.unfavorite_an_article","lane":"api","label":"お気に入り解除","detail":"DELETE .../favorite。認証必須。記事未検出時article_not_found(404)","ref":"conduit/articles/views.py:104"},{"id":"api.articles.articles_feed","lane":"api","label":"フィード取得","detail":"GET /api/articles/feed。認証必須。フォロー中著者の記事を作成日時降順で取得","ref":"conduit/articles/views.py:118"},{"id":"api.articles.get_tags","lane":"api","label":"タグ一覧取得","detail":"GET /api/tags。認証不要。marshal_withを使わずjsonifyで{tags:[...]}を直接返す","ref":"conduit/articles/views.py:128"},{"id":"api.articles.get_comments","lane":"api","label":"コメント一覧取得","detail":"GET .../comments。認証デコレータなし(未ログイン可)。記事未検出時article_not_found(404)","ref":"conduit/articles/views.py:139"},{"id":"api.articles.make_comment_on_article","lane":"api","label":"コメント作成","detail":"POST .../comments。認証必須。記事未検出時article_not_found(404)","ref":"conduit/articles/views.py:150"},{"id":"api.articles.delete_comment_on_article","lane":"api","label":"コメント削除","detail":"DELETE .../comments/\u003ccid>。所有者チェックはfilter_by埋め込みでcomment_not_owned例外は未使用","ref":"conduit/articles/views.py:161"},{"id":"svc.auth.jwt_required","lane":"svc","label":"JWT認証必須","detail":"flask_jwt_extended の @jwt_required。リポジトリ内に定義は無く各 views で直輸入。ref は代表的な適用行","ref":"conduit/user/views.py:44"},{"id":"svc.crud.save","lane":"svc","label":"レコード保存","detail":"CRUDMixin.save。db.session.addし既定でcommitする全モデル共通の保存処理","ref":"conduit/extensions.py:27"},{"id":"svc.crud.update","lane":"svc","label":"CRUD更新","detail":"CRUDMixin.update。kwargsを各属性にsetattrし、commit=True既定で内部でsave()も呼ぶ","ref":"conduit/extensions.py:21"},{"id":"svc.crud.delete","lane":"svc","label":"レコード削除","detail":"CRUDMixin.delete。db.session.deleteしcommitする全モデル共通の削除処理","ref":"conduit/extensions.py:34"},{"id":"svc.schema.article_schema","lane":"svc","label":"記事スキーマ","detail":"ArticleSchema。use_kwargsで入力load、marshal_withで出力dump(article封筒)に使用","ref":"conduit/articles/serializers.py:85"},{"id":"svc.schema.articles_schema","lane":"svc","label":"記事一覧スキーマ","detail":"ArticleSchemas(many=True)。articles配列とarticlesCountに封筒化して返す","ref":"conduit/articles/serializers.py:86"},{"id":"svc.schema.comment_schema","lane":"svc","label":"コメントスキーマ","detail":"CommentSchema。use_kwargsで入力load、marshal_withで出力dump(comment封筒)に使用","ref":"conduit/articles/serializers.py:87"},{"id":"svc.schema.comments_schema","lane":"svc","label":"コメント一覧スキーマ","detail":"CommentsSchema(many=True)。comments配列に封筒化して返す","ref":"conduit/articles/serializers.py:88"},{"id":"svc.article.__init__","lane":"svc","label":"Article生成","detail":"Articleコンストラクタ。slug未指定ならtitleをslugify、authorに投稿者プロフィールを設定","ref":"conduit/articles/models.py:72"},{"id":"svc.tags.__init__","lane":"svc","label":"Tags生成","detail":"Tagsコンストラクタ。既存タグが無い場合のみ呼ばれ直後にsave()される","ref":"conduit/articles/models.py:27"},{"id":"svc.comment.__init__","lane":"svc","label":"Comment生成","detail":"Commentコンストラクタ。article/author(投稿者プロフィール)/bodyを紐付けて生成","ref":"conduit/articles/models.py:45"},{"id":"svc.article.favourite","lane":"svc","label":"お気に入り追加","detail":"is_favourite判定後、未登録ならfavoritersに追加しTrue、既存ならFalse(戻り値は未使用)","ref":"conduit/articles/models.py:76"},{"id":"svc.article.unfavourite","lane":"svc","label":"お気に入り削除","detail":"is_favourite判定後、登録済みならfavoritersから削除しTrue、未登録ならFalse(戻り値は未使用)","ref":"conduit/articles/models.py:82"},{"id":"svc.article.is_favourite","lane":"svc","label":"お気に入り判定","detail":"favoriter_assocをprofile.idで検索しカウントが1以上かを判定","ref":"conduit/articles/models.py:88"},{"id":"svc.article.add_tag","lane":"svc","label":"タグ付与","detail":"tagListに未登録のタグのみtag_assoc経由で追加、既存ならFalseで何もしない","ref":"conduit/articles/models.py:91"},{"id":"svc.article.favoritesCount","lane":"svc","label":"お気に入り数算出","detail":"favoriters.all()の件数を返すプロパティ。記事シリアライズ時に常に参照される","ref":"conduit/articles/models.py:104"},{"id":"svc.article.favorited","lane":"svc","label":"本人お気に入り判定","detail":"current_user在圈時のみ本人がお気に入り済みか判定。未ログイン時は常にFalse","ref":"conduit/articles/models.py:108"},{"id":"svc.error.article_not_found","lane":"svc","label":"記事未検出エラー","detail":"InvalidUsage.article_not_found()。404 'Article not found'を送出","ref":"conduit/exceptions.py:42"},{"id":"db.article","lane":"db","label":"articleテーブル","detail":"記事本体(slug/title/body等)。author_idでuserprofileに外部キー","ref":"conduit/articles/models.py:50"},{"id":"db.comment","lane":"db","label":"commentテーブル","detail":"コメント本体。article_id/author_id(userprofile)で外部キー","ref":"conduit/articles/models.py:35"},{"id":"db.tags","lane":"db","label":"tagsテーブル","detail":"タグ名マスタ(tagname)。記事とはtag_assocで多対多","ref":"conduit/articles/models.py:22"},{"id":"db.favoriter_assoc","lane":"db","label":"お気に入り関連","detail":"favoritor_assoc。userprofile↔articleの多対多お気に入り関連テーブル","ref":"conduit/articles/models.py:12"},{"id":"db.tag_assoc","lane":"db","label":"タグ関連テーブル","detail":"tag_assoc。tags↔articleの多対多タグ付け関連テーブル","ref":"conduit/articles/models.py:16"},{"id":"db.users","lane":"db","label":"usersテーブル","detail":"username/email(共にunique)・password(bcryptハッシュ)・bio・image等を保持","ref":"conduit/user/models.py:11"},{"id":"db.userprofile","lane":"db","label":"userprofileテーブル","detail":"users.idを参照するuser_id(1:1)。username/bio/image/emailはUserへのプロパティ委譲","ref":"conduit/profile/models.py:13"},{"id":"api.user.register_user","lane":"api","label":"アカウント登録","detail":"POST /api/users。username/email/passwordを受け取りUser+UserProfileを作成しJWTを発行する","ref":"conduit/user/views.py:20"},{"id":"api.user.login_user","lane":"api","label":"ログイン","detail":"POST /api/users/login。emailでUser検索しcheck_passwordで照合、成功時にfreshトークンを発行","ref":"conduit/user/views.py:34"},{"id":"api.user.get_user","lane":"api","label":"自分の情報取得","detail":"GET /api/user。jwt_required必須。current_userにAuthorizationヘッダーのtokenを再設定して返す","ref":"conduit/user/views.py:46"},{"id":"api.user.update_user","lane":"api","label":"プロフィール更新","detail":"PUT /api/user。jwt_required必須。passwordがあれば再ハッシュ化し、残りのkwargsでupdate","ref":"conduit/user/views.py:57"},{"id":"api.profiles.get_profile","lane":"api","label":"プロフィール取得","detail":"GET /api/profiles/\u003cusername>。jwt_optional。usernameでUser検索し見つからなければ404","ref":"conduit/profile/views.py:17"},{"id":"api.profiles.follow_user","lane":"api","label":"フォローする","detail":"POST /api/profiles/\u003cusername>/follow。jwt_required必須。current_user.profileでfollowを実行","ref":"conduit/profile/views.py:27"},{"id":"api.profiles.unfollow_user","lane":"api","label":"フォロー解除","detail":"DELETE /api/profiles/\u003cusername>/follow。jwt_required必須。current_user.profileでunfollowを実行","ref":"conduit/profile/views.py:39"},{"id":"svc.auth.jwt_optional","lane":"svc","label":"JWT検証任意","detail":"@jwt_optional。トークンがあれば検証しcurrent_userを設定、なくても処理は継続する","ref":"conduit/user/views.py:31"},{"id":"svc.auth.create_access_token","lane":"svc","label":"JWT発行","detail":"flask_jwt_extendedのcreate_access_token。register/loginでトークン発行(loginはfresh=True)","ref":"conduit/user/views.py:23"},{"id":"svc.schema.user_schema","lane":"svc","label":"UserSchema","detail":"@use_kwargs/@marshal_withで使用。リクエストのuserラップを外し、レスポンスをuserでラップして返す","ref":"conduit/user/serializers.py:6"},{"id":"svc.schema.profile_schema","lane":"svc","label":"ProfileSchema","detail":"@marshal_withで使用。profileラップの解除/付与とfollowingフラグの出力を担う","ref":"conduit/profile/serializers.py:4"},{"id":"svc.user.init","lane":"svc","label":"User生成","detail":"User.__init__。username/emailを設定し、passwordがあればset_password、なければNoneのまま","ref":"conduit/user/models.py:21"},{"id":"svc.user.set_password","lane":"svc","label":"パスワード設定","detail":"bcrypt.generate_password_hashでハッシュ化して保存。registerとupdate-userの両方で使用","ref":"conduit/user/models.py:29"},{"id":"svc.user.check_password","lane":"svc","label":"パスワード照合","detail":"bcrypt.check_password_hashで照合。falseなら呼び出し元でuser_not_foundにまとめられる","ref":"conduit/user/models.py:33"},{"id":"svc.profile.init","lane":"svc","label":"UserProfile生成","detail":"UserProfile.__init__。保存済みUserを紐づけて生成(registerでUser.save()後に呼ばれる)","ref":"conduit/profile/models.py:27"},{"id":"svc.profile.follow","lane":"svc","label":"フォロー実行","detail":"self以外かつ未フォローならfollowsに追加してTrue、それ以外は何もせずFalse(冪等)","ref":"conduit/profile/models.py:33"},{"id":"svc.profile.unfollow","lane":"svc","label":"フォロー解除実行","detail":"self以外かつフォロー中ならfollowsから削除してTrue、それ以外は何もせずFalse(冪等)","ref":"conduit/profile/models.py:39"},{"id":"svc.profile.is_following","lane":"svc","label":"フォロー中か判定","detail":"followers_assocをfollowed_by=profile.idで絞り込みcountで判定。follow/unfollow/followingが使用","ref":"conduit/profile/models.py:30"},{"id":"svc.profile.following","lane":"svc","label":"followingフラグ","detail":"current_userがいればcurrent_user.profile.is_followingで判定、いなければ常にFalse","ref":"conduit/profile/models.py:46"},{"id":"svc.exceptions.user_not_found","lane":"svc","label":"user_not_foundエラー","detail":"InvalidUsage.user_not_found。404 'User not found' を返す例外を生成してraise","ref":"conduit/exceptions.py:30"},{"id":"svc.exceptions.user_already_registered","lane":"svc","label":"重複登録エラー","detail":"InvalidUsage.user_already_registered。422 'User already registered' を返す(IntegrityError捕捉時)","ref":"conduit/exceptions.py:34"},{"id":"db.followers_assoc","lane":"db","label":"followers_assoc中間表","detail":"follower/followed_byの2列でuserprofile.user_id同士の多対多フォロー関係を保持","ref":"conduit/profile/models.py:7"}],"edges":[{"from":"api.articles.get_articles","to":"db.article","label":"GET /api/articles","kind":"http"},{"from":"api.articles.get_articles","to":"db.tags","label":"tag指定時に絞込み","kind":"db"},{"from":"api.articles.get_articles","to":"db.userprofile","label":"author指定時にauthorへ結合","kind":"db"},{"from":"db.userprofile","to":"db.users","label":"usernameで絞込み","kind":"db"},{"from":"api.articles.get_articles","to":"db.favoriter_assoc","label":"favorited指定時に結合","kind":"db"},{"from":"db.favoriter_assoc","to":"db.users","label":"usernameで絞込み","kind":"db"},{"from":"api.articles.get_articles","to":"svc.schema.articles_schema","label":"一覧をシリアライズ","kind":"call"},{"from":"api.articles.articles_feed","to":"svc.auth.jwt_required","label":"GET /api/articles/feed","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.articles_feed","label":"認証OK","kind":"call"},{"from":"db.userprofile","to":"db.article","label":"作成日時降順で取得","kind":"db"},{"from":"api.articles.articles_feed","to":"svc.schema.articles_schema","label":"一覧をシリアライズ","kind":"call"},{"from":"api.articles.get_article","to":"db.article","label":"slugで記事検索","kind":"http"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","kind":"error"},{"from":"api.articles.get_article","to":"svc.schema.article_schema","label":"記事をシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"},{"from":"api.articles.make_article","to":"svc.auth.jwt_required","label":"POST /api/articles","kind":"http"},{"from":"api.articles.make_article","to":"svc.article.__init__","label":"記事オブジェクトを生成","kind":"call"},{"from":"svc.article.__init__","to":"db.userprofile","label":"投稿者プロフィールを紐付け","kind":"db"},{"from":"api.articles.make_article","to":"db.tags","label":"tagList指定時タグを検索","kind":"db"},{"from":"db.tags","to":"svc.tags.__init__","label":"未登録タグは新規生成","kind":"call"},{"from":"svc.tags.__init__","to":"svc.crud.save","label":"新規タグを保存","kind":"call"},{"from":"api.articles.make_article","to":"svc.article.add_tag","label":"記事にタグを付与","kind":"call"},{"from":"svc.article.add_tag","to":"db.tag_assoc","label":"記事とタグの関連を追加","kind":"db"},{"from":"api.articles.make_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"記事レコードをコミット","kind":"db"},{"from":"api.articles.update_article","to":"svc.auth.jwt_required","label":"PUT /api/articles/\u003cslug>","kind":"http"},{"from":"api.articles.update_article","to":"db.article","label":"slug×本人所有で記事検索","kind":"db"},{"from":"api.articles.update_article","to":"svc.crud.update","label":"更新項目を反映","kind":"call"},{"from":"svc.crud.update","to":"svc.crud.save","label":"commit既定で内部保存","kind":"call"},{"from":"api.articles.update_article","to":"svc.crud.save","label":"直後に明示保存(冗長)","kind":"call"},{"from":"api.articles.delete_article","to":"svc.auth.jwt_required","label":"DELETE /api/articles/\u003cslug>","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.delete_article","label":"認証OK","kind":"call"},{"from":"api.articles.delete_article","to":"db.article","label":"slug×本人所有で記事検索","kind":"db"},{"from":"api.articles.delete_article","to":"svc.crud.delete","label":"取得した記事を削除","kind":"call"},{"from":"svc.crud.delete","to":"db.article","label":"記事レコードを削除","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.auth.jwt_required","label":"POST .../favorite","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.favorite_an_article","label":"認証OK","kind":"call"},{"from":"api.articles.favorite_an_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.article.favourite","label":"お気に入りに追加","kind":"call"},{"from":"svc.article.favourite","to":"svc.article.is_favourite","label":"既に登録済みか判定","kind":"call"},{"from":"svc.article.is_favourite","to":"db.favoriter_assoc","label":"お気に入り関連を検索","kind":"db"},{"from":"svc.article.favourite","to":"db.favoriter_assoc","label":"未登録なら関連を追加","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"api.articles.favorite_an_article","to":"svc.schema.article_schema","label":"結果をシリアライズ","kind":"call"},{"from":"api.articles.unfavorite_an_article","to":"svc.auth.jwt_required","label":"DELETE .../favorite","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.unfavorite_an_article","label":"認証OK","kind":"call"},{"from":"api.articles.unfavorite_an_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"api.articles.unfavorite_an_article","to":"svc.article.unfavourite","label":"お気に入りを解除","kind":"call"},{"from":"svc.article.unfavourite","to":"svc.article.is_favourite","label":"現在登録済みか判定","kind":"call"},{"from":"svc.article.unfavourite","to":"db.favoriter_assoc","label":"登録済みなら関連を削除","kind":"db"},{"from":"api.articles.unfavorite_an_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"api.articles.unfavorite_an_article","to":"svc.schema.article_schema","label":"結果をシリアライズ","kind":"call"},{"from":"api.articles.get_comments","to":"db.article","label":"GET .../comments","kind":"http"},{"from":"api.articles.get_comments","to":"db.comment","label":"記事のコメント一覧を取得","kind":"db"},{"from":"api.articles.get_comments","to":"svc.schema.comments_schema","label":"一覧をシリアライズ","kind":"call"},{"from":"api.articles.make_comment_on_article","to":"svc.auth.jwt_required","label":"POST .../comments","kind":"http"},{"from":"api.articles.make_comment_on_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"api.articles.make_comment_on_article","to":"svc.comment.__init__","label":"コメントを生成","kind":"call"},{"from":"svc.comment.__init__","to":"db.userprofile","label":"投稿者プロフィールを紐付け","kind":"db"},{"from":"api.articles.make_comment_on_article","to":"svc.crud.save","label":"コメントを保存","kind":"call"},{"from":"svc.crud.save","to":"db.comment","label":"コメントレコードをコミット","kind":"db"},{"from":"api.articles.delete_comment_on_article","to":"svc.auth.jwt_required","label":"DELETE .../comments/\u003ccid>","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.delete_comment_on_article","label":"認証OK","kind":"call"},{"from":"api.articles.delete_comment_on_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"api.articles.delete_comment_on_article","to":"db.comment","label":"id×本人投稿でコメント検索","kind":"db"},{"from":"api.articles.delete_comment_on_article","to":"svc.crud.delete","label":"取得したコメントを削除","kind":"call"},{"from":"svc.crud.delete","to":"db.comment","label":"コメントレコードを削除","kind":"db"},{"from":"api.articles.get_tags","to":"db.tags","label":"全タグを取得","kind":"http"},{"from":"api.user.register_user","to":"svc.schema.user_schema","label":"POST /api/users受信","kind":"http"},{"from":"svc.schema.user_schema","to":"api.user.register_user","label":"body/userをデシリアライズ","kind":"call"},{"from":"api.user.register_user","to":"svc.user.init","label":"User(username,email,password)生成","kind":"call"},{"from":"svc.user.init","to":"svc.user.set_password","label":"bcryptでパスワードハッシュ化","kind":"call"},{"from":"svc.user.set_password","to":"svc.crud.save","label":"User.save()","kind":"call"},{"from":"svc.crud.save","to":"db.users","label":"INSERT users","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_already_registered","label":"username/email重複(IntegrityError)","kind":"error"},{"from":"db.users","to":"svc.profile.init","label":"保存成功→UserProfile生成","kind":"call"},{"from":"svc.profile.init","to":"svc.crud.save","label":"UserProfile.save()","kind":"call"},{"from":"svc.crud.save","to":"db.userprofile","label":"INSERT userprofile","kind":"db"},{"from":"db.userprofile","to":"svc.auth.create_access_token","label":"JWTトークン発行","kind":"call"},{"from":"svc.auth.create_access_token","to":"svc.schema.user_schema","label":"userをシリアライズ","kind":"call"},{"from":"api.user.login_user","to":"svc.auth.jwt_optional","label":"POST /api/users/login受信","kind":"http"},{"from":"svc.auth.jwt_optional","to":"svc.schema.user_schema","label":"認証任意で通過","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.login_user","label":"email/passwordをデシリアライズ","kind":"call"},{"from":"api.user.login_user","to":"db.users","label":"emailでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当ユーザーなし","kind":"error"},{"from":"db.users","to":"svc.user.check_password","label":"該当ユーザーあり→パスワード照合","kind":"call"},{"from":"svc.user.check_password","to":"svc.exceptions.user_not_found","label":"パスワード不一致","kind":"error"},{"from":"svc.user.check_password","to":"svc.auth.create_access_token","label":"照合成功→freshトークン発行","kind":"call"},{"from":"api.user.get_user","to":"svc.auth.jwt_required","label":"GET /api/user受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.user.get_user","label":"検証OK→current_user解決","kind":"call"},{"from":"api.user.get_user","to":"svc.schema.user_schema","label":"Authorizationヘッダーのtokenを再設定しシリアライズ","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.get_user","label":"レスポンス返却","kind":"call"},{"from":"api.user.update_user","to":"svc.auth.jwt_required","label":"PUT /api/user受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.user_schema","label":"検証OK→ボディをデシリアライズ","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.update_user","label":"デシリアライズ済みkwargs取得","kind":"call"},{"from":"api.user.update_user","to":"svc.user.set_password","label":"passwordが含まれる場合のみ再ハッシュ化","kind":"call"},{"from":"svc.user.set_password","to":"svc.crud.update","label":"残りのkwargsで属性更新","kind":"call"},{"from":"api.user.update_user","to":"svc.crud.update","label":"passwordなしはkwargsそのまま属性更新","kind":"call"},{"from":"db.users","to":"svc.schema.user_schema","label":"更新後のuserをシリアライズ","kind":"call"},{"from":"api.profiles.get_profile","to":"svc.auth.jwt_optional","label":"GET受信","kind":"http"},{"from":"svc.auth.jwt_optional","to":"api.profiles.get_profile","label":"認証任意で通過","kind":"call"},{"from":"api.profiles.get_profile","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"db.userprofile","label":"見つかった→関連profile取得(backref)","kind":"db"},{"from":"db.userprofile","to":"svc.schema.profile_schema","label":"シリアライズ開始","kind":"call"},{"from":"svc.schema.profile_schema","to":"svc.profile.following","label":"following属性を評価","kind":"call"},{"from":"svc.profile.following","to":"svc.profile.is_following","label":"current_user起点でフォロー判定","kind":"call"},{"from":"svc.profile.is_following","to":"api.profiles.get_profile","label":"レスポンス返却","kind":"call"},{"from":"api.profiles.follow_user","to":"svc.auth.jwt_required","label":"POST受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.profiles.follow_user","label":"検証OK","kind":"call"},{"from":"api.profiles.follow_user","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.profile.follow","label":"見つかった→フォロー実行","kind":"call"},{"from":"svc.profile.follow","to":"svc.profile.is_following","label":"自分自身/既フォローかを判定","kind":"call"},{"from":"svc.profile.is_following","to":"svc.crud.save","label":"followers_assocに追加しcurrent_userのprofileを保存","kind":"call"},{"from":"svc.crud.save","to":"db.followers_assoc","label":"INSERT follower関係","kind":"db"},{"from":"db.followers_assoc","to":"svc.schema.profile_schema","label":"対象userのprofileをシリアライズ","kind":"call"},{"from":"svc.schema.profile_schema","to":"api.profiles.follow_user","label":"レスポンス返却","kind":"call"},{"from":"api.profiles.unfollow_user","to":"svc.auth.jwt_required","label":"DELETE受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.profiles.unfollow_user","label":"検証OK","kind":"call"},{"from":"api.profiles.unfollow_user","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.profile.unfollow","label":"見つかった→フォロー解除実行","kind":"call"},{"from":"svc.profile.unfollow","to":"svc.profile.is_following","label":"現在フォロー中かを判定","kind":"call"},{"from":"svc.schema.profile_schema","to":"api.profiles.unfollow_user","label":"レスポンス返却","kind":"call"},{"from":"svc.auth.jwt_required","to":"svc.schema.article_schema","label":"POSTボディをデシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"api.articles.make_article","label":"デシリアライズ済み引数で実行","kind":"call"},{"from":"svc.schema.article_schema","to":"api.articles.update_article","label":"デシリアライズ済み引数で実行","kind":"call"},{"from":"svc.auth.jwt_required","to":"svc.schema.comment_schema","label":"POSTボディをデシリアライズ","kind":"call"},{"from":"svc.schema.comment_schema","to":"api.articles.make_comment_on_article","label":"デシリアライズ済み引数で実行","kind":"call"},{"from":"api.articles.articles_feed","to":"db.followers_assoc","label":"current_user.profile.follows で結合","kind":"db"},{"from":"db.followers_assoc","to":"db.userprofile","label":"フォロー中プロフィールへ結合","kind":"db"}],"flows":[{"id":"list-articles","title":"記事一覧を見る","category":"記事","trigger":"GET /api/articles","steps":[{"from":"api.articles.get_articles","to":"db.article","label":"GET /api/articles","kind":"http"},{"from":"api.articles.get_articles","to":"db.tags","label":"tag指定時に絞込み","branch":"alt","kind":"db"},{"from":"api.articles.get_articles","to":"db.userprofile","label":"author指定時にauthorへ結合","branch":"alt","kind":"db"},{"from":"db.userprofile","to":"db.users","label":"usernameで絞込み","branch":"alt","kind":"db"},{"from":"api.articles.get_articles","to":"db.favoriter_assoc","label":"favorited指定時に結合","branch":"alt","kind":"db"},{"from":"db.favoriter_assoc","to":"db.users","label":"usernameで絞込み","branch":"alt","kind":"db"},{"from":"api.articles.get_articles","to":"svc.schema.articles_schema","label":"一覧をシリアライズ","kind":"call"}],"notes":["tag/author/favoritedはいずれも任意で、指定された条件だけクエリに追加される(併用可)","author絞込みはArticle.author→Userを明示的にjoinするが、favorited絞込みはArticle.favoriters(UserProfile側)への結合のみでUserへの明示joinが無く、実装が非対称","認証不要(@jwt_optional)。ログイン中なら一覧内の各記事のfavoritedが本人視点の値になる"]},{"id":"articles-feed","title":"フォロー中のフィードを見る","category":"記事","trigger":"GET /api/articles/feed","steps":[{"from":"api.articles.articles_feed","to":"svc.auth.jwt_required","label":"GET /api/articles/feed","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.articles_feed","label":"認証OK","kind":"call"},{"from":"api.articles.articles_feed","to":"db.followers_assoc","label":"current_user.profile.follows で結合","branch":"main"},{"from":"db.followers_assoc","to":"db.userprofile","label":"フォロー中プロフィールへ結合","branch":"main"},{"from":"db.userprofile","to":"db.article","label":"作成日時降順で取得","kind":"db"},{"from":"api.articles.articles_feed","to":"svc.schema.articles_schema","label":"一覧をシリアライズ","kind":"call"}],"notes":["current_user.profile.followsはフォロー中プロフィール一覧(follows関係の定義自体はprofile側で境界外)","未認証だと@jwt_requiredにより401相当で弾かれる"]},{"id":"get-article","title":"記事を読む","category":"記事","trigger":"GET /api/articles/\u003cslug>","steps":[{"from":"api.articles.get_article","to":"db.article","label":"slugで記事検索","kind":"http"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.get_article","to":"svc.schema.article_schema","label":"記事をシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["認証不要(@jwt_optional)。ログイン中のみfavoritedが本人視点の値になり、未ログイン時は常にfalse","記事が見つからない場合InvalidUsage.article_not_found()(404 'Article not found')を送出"]},{"id":"create-article","title":"記事を書く","category":"記事","trigger":"POST /api/articles","steps":[{"from":"api.articles.make_article","to":"svc.auth.jwt_required","label":"POST /api/articles","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.article_schema","label":"POSTボディをデシリアライズ","branch":"main"},{"from":"svc.schema.article_schema","to":"api.articles.make_article","label":"デシリアライズ済み引数で実行","branch":"main"},{"from":"api.articles.make_article","to":"svc.article.__init__","label":"記事オブジェクトを生成","kind":"call"},{"from":"svc.article.__init__","to":"db.userprofile","label":"投稿者プロフィールを紐付け","kind":"db"},{"from":"api.articles.make_article","to":"db.tags","label":"tagList指定時タグを検索","branch":"alt","kind":"db"},{"from":"db.tags","to":"svc.tags.__init__","label":"未登録タグは新規生成","branch":"alt","kind":"call"},{"from":"svc.tags.__init__","to":"svc.crud.save","label":"新規タグを保存","branch":"alt","kind":"call"},{"from":"api.articles.make_article","to":"svc.article.add_tag","label":"記事にタグを付与","branch":"alt","kind":"call"},{"from":"svc.article.add_tag","to":"db.tag_assoc","label":"記事とタグの関連を追加","branch":"alt","kind":"db"},{"from":"api.articles.make_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"記事レコードをコミット","kind":"db"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["応答は @marshal_with(article_schema) が暗黙にシリアライズして返す","tagList未指定時はタグ関連処理を全てスキップし記事のみ作成する","同名タグが既存なら再利用し、新規作成時のみTags.save()が呼ばれる"]},{"id":"update-article","title":"記事を編集する","category":"記事","trigger":"PUT /api/articles/\u003cslug>","steps":[{"from":"api.articles.update_article","to":"svc.auth.jwt_required","label":"PUT /api/articles/\u003cslug>","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.article_schema","label":"PUTボディをデシリアライズ","branch":"main"},{"from":"svc.schema.article_schema","to":"api.articles.update_article","label":"デシリアライズ済み引数で実行","branch":"main"},{"from":"api.articles.update_article","to":"db.article","label":"slug×本人所有で記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"未検出or他人の記事","branch":"error","kind":"error"},{"from":"api.articles.update_article","to":"svc.crud.update","label":"更新項目を反映","kind":"call"},{"from":"svc.crud.update","to":"svc.crud.save","label":"commit既定で内部保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"記事レコードをコミット","kind":"db"},{"from":"api.articles.update_article","to":"svc.crud.save","label":"直後に明示保存(冗長)","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["応答は @marshal_with(article_schema) が暗黙にシリアライズして返す","所有者チェックはfilter_by(author_id=...)に埋め込まれ、他人の記事は「存在しない」と同じ扱いでarticle_not_found(404)になる","article.update()は内部で既にsave()を呼んでおり、直後の明示的なarticle.save()は冗長な二重呼び出し(実害はないが無駄なcommitが発生)","article_schemaにあるtagListをリクエストに含めるとsetattr(article,'tagList',[文字列...])が実行されるが、Tagsモデルへの変換もadd_tag経由の処理も無いため意図通りタグ関連を更新できない可能性がある"]},{"id":"delete-article","title":"記事を削除する","category":"記事","trigger":"DELETE /api/articles/\u003cslug>","steps":[{"from":"api.articles.delete_article","to":"svc.auth.jwt_required","label":"DELETE /api/articles/\u003cslug>","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.delete_article","label":"認証OK","kind":"call"},{"from":"api.articles.delete_article","to":"db.article","label":"slug×本人所有で記事検索","kind":"db"},{"from":"api.articles.delete_article","to":"svc.crud.delete","label":"取得した記事を削除","kind":"call"},{"from":"svc.crud.delete","to":"db.article","label":"記事レコードを削除","kind":"db"}],"notes":["他の記事系フローと異なりarticle_not_foundの存在チェックが無い実装上の穴がある。slugが存在しない、または他人の記事の場合articleはNoneのままとなり、直後のarticle.delete()でAttributeError(未捕捉の500相当)になる","成功時は本文なしの200を返す(削除後の記事はレスポンスに含まれない)"]},{"id":"favorite-article","title":"記事をお気に入りにする","category":"記事","trigger":"POST /api/articles/\u003cslug>/favorite","steps":[{"from":"api.articles.favorite_an_article","to":"svc.auth.jwt_required","label":"POST .../favorite","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.favorite_an_article","label":"認証OK","kind":"call"},{"from":"api.articles.favorite_an_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.favorite_an_article","to":"svc.article.favourite","label":"お気に入りに追加","kind":"call"},{"from":"svc.article.favourite","to":"svc.article.is_favourite","label":"既に登録済みか判定","kind":"call"},{"from":"svc.article.is_favourite","to":"db.favoriter_assoc","label":"お気に入り関連を検索","kind":"db"},{"from":"svc.article.favourite","to":"db.favoriter_assoc","label":"未登録なら関連を追加","branch":"alt","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"変更をコミット","kind":"db"},{"from":"api.articles.favorite_an_article","to":"svc.schema.article_schema","label":"結果をシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["既にお気に入り済みでも200で成功応答する。favourite()の戻り値(True/False)はビュー側で参照されず無視される(冪等的)"]},{"id":"unfavorite-article","title":"お気に入りを解除する","category":"記事","trigger":"DELETE /api/articles/\u003cslug>/favorite","steps":[{"from":"api.articles.unfavorite_an_article","to":"svc.auth.jwt_required","label":"DELETE .../favorite","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.unfavorite_an_article","label":"認証OK","kind":"call"},{"from":"api.articles.unfavorite_an_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.unfavorite_an_article","to":"svc.article.unfavourite","label":"お気に入りを解除","kind":"call"},{"from":"svc.article.unfavourite","to":"svc.article.is_favourite","label":"現在登録済みか判定","kind":"call"},{"from":"svc.article.is_favourite","to":"db.favoriter_assoc","label":"お気に入り関連を検索","kind":"db"},{"from":"svc.article.unfavourite","to":"db.favoriter_assoc","label":"登録済みなら関連を削除","branch":"alt","kind":"db"},{"from":"api.articles.unfavorite_an_article","to":"svc.crud.save","label":"記事を保存","kind":"call"},{"from":"svc.crud.save","to":"db.article","label":"変更をコミット","kind":"db"},{"from":"api.articles.unfavorite_an_article","to":"svc.schema.article_schema","label":"結果をシリアライズ","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favoritesCount","label":"お気に入り数を算出","kind":"call"},{"from":"svc.schema.article_schema","to":"svc.article.favorited","label":"本人のお気に入り判定","kind":"call"}],"notes":["既にお気に入りでない場合も200で成功応答する。unfavourite()の戻り値は無視される(冪等的)"]},{"id":"get-comments","title":"コメントを読む","category":"コメント・タグ","trigger":"GET /api/articles/\u003cslug>/comments","steps":[{"from":"api.articles.get_comments","to":"db.article","label":"GET .../comments","kind":"http"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.get_comments","to":"db.comment","label":"記事のコメント一覧を取得","kind":"db"},{"from":"api.articles.get_comments","to":"svc.schema.comments_schema","label":"一覧をシリアライズ","kind":"call"}],"notes":["認証デコレータ無しで未ログイン閲覧できるのは、この GET コメントと GET /api/tags（get_tags）の2つ"]},{"id":"create-comment","title":"コメントを書く","category":"コメント・タグ","trigger":"POST /api/articles/\u003cslug>/comments","steps":[{"from":"api.articles.make_comment_on_article","to":"svc.auth.jwt_required","label":"POST .../comments","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.comment_schema","label":"POSTボディをデシリアライズ","branch":"main"},{"from":"svc.schema.comment_schema","to":"api.articles.make_comment_on_article","label":"デシリアライズ済み引数で実行","branch":"main"},{"from":"api.articles.make_comment_on_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.make_comment_on_article","to":"svc.comment.__init__","label":"コメントを生成","kind":"call"},{"from":"svc.comment.__init__","to":"db.userprofile","label":"投稿者プロフィールを紐付け","kind":"db"},{"from":"api.articles.make_comment_on_article","to":"svc.crud.save","label":"コメントを保存","kind":"call"},{"from":"svc.crud.save","to":"db.comment","label":"コメントレコードをコミット","kind":"db"}],"notes":["応答は @marshal_with(comment_schema) が暗黙にシリアライズして返す"]},{"id":"delete-comment","title":"コメントを削除する","category":"コメント・タグ","trigger":"DELETE /api/articles/\u003cslug>/comments/\u003ccid>","steps":[{"from":"api.articles.delete_comment_on_article","to":"svc.auth.jwt_required","label":"DELETE .../comments/\u003ccid>","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.articles.delete_comment_on_article","label":"認証OK","kind":"call"},{"from":"api.articles.delete_comment_on_article","to":"db.article","label":"slugで記事検索","kind":"db"},{"from":"db.article","to":"svc.error.article_not_found","label":"該当slugなし","branch":"error","kind":"error"},{"from":"api.articles.delete_comment_on_article","to":"db.comment","label":"id×本人投稿でコメント検索","kind":"db"},{"from":"api.articles.delete_comment_on_article","to":"svc.crud.delete","label":"取得したコメントを削除","kind":"call"},{"from":"svc.crud.delete","to":"db.comment","label":"コメントレコードを削除","kind":"db"}],"notes":["所有者チェックはInvalidUsage.comment_not_owned()例外ではなく、検索クエリのfilter_by(id=cid, author=current_user.profile)に埋め込まれている","id不一致または他人のコメントの場合commentはNoneのままとなり、直後のcomment.delete()でAttributeError(未捕捉の500相当)になる。exceptions.pyに定義済みのInvalidUsage.comment_not_owned()(422 'Not your article')はこの経路では一度も呼ばれない"]},{"id":"get-tags","title":"タグ一覧を見る","category":"コメント・タグ","trigger":"GET /api/tags","steps":[{"from":"api.articles.get_tags","to":"db.tags","label":"全タグを取得","kind":"http"}],"notes":["marshal_withを使わず素のjsonifyで{tags:[tagname,...]}を返す唯一のエンドポイント。認証も不要"]},{"id":"register","title":"アカウントを登録する","category":"認証・アカウント","trigger":"POST /api/users","steps":[{"from":"api.user.register_user","to":"svc.schema.user_schema","label":"POST /api/users受信","kind":"http"},{"from":"svc.schema.user_schema","to":"api.user.register_user","label":"body/userをデシリアライズ","kind":"call"},{"from":"api.user.register_user","to":"svc.user.init","label":"User(username,email,password)生成","kind":"call"},{"from":"svc.user.init","to":"svc.user.set_password","label":"bcryptでパスワードハッシュ化","kind":"call"},{"from":"svc.user.set_password","to":"svc.crud.save","label":"User.save()","kind":"call"},{"from":"svc.crud.save","to":"db.users","label":"INSERT users","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_already_registered","label":"username/email重複(IntegrityError)","branch":"error","kind":"error"},{"from":"db.users","to":"svc.profile.init","label":"保存成功→UserProfile生成","kind":"call"},{"from":"svc.profile.init","to":"svc.crud.save","label":"UserProfile.save()","kind":"call"},{"from":"svc.crud.save","to":"db.userprofile","label":"INSERT userprofile","kind":"db"},{"from":"db.userprofile","to":"svc.auth.create_access_token","label":"JWTトークン発行","kind":"call"},{"from":"svc.auth.create_access_token","to":"svc.schema.user_schema","label":"userをシリアライズ","kind":"call"}],"notes":["IntegrityErrorはUser.save()/UserProfile.save()どちらの保存でも発生しうるが、raise前に必ずdb.session.rollback()する","エラー時はDBロールバック後にInvalidUsage(422)を送出し、後続のUserProfile生成・JWT発行は行われない","use_kwargsによるusername/email/password欠落はwebargs側のバリデーションで別途弾かれる(この経路には現れない)"]},{"id":"login","title":"ログインする","category":"認証・アカウント","trigger":"POST /api/users/login","steps":[{"from":"api.user.login_user","to":"svc.auth.jwt_optional","label":"POST /api/users/login受信","kind":"http"},{"from":"svc.auth.jwt_optional","to":"svc.schema.user_schema","label":"認証任意で通過","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.login_user","label":"email/passwordをデシリアライズ","kind":"call"},{"from":"api.user.login_user","to":"db.users","label":"emailでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当ユーザーなし","branch":"error","kind":"error"},{"from":"db.users","to":"svc.user.check_password","label":"該当ユーザーあり→パスワード照合","kind":"call"},{"from":"svc.user.check_password","to":"svc.exceptions.user_not_found","label":"パスワード不一致","branch":"error","kind":"error"},{"from":"svc.user.check_password","to":"svc.auth.create_access_token","label":"照合成功→freshトークン発行","kind":"call"},{"from":"svc.auth.create_access_token","to":"svc.schema.user_schema","label":"userをシリアライズ","kind":"call"}],"notes":["ユーザー未検出とパスワード不一致は同じuser_not_found(404)にまとめて返す","jwt_optionalなので既存トークンの有無に関わらずログイン処理自体は常に実行される"]},{"id":"get-current-user","title":"自分の情報を取得する","category":"認証・アカウント","trigger":"GET /api/user","steps":[{"from":"api.user.get_user","to":"svc.auth.jwt_required","label":"GET /api/user受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.user.get_user","label":"検証OK→current_user解決","kind":"call"},{"from":"api.user.get_user","to":"svc.schema.user_schema","label":"Authorizationヘッダーのtokenを再設定しシリアライズ","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.get_user","label":"レスポンス返却","kind":"call"}],"notes":["jwt_required検証失敗時の401はflask_jwt_extended側の既定処理で、本コードのInvalidUsageは経由しない","Authorizationヘッダーを'Token 'で分割する実装で、コード中に'Not sure about this'というコメントがあり形式依存を示唆"]},{"id":"update-user","title":"プロフィール情報を更新する","category":"認証・アカウント","trigger":"PUT /api/user","steps":[{"from":"api.user.update_user","to":"svc.auth.jwt_required","label":"PUT /api/user受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"svc.schema.user_schema","label":"検証OK→ボディをデシリアライズ","kind":"call"},{"from":"svc.schema.user_schema","to":"api.user.update_user","label":"デシリアライズ済みkwargs取得","kind":"call"},{"from":"api.user.update_user","to":"svc.user.set_password","label":"passwordが含まれる場合のみ再ハッシュ化","branch":"alt","kind":"call"},{"from":"svc.user.set_password","to":"svc.crud.update","label":"残りのkwargsで属性更新","branch":"alt","kind":"call"},{"from":"api.user.update_user","to":"svc.crud.update","label":"passwordなしはkwargsそのまま属性更新","kind":"call"},{"from":"svc.crud.update","to":"svc.crud.save","label":"変更をsave()でコミット","kind":"call"},{"from":"svc.crud.save","to":"db.users","label":"UPDATE users","kind":"db"},{"from":"db.users","to":"svc.schema.user_schema","label":"更新後のuserをシリアライズ","kind":"call"}],"notes":["kwargsに'updated_at'が含まれる場合、created_atの値で上書きしてから更新している(意図せずcreated_atを再代入している可能性がある実装)","passwordは更新前にkwargsから取り除かれてからupdate()に渡るため、set_password()とCRUD更新で二重に処理されることはない"]},{"id":"get-profile","title":"他ユーザーのプロフィールを見る","category":"プロフィール","trigger":"GET /api/profiles/\u003cusername>","steps":[{"from":"api.profiles.get_profile","to":"svc.auth.jwt_optional","label":"GET受信","kind":"http"},{"from":"svc.auth.jwt_optional","to":"api.profiles.get_profile","label":"認証任意で通過","kind":"call"},{"from":"api.profiles.get_profile","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当usernameなし","branch":"error","kind":"error"},{"from":"db.users","to":"db.userprofile","label":"見つかった→関連profile取得(backref)","kind":"db"},{"from":"db.userprofile","to":"svc.schema.profile_schema","label":"シリアライズ開始","kind":"call"},{"from":"svc.schema.profile_schema","to":"svc.profile.following","label":"following属性を評価","kind":"call"},{"from":"svc.profile.following","to":"svc.profile.is_following","label":"current_user起点でフォロー判定","kind":"call"},{"from":"svc.profile.is_following","to":"api.profiles.get_profile","label":"レスポンス返却","kind":"call"}],"notes":["未ログイン(current_userなし)ならfollowingは常にFalse","jwt_optionalなので未認証でもプロフィール閲覧自体はできる"]},{"id":"follow-user","title":"ユーザーをフォローする","category":"プロフィール","trigger":"POST /api/profiles/\u003cusername>/follow","steps":[{"from":"api.profiles.follow_user","to":"svc.auth.jwt_required","label":"POST受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.profiles.follow_user","label":"検証OK","kind":"call"},{"from":"api.profiles.follow_user","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当usernameなし","branch":"error","kind":"error"},{"from":"db.users","to":"svc.profile.follow","label":"見つかった→フォロー実行","kind":"call"},{"from":"svc.profile.follow","to":"svc.profile.is_following","label":"自分自身/既フォローかを判定","kind":"call"},{"from":"svc.profile.is_following","to":"svc.crud.save","label":"followers_assocに追加しcurrent_userのprofileを保存","kind":"call"},{"from":"svc.crud.save","to":"db.followers_assoc","label":"INSERT follower関係","kind":"db"},{"from":"db.followers_assoc","to":"svc.schema.profile_schema","label":"対象userのprofileをシリアライズ","kind":"call"},{"from":"svc.schema.profile_schema","to":"api.profiles.follow_user","label":"レスポンス返却","kind":"call"}],"notes":["自分自身や既にフォロー済みの場合はfollow()が何もせずFalseを返すだけで、save()とレスポンスは常に200で成功のように見える(冪等)"]},{"id":"unfollow-user","title":"フォローを解除する","category":"プロフィール","trigger":"DELETE /api/profiles/\u003cusername>/follow","steps":[{"from":"api.profiles.unfollow_user","to":"svc.auth.jwt_required","label":"DELETE受信","kind":"http"},{"from":"svc.auth.jwt_required","to":"api.profiles.unfollow_user","label":"検証OK","kind":"call"},{"from":"api.profiles.unfollow_user","to":"db.users","label":"usernameでUser検索","kind":"db"},{"from":"db.users","to":"svc.exceptions.user_not_found","label":"該当usernameなし","branch":"error","kind":"error"},{"from":"db.users","to":"svc.profile.unfollow","label":"見つかった→フォロー解除実行","kind":"call"},{"from":"svc.profile.unfollow","to":"svc.profile.is_following","label":"現在フォロー中かを判定","kind":"call"},{"from":"svc.profile.is_following","to":"svc.crud.save","label":"followers_assocから削除しcurrent_userのprofileを保存","kind":"call"},{"from":"svc.crud.save","to":"db.followers_assoc","label":"DELETE follower関係","kind":"db"},{"from":"db.followers_assoc","to":"svc.schema.profile_schema","label":"対象userのprofileをシリアライズ","kind":"call"},{"from":"svc.schema.profile_schema","to":"api.profiles.unfollow_user","label":"レスポンス返却","kind":"call"}],"notes":["自分自身やフォローしていない相手の場合はunfollow()が何もせずFalseを返すだけで、レスポンスは常に200で成功のように見える(冪等)"]}]};
 
 /* ============================ 定数 ============================ */
 const META = DATA.meta || {};
@@ -478,8 +544,10 @@ const DEFAULT_LANES = [
 const LANES = (Array.isArray(META.lanes) && META.lanes.length)
   ? META.lanes.map(l => [l.key, l.label || l.key])
   : DEFAULT_LANES;
-/* ---- テーマ（既定はダーク。meta.theme か OS 設定、以降は利用者の選択を記憶する） ---- */
-const THEME_KEY = 'flowmap:theme';
+/* ---- テーマ（既定はライト。meta.theme で上書き可、以降は利用者の選択を記憶する） ---- */
+/* v2: 既定をダーク→ライトへ反転した際にキーも改める。旧キーのままだと、旧版（既定ダーク）を
+   一度でも開いた閲覧環境に 'dark' が保存済みで、ライト基準が永遠に効かない */
+const THEME_KEY = 'flowmap:theme:v2';
 /* redraw は「描画済みの図があるとき」だけ true にする。
    起動時の初回適用はレンダラ定義より前に走るため、そこで view（let 宣言）に触ると
    一時的死角（TDZ）で ReferenceError になり、以降の起動処理が丸ごと止まる。
@@ -496,21 +564,23 @@ function applyTheme(t, redraw){
 }
 let savedTheme = null;
 try { savedTheme = localStorage.getItem(THEME_KEY); } catch(e) {}
-applyTheme(savedTheme || META.theme ||
-  (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'), false);
+/* 既定はライト（白地）。OS のダーク設定では自動で暗くしない——配布先の閲覧者層は
+   ライト前提のため、暗い配色は利用者が ◐ で明示的に選んだときだけ */
+applyTheme(savedTheme || META.theme || 'light', false);
 const LANE_LABEL = Object.fromEntries(LANES);
 const FALLBACK_LANE = LANES[0][0];
 /* UI文字列。meta.lang: "en" で英語UIに切り替わる（データ本文の言語は書き手の責任範囲） */
 const LANG = META.lang === 'en' ? 'en' : 'ja';
 const STR = LANG === 'en' ? {
   flowWord:'operation', defaultTitle:'Flow Map',
-  subtitle:'Press a button — only that route lights up, in order',
+  subtitle:'Pick from the list — only that route lights up, in order',
   searchPh:w=>`Search ${w}s / nodes / refs…`,
   overlayOn:'Overlay on full map', overlayOff:'Draw route only',
   edgeLabels:'Edge labels', play:'▶ Play', pause:'⏸ Pause', prev:'◀ Prev', next:'Next ▶',
   spSlow:'Slow', spStd:'Normal', spFast:'Fast',
-  fit:'Fit view', clear:'Clear selection',
-  foldHide:w=>`Hide ${w} list`, foldShow:w=>`Show ${w} list`,
+  fit:'Fit view', fitShort:'Fit', clear:'Clear selection',
+  viewMenu:'View ▾', tabList:w=>'List', tabSteps:'Steps',
+  asideFold:'Hide the panel', asideShow:'Show the panel',
   stat:(w,f,n,e)=>`${esc(w)}s <b>${f}</b> · nodes <b>${n}</b> · edges <b>${e}</b>`,
   diffStat:(a,c)=>` · vs prev <b style="color:var(--new)">+${a}</b>/<b style="color:var(--alt)">mod ${c}</b>`,
   lgMain:'main path', lgAlt:'conditional', lgErr:'failure / retry',
@@ -520,22 +590,23 @@ const STR = LANG === 'en' ? {
   themeToggle:'Toggle light / dark',
   evLabel:{direct:'direct call',inferred:'inferred',framework:'implicit (framework)',unverified:'unverified'},
   subjectOf:'Subject',
-  empty:w=>`Pick an ${esc(w)} above —<br>only its route lights up.<br><br><span class="k">drag</span> to pan, <span class="k">Ctrl+wheel</span> to zoom<br><span class="k">←</span> <span class="k">→</span> to step, <span class="k">Space</span> to play/pause<br><span class="k">Esc</span> to clear`,
+  empty:w=>`Pick an ${esc(w)} from the List tab —<br>only its route lights up.<br><br><span class="k">drag</span> to pan, <span class="k">wheel</span> to zoom<br><span class="k">←</span> <span class="k">→</span> to step, <span class="k">Space</span> to play/pause<br><span class="k">Esc</span> to clear`,
   trg:w=>`${esc(w)}: `, steps:n=>`${n} steps`,
-  showingStep:i=>`· showing step <b style="color:var(--main)">${i}</b>`, showingAll:'· showing full route',
+  progStep:(i,n)=>`${i} / ${n}`, progAll:'full route',
   through:(w,n)=>`${esc(w)}s through here (${n})`,
   conn:(i,o)=>`Connections (← in ${i} / → out ${o})`, notes:'Notes', none:'none',
   badgeStart:'GO', badgeSrc:'SRC', chgNew:'NEW', chgMod:'MOD',
-  hint:w=>`Press a button above and that ${esc(w)}'s route lights up <b>step by step</b>. Drag to pan the map. Click a node to reverse-look-up the ${esc(w)}s passing through it.`,
+  hint:w=>`Pick an ${esc(w)} from the <b>List</b> and its route lights up <b>step by step</b>. Drag to pan, wheel to zoom. Click a node to reverse-look-up the ${esc(w)}s passing through it.`,
 } : {
   flowWord:'操作', defaultTitle:'処理フロー全図',
-  subtitle:'ボタンを押すと、そのルートだけが順番に光ります',
+  subtitle:'一覧から選ぶと、そのルートだけが順番に光ります',
   searchPh:w=>`${w}・処理・参照で検索…`,
   overlayOn:'全体マップに重ねる', overlayOff:'経路だけを描く',
   edgeLabels:'エッジのラベル', play:'▶ 順に再生', pause:'⏸ 停止', prev:'◀ 前', next:'次 ▶',
   spSlow:'ゆっくり', spStd:'標準', spFast:'はやい',
-  fit:'全体を表示', clear:'選択解除',
-  foldHide:w=>`${w}一覧を畳む`, foldShow:w=>`${w}一覧を出す`,
+  fit:'全体を表示', fitShort:'全体', clear:'選択解除',
+  viewMenu:'表示 ▾', tabList:w=>`${esc(w)}一覧`, tabSteps:'手順',
+  asideFold:'パネルを畳む', asideShow:'パネルを出す',
   stat:(w,f,n,e)=>`${esc(w)} <b>${f}</b> ・ 処理ノード <b>${n}</b> ・ 経路 <b>${e}</b>`,
   diffStat:(a,c)=>` ・ 前回比 <b style="color:var(--new)">+${a}</b>/<b style="color:var(--alt)">変更${c}</b>`,
   lgMain:'正常系', lgAlt:'条件分岐', lgErr:'失敗・再試行',
@@ -544,13 +615,13 @@ const STR = LANG === 'en' ? {
   evHelp:'ノードの参照はリポジトリと突き合わせて実在を確認しています。経路（AがBを呼ぶ）は機械的に確かめようがないため、代わりに根拠の強さを表示しています。直接=呼び出し行がソースにある／推定=型・DI・設定から導いた／暗黙=フレームワークが呼ぶためソースに行が無い／未確認=呼び出し先を特定できなかった。',
   evLabel:{direct:'直接の呼び出し',inferred:'推定',framework:'暗黙（フレームワーク）',unverified:'未確認'},
   subjectOf:'対象', themeToggle:'明るい配色と暗い配色を切り替える',
-  empty:w=>`上のボタンから${esc(w)}を選ぶと<br>そのルートだけが光ります。<br><br><span class="k">ドラッグ</span> で移動、<span class="k">Ctrl+ホイール</span> で拡大縮小<br><span class="k">←</span> <span class="k">→</span> で1ステップずつ、<span class="k">Space</span> で再生／停止<br><span class="k">Esc</span> で選択解除`,
+  empty:w=>`「${esc(w)}一覧」から選ぶと<br>そのルートだけが光ります。<br><br><span class="k">ドラッグ</span> で移動、<span class="k">ホイール</span> で拡大縮小<br><span class="k">←</span> <span class="k">→</span> で1ステップずつ、<span class="k">Space</span> で再生／停止<br><span class="k">Esc</span> で選択解除`,
   trg:w=>`${esc(w)}：`, steps:n=>`全 ${n} ステップ`,
-  showingStep:i=>`・<b style="color:var(--main)">${i}</b> 番目を表示中`, showingAll:'・全経路を表示中',
+  progStep:(i,n)=>`${i} / ${n}`, progAll:'全経路',
   through:(w,n)=>`ここを通る${esc(w)}（${n}）`,
   conn:(i,o)=>`前後の接続（← 入力 ${i} / → 出力 ${o}）`, notes:'注意点 / 仕様メモ', none:'なし',
   badgeStart:'開始', badgeSrc:'起点', chgNew:'NEW', chgMod:'変更',
-  hint:w=>`上のボタンを押すと、その${esc(w)}が通る経路だけが<b>順番に光ります</b>。図はドラッグで動かせます。ノードをクリックすると「ここを通る${esc(w)}」を逆引きできます。`,
+  hint:w=>`「<b>${esc(w)}一覧</b>」から選ぶと、その経路だけが<b>順番に光ります</b>。図はドラッグで移動、ホイールで拡大縮小。ノードを押すと「ここを通る${esc(w)}」を逆引きできます。`,
 };
 const FLOW_WORD = META.flowWord || STR.flowWord;
 /* 同じ「順番に光る」演出が、モードによって別の順序を指す。図の側で宣言しないと受け手が誤読する */
@@ -711,7 +782,24 @@ const layer = document.getElementById('zoomlayer');
 const svg = document.getElementById('edges');
 const wrap = document.getElementById('wrap');
 const tip = document.getElementById('tip');
+const asideEl = document.getElementById('aside');
 const SVGNS = 'http://www.w3.org/2000/svg';
+
+/* 右パネルの「一覧⇄手順」タブ。スマホでは下部ペインが同じ状態を映すので、
+   タブを切り替えたらペイン側の表示も同期させる（fromPane=true はペイン側からの呼び出し＝逆流させない） */
+function setTab(t, fromPane){
+  asideEl.dataset.tab = t;
+  const tl = document.getElementById('tabList'), ts = document.getElementById('tabSteps');
+  tl.classList.toggle('on', t==='list');  tl.setAttribute('aria-selected', String(t==='list'));
+  ts.classList.toggle('on', t==='steps'); ts.setAttribute('aria-selected', String(t==='steps'));
+  if(!fromPane && MOBILE()){
+    const app = document.getElementById('app');
+    if(app.dataset.pane && app.dataset.pane !== 'map'){
+      app.dataset.pane = (t==='list' ? 'deck' : 'steps');
+      document.querySelectorAll('.pane').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.pane===app.dataset.pane)));
+    }
+  }
+}
 let view = {nodeEls:new Map(), edgeEls:new Map(), labelEls:new Map(), lay:null, ids:null, edges:null};
 let zoom = 1;
 
@@ -863,6 +951,8 @@ function selectFlow(f){
   // curStep=-1 のまま描くと全経路がフル点灯してから暗転し、段階再生の最初の一歩が台無しになる
   curStep = 0;
   paint(); renderPanel(); fit(true);
+  setTab('steps');                                              // 選んだら手順タブへ
+  document.getElementById('player').classList.add('show');      // 再生バーは選択中だけ
   if(typeof setPane==='function' && MOBILE()) setPane('map');   // 押したら図へ移る（体験の核をスマホでも通す）
   setTimeout(()=>play(), 260);
 }
@@ -872,6 +962,8 @@ function clearFlow(){
   document.querySelectorAll('button.flowbtn').forEach(b=>b.classList.remove('sel'));
   showMap();
   paint(); renderPanel(); fit(false);
+  setTab('list');                                               // 次に選ぶのは一覧から
+  document.getElementById('player').classList.remove('show');
 }
 function paint(){
   const nodes = view.nodeEls, edges = view.edgeEls;
@@ -942,7 +1034,7 @@ function paint(){
   });
   if(curStep>=0 && rows[curStep]) followStep(rows[curStep]);
   const pg = document.getElementById('prog');
-  if(pg) pg.innerHTML = curStep>=0 ? STR.showingStep(curStep+1) : STR.showingAll;
+  if(pg) pg.textContent = curStep>=0 ? STR.progStep(curStep+1, cur.steps.length) : STR.progAll;
   applyEdgeLabels();
 }
 /* 経路の根拠クラスは分岐の色クラスと共存させる（上書きで消さない） */
@@ -1026,8 +1118,9 @@ function renderPanel(){
   }).join('');
   el.innerHTML = `<div class="ahead">
       <div class="t">${esc(cur.title)}</div>
-      <div class="g">${esc(cur.category)} ・ ${STR.steps(cur.steps.length)} <span id="prog"></span></div>
+      <div class="g">${esc(cur.category)} ・ ${STR.steps(cur.steps.length)}</div>
       ${cur.trigger?`<div class="trigger">${STR.trg(FLOW_WORD)}${esc(cur.trigger)}</div>`:''}
+      <button class="ctl aclear" id="btnClearSel">✕ ${STR.clear}</button>
     </div>
     <div class="steps">${st}
       ${(cur.notes&&cur.notes.length)?`<div class="notes"><h3>${STR.notes}</h3><ul>${cur.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div>`:''}
@@ -1035,6 +1128,7 @@ function renderPanel(){
   el.querySelectorAll('.step').forEach(s=>s.addEventListener('click', ()=>{
     stopPlay(); curStep = +s.dataset.i; paint();
   }));
+  el.querySelector('#btnClearSel').addEventListener('click', clearFlow);
 }
 const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
@@ -1077,7 +1171,8 @@ function showNodePanel(id){
     const f = FLOWS.find(x=>x.id===el.dataset.f); if(f) selectFlow(f);
   }));
   view.nodeEls.forEach((el,i)=>el.classList.toggle('hit', i===id));
-  if(typeof setPane==='function' && MOBILE()) setPane('steps');   // 逆引きの結果は手順ペインに出る
+  setTab('steps');                                                // 逆引きの結果は手順タブに出る
+  if(typeof setPane==='function' && MOBILE()) setPane('steps');   // スマホでは手順ペインへ
 }
 
 /* ============================ デッキ（ボタン） ============================ */
@@ -1107,6 +1202,7 @@ function renderDeck(){
 /* ============================ 検索 ============================ */
 document.getElementById('q').addEventListener('input', e=>{
   const q = e.target.value.trim().toLowerCase();
+  if(q) setTab('list');   // 検索結果は一覧タブに出る（手順タブのまま絞り込んでも見えない）
   document.querySelectorAll('button.flowbtn').forEach(b=>{
     b.classList.toggle('hidden', !!q && !b.dataset.s.includes(q));
   });
@@ -1218,9 +1314,11 @@ function zoomAt(clientX, clientY, nz){
   wrap.scrollLeft = cx * zoom - px;
   wrap.scrollTop  = cy * zoom - py;
 }
+/* 素のホイールで拡縮する（地図アプリ方式）。この画面は図が全面を占める専用アプリで、
+   ページ側に縦スクロールが無いため「ページを送りたいのに拡大される」衝突は起きない。
+   縦横の移動はドラッグが担う。Ctrl+ホイール（トラックパッドのピンチ含む）も同じ動作 */
 wrap.addEventListener('wheel', e => {
-  if (!e.ctrlKey) return;   // 素のホイールは通常スクロールのまま
-  e.preventDefault();       // ブラウザのページ拡大を抑止
+  e.preventDefault();       // ブラウザのページ拡大・スクロールを抑止
   zoomAt(e.clientX, e.clientY, zoom * (e.deltaY < 0 ? 1.13 : 1/1.13));
 }, { passive: false });
 
@@ -1278,18 +1376,31 @@ document.getElementById('legend').innerHTML =
 document.getElementById('btnPlay').onclick = ()=> timer ? (stopPlay(), paint()) : play();
 document.getElementById('btnPrev').onclick = ()=> stepBy(-1);
 document.getElementById('btnNext').onclick = ()=> stepBy(1);
-document.getElementById('btnClear').onclick = clearFlow;
 document.getElementById('btnFit').onclick = ()=> fit(false);
 const zoomAtCenter = f => { const r = wrap.getBoundingClientRect(); zoomAt(r.left + r.width/2, r.top + r.height/2, zoom * f); };
 document.getElementById('btnZoomIn').onclick = ()=> zoomAtCenter(1.18);
 document.getElementById('btnZoomOut').onclick = ()=> zoomAtCenter(1/1.18);
-document.getElementById('btnFold').onclick = e=>{
-  const d = document.getElementById('deck');
-  const folded = d.classList.toggle('folded');
-  e.currentTarget.classList.toggle('on', folded);
-  e.currentTarget.textContent = folded ? STR.foldShow(FLOW_WORD) : STR.foldHide(FLOW_WORD);
-  setTimeout(()=>{ setZoom(zoom); if(cur) fit(true); }, 280);
+/* パネルの折畳。図の再フィットはレイアウト確定後に */
+document.getElementById('btnAside').onclick = e=>{
+  const folded = document.getElementById('app').classList.toggle('noaside');
+  e.currentTarget.textContent = folded ? '⇤' : '⇥';
+  e.currentTarget.title = folded ? STR.asideShow : STR.asideFold;
+  setTimeout(()=>{ setZoom(zoom); if(cur) fit(true); }, 20);
 };
+/* 表示メニュー（開閉と外側クリックで閉じる） */
+{
+  const pop = document.getElementById('viewpop'), btn = document.getElementById('btnView');
+  btn.onclick = e=>{
+    e.stopPropagation();
+    const open = pop.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(open));
+  };
+  document.addEventListener('click', e=>{
+    if(pop.classList.contains('open') && !pop.contains(e.target)){
+      pop.classList.remove('open'); btn.setAttribute('aria-expanded','false');
+    }
+  });
+}
 document.getElementById('btnLabels').onclick = e=>{
   showLabels = !showLabels; e.currentTarget.classList.toggle('on', showLabels); applyEdgeLabels();
 };
@@ -1327,9 +1438,9 @@ function showHintOnce(){
   d.id = 'hint';
   d.innerHTML = STR.hint(FLOW_WORD) + `<span class="x" title="close">✕</span>`;
   document.body.appendChild(d);
-  const r = document.getElementById('deck').getBoundingClientRect();
+  const r = wrap.getBoundingClientRect();   // 図の左上（一覧はパネル側なので図を塞がない位置に）
   d.style.left = Math.max(16, r.left + 16) + 'px';
-  d.style.top = Math.max(60, r.top + 10) + 'px';
+  d.style.top = Math.max(60, r.top + 12) + 'px';
   d.querySelector('.x').addEventListener('click', dismissHint);
   setTimeout(dismissHint, 15000);
 }
@@ -1351,14 +1462,17 @@ if(MODE!=='code') document.querySelector('header .sub').textContent = STR.subtit
 { const b=document.getElementById('btnTheme');
   if(b) b.onclick=()=>applyTheme(document.documentElement.dataset.theme==='light'?'dark':'light', true); }
 document.getElementById('q').placeholder = STR.searchPh(FLOW_WORD);
-document.getElementById('btnFold').textContent = STR.foldHide(FLOW_WORD);
+document.getElementById('btnView').textContent = STR.viewMenu;
+document.getElementById('tabList').textContent = STR.tabList(FLOW_WORD);
+document.getElementById('tabSteps').textContent = STR.tabSteps;
+document.getElementById('btnAside').title = STR.asideFold;
 document.getElementById('btnOnly').textContent = STR.overlayOn;
 document.getElementById('btnLabels').textContent = STR.edgeLabels;
 document.getElementById('btnPlay').textContent = STR.play;
 document.getElementById('btnPrev').textContent = STR.prev;
 document.getElementById('btnNext').textContent = STR.next;
-document.getElementById('btnFit').textContent = STR.fit;
-document.getElementById('btnClear').textContent = STR.clear;
+document.getElementById('btnFit').textContent = STR.fitShort;
+document.getElementById('btnFit').title = STR.fit;
 { const so = document.getElementById('speed').options;
   if (so.length === 3) { so[0].textContent = STR.spSlow; so[1].textContent = STR.spStd; so[2].textContent = STR.spFast; } }
 renderDeck();
@@ -1371,6 +1485,9 @@ const APP = document.getElementById('app');
 function setPane(p){
   APP.dataset.pane = p;
   document.querySelectorAll('.pane').forEach(b=>b.setAttribute('aria-pressed', String(b.dataset.pane===p)));
+  // 一覧・手順のペインはパネルのタブと同じ状態を共有する（fromPane=true で逆流を防ぐ）
+  if(p==='deck') setTab('list', true);
+  else if(p==='steps') setTab('steps', true);
   // 非表示だった間は clientWidth が 0 なので、offsetHeight を読んでレイアウトを確定させてから測る
   if(p==='map'){ void wrap.offsetHeight; setZoom(zoom); fit(!!cur); }
 }
@@ -1381,14 +1498,29 @@ function setPane(p){
   APP.dataset.pane = 'map';
   setPane('map');
 }
+/* デスクトップのタブ切替（スマホではタブ自体が非表示で、下部ペインが兼ねる） */
+document.getElementById('tabList').onclick = ()=> setTab('list');
+document.getElementById('tabSteps').onclick = ()=> setTab('steps');
 
-/* ディープリンク（#flow=<id>）で開かれたら、そのフローを選択した状態で始める */
-(function initFromHash(){
-  let f = null;
+/* ディープリンク（#flow=<id>）で開かれたら、そのフローを選択した状態で始める。
+   selectFlow は選択のたび history.replaceState で #flow= を書き戻すので、この図を既に
+   開いているタブへ別の #flow= リンクが飛んでくると「同一文書内の移動」になり、
+   ページの読み込み処理は二度と走らない。hashchange を拾わないと、そのリンクは
+   押しても無反応に見える（ガイドの「図で追う」リンク、アプリの「使い方」ボタンの
+   二度目以降が丸ごと死ぬ）。起動時と hashchange で同じ経路を通す */
+function applyHash(initial){
   const m = location.hash.match(/^#flow=(.+)$/);
+  let f = null;
   if(m){ try{ f = FLOWS.find(x => x.id === decodeURIComponent(m[1])); }catch(e){} }
-  if(f) selectFlow(f); else showHintOnce();
-})();
+  if(f){ if(!cur || cur.id !== f.id) selectFlow(f); return; }
+  // #flow= が外れた（ハッシュ無しで開き直された）ときは、選択解除した状態まで戻す
+  if(!m && cur){ clearFlow(); return; }
+  if(initial) showHintOnce();
+}
+addEventListener('hashchange', ()=>applyHash(false));
+// 戻る／進むで bfcache から復帰したときも、URL と画面の選択がずれたままになる
+addEventListener('pageshow', e=>{ if(e.persisted) applyHash(false); });
+applyHash(true);
 </script>
 </body>
 </html>
